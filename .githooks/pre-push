@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[hook:pre-push] Running full local CI checks..."
+npm run prepush:check

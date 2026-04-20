@@ -1,0 +1,263 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-ui);
+
+  --color-background: var(--mirai-color-bg);
+  --color-foreground: var(--mirai-color-ink);
+  --color-card: var(--mirai-color-surface);
+  --color-card-foreground: var(--mirai-color-ink);
+  --color-popover: var(--mirai-color-surface);
+  --color-popover-foreground: var(--mirai-color-ink);
+  --color-primary: var(--mirai-color-brand);
+  --color-primary-foreground: var(--mirai-color-ink);
+  --color-secondary: var(--mirai-color-surface-muted);
+  --color-secondary-foreground: var(--mirai-color-ink);
+  --color-muted: var(--mirai-color-surface-muted);
+  --color-muted-foreground: var(--mirai-color-ink-2);
+  --color-accent: var(--mirai-color-brand-strong);
+  --color-accent-foreground: var(--mirai-color-surface);
+  --color-destructive: var(--mirai-color-danger);
+  --color-border: var(--mirai-color-line);
+  --color-input: var(--mirai-color-line);
+  --color-ring: var(--mirai-color-brand-strong);
+
+  --radius-sm: var(--mirai-radius-xs);
+  --radius-md: var(--mirai-radius-sm);
+  --radius-lg: var(--mirai-radius-md);
+  --radius-xl: var(--mirai-radius-lg);
+}
+
+:root {
+  color-scheme: light;
+
+  /* Figma Light Mode color tokens */
+  --mirai-color-bg: #ffffff;
+  --mirai-color-surface: #ffffff;
+  --mirai-color-surface-muted: #f5f5f5;
+  --mirai-color-ink: #0f0f0f;
+  --mirai-color-ink-2: #2f2e30;
+  --mirai-color-brand: #48e1ed;
+  --mirai-color-brand-strong: #4349e7;
+  --mirai-color-danger: #db4444;
+  --mirai-color-line: rgba(15, 15, 15, 0.12);
+
+  /* Typography tokens from Figma variables */
+  --mirai-font-title-12-regular: 400 12px/18px var(--font-body);
+  --mirai-font-title-14-semibold: 600 14px/21px var(--font-body);
+  --mirai-font-title-16-regular: 400 16px/24px var(--font-body);
+  --mirai-font-heading-24-bold: 700 24px/24px var(--font-ui);
+  --mirai-font-heading-24-semibold: 600 24px/24px var(--font-ui);
+  --mirai-font-bri-button: 400 16px/24px var(--font-display);
+  --mirai-font-bri-name: 600 36px/48px var(--font-display);
+  --mirai-font-bri-body: 400 18px/24px var(--font-display);
+  --mirai-font-bri-product: 600 18px/24px var(--font-display);
+
+  /* Spacing tokens (extracted from header/footer/button) */
+  --mirai-space-2: 8px;
+  --mirai-space-3: 12px;
+  --mirai-space-4: 16px;
+  --mirai-space-5: 20px;
+  --mirai-space-6: 24px;
+  --mirai-space-8: 32px;
+  --mirai-space-12: 48px;
+
+  /* Radius tokens */
+  --mirai-radius-xs: 4px;
+  --mirai-radius-sm: 6px;
+  --mirai-radius-md: 8px;
+  --mirai-radius-lg: 12px;
+
+  /* Shadow tokens (very subtle in Figma, defined for scalable system) */
+  --mirai-shadow-sm: 0 8px 20px rgba(15, 15, 15, 0.06);
+  --mirai-shadow-md: 0 16px 30px rgba(15, 15, 15, 0.08);
+  --mirai-shadow-focus: 0 0 0 3px rgba(67, 73, 231, 0.2);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --mirai-color-bg: #111216;
+  --mirai-color-surface: #181a20;
+  --mirai-color-surface-muted: #242733;
+  --mirai-color-ink: #f7f8fa;
+  --mirai-color-ink-2: #c8ccd5;
+  --mirai-color-brand: #48e1ed;
+  --mirai-color-brand-strong: #7480ff;
+  --mirai-color-danger: #ff6f6f;
+  --mirai-color-line: rgba(247, 248, 250, 0.14);
+
+  --mirai-shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.22);
+  --mirai-shadow-md: 0 16px 30px rgba(0, 0, 0, 0.3);
+  --mirai-shadow-focus: 0 0 0 3px rgba(116, 128, 255, 0.25);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@keyframes mirai-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes mirai-float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-24px);
+  }
+}
+
+@keyframes mirai-shimmer {
+  0% {
+    transform: translateX(-150%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(150%);
+    opacity: 0;
+  }
+}
+
+@keyframes mirai-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 107, 53, 0);
+  }
+}
+
+@layer utilities {
+  .page-shell {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1170px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .page-shell {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  .token-chip {
+    @apply inline-flex items-center rounded-[4px] border border-border bg-secondary px-2 py-1 text-xs;
+  }
+
+  .bg-grid {
+    background-color: #050814;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .gradient-text {
+    background: linear-gradient(120deg, #3385ff 0%, #6ea8ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gradient-text-cyan {
+    background: linear-gradient(120deg, #00d4ff 0%, #8ceaff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background: linear-gradient(180deg, rgba(15, 20, 36, 0.72) 0%, rgba(8, 12, 28, 0.72) 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  .card-brand {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.35), 0 0 26px rgba(0, 102, 255, 0.35);
+  }
+
+  .animate-float {
+    animation: mirai-float 5s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: mirai-float-slow 7s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.3) 50%, transparent 80%);
+    animation: mirai-shimmer 2.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .animate-pulse-glow {
+    animation: mirai-pulse-glow 2s ease-out infinite;
+  }
+}

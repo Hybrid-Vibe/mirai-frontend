@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[hook:pre-commit] Running security scan..."
+npm run security:scan
