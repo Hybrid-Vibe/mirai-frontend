@@ -133,14 +133,14 @@ export function SiteHeader() {
               </button>
 
               {isAccountOpen && (
-                <div className="absolute right-0 top-12 z-20 w-[224px] rounded-[4px] bg-[rgba(0,0,0,0.04)] px-[20px] py-[18px] backdrop-blur-[150px]">
+                <div className="absolute right-0 top-12 z-20 w-[224px] rounded-[8px] border border-(--mirai-color-line) bg-background/95 px-[20px] py-[18px] shadow-xl backdrop-blur-md">
                   <div className="flex flex-col gap-[13px]">
                     {ACCOUNT_MENU_ITEMS.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
                         onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-[16px] text-[#FAFAFA] transition hover:opacity-80"
+                        className="flex items-center gap-[16px] text-foreground transition hover:text-(--mirai-sem-primary)"
                       >
                         <item.icon className="h-6 w-6" />
                         <span className="font-body text-[14px] font-normal leading-[21px]">
