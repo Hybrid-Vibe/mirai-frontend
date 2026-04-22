@@ -1,20 +1,65 @@
-import * as React from "react"
-import { Input as InputPrimitive } from "@base-ui/react/input"
+import * as React from "react";
+import { Input as InputPrimitive } from "@base-ui/react/input";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+const inputVariants = cva(
+  "w-full min-w-0 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground disabled:opacity-80",
+  {
+    variants: {
+      variant: {
+        default: "border-input focus-visible:border-ring",
+        error:
+          "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/35",
+      },
+      size: {
+        sm: "h-9 px-3 type-body-sm",
+        md: "h-10 px-3.5 type-body-sm",
+        lg: "h-12 px-4 type-body-md",
+
+        /* Legacy alias */
+        default: "h-10 px-3.5 type-body-sm",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "md",
+    },
+  },
+);
+
+export interface InputProps
+  extends Omit<React.ComponentProps<"input">, "size">,
+    VariantProps<typeof inputVariants> {
+  htmlSize?: number;
+}
+
+function Input({
+  className,
+  type,
+  variant,
+  size,
+  htmlSize,
+  "aria-invalid": ariaInvalid,
+  ...props
+}: InputProps) {
+  const resolvedVariant = ariaInvalid ? "error" : variant;
+
   return (
     <InputPrimitive
       type={type}
       data-slot="input"
+      data-variant={resolvedVariant ?? "default"}
       className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-        className
+        inputVariants({ variant: resolvedVariant, size }),
+        className,
       )}
+      size={htmlSize}
+      aria-invalid={ariaInvalid}
       {...props}
     />
-  )
+  );
 }
 
-export { Input }
+export { Input, inputVariants };

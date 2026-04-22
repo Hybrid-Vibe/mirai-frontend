@@ -3,3 +3,4 @@ export { HowItWorksSection } from "./how-it-works-section";
 export { FeaturesSection } from "./features-section";
 export { FlashSalesSection } from "./flash-sales-section";
 export { TestimonialsSection } from "./testimonials-section";
+export { MarketingAnchorNav } from "./marketing-anchor-nav";

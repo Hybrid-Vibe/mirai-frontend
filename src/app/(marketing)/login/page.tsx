@@ -1,45 +1,61 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AuthShowcase } from "@/components/features/marketing/auth-showcase";
 
 export default function LoginPage() {
+  const [identity, setIdentity] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
-    <main className="bg-background py-14">
+    <main className="bg-background py-16">
       <div className="page-shell grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
-        <section className="min-h-[620px] rounded-[4px] bg-[#F5F5F5] p-8">
-          <div className="grid h-full place-content-center gap-5">
-            <div className="mx-auto h-56 w-56 rounded-full bg-gradient-to-br from-[#4349E7] to-[#48E1ED]" />
-            <div className="mx-auto h-40 w-72 rounded-3xl bg-gradient-to-br from-[#111216] to-[#2F2E30]" />
-          </div>
-        </section>
+        <AuthShowcase />
 
         <section>
-          <h1 className="font-heading text-4xl font-semibold text-[#0F0F0F] md:text-5xl">Đăng nhập vào MIRAI</h1>
-          <p className="mt-3 text-sm text-[#2F2E30]/70">Nhập thông tin của bạn bên dưới</p>
+          <h1 className="font-heading text-5xl font-semibold text-foreground">
+            Đăng nhập vào MIRAI
+          </h1>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Nhập thông tin của bạn bên dưới
+          </p>
 
           <form className="mt-8 space-y-6">
-            <input
-              type="text"
+            <Input
+              type="email"
               placeholder="Email or Phone Number"
-              className="h-11 w-full border-b border-[#2F2E30]/40 bg-transparent text-sm outline-none"
+              value={identity}
+              onChange={(event) => setIdentity(event.target.value)}
+              className="rounded-none border-0 border-b border-border bg-transparent px-0"
             />
-            <input
+            <Input
               type="password"
               placeholder="Password"
-              className="h-11 w-full border-b border-[#2F2E30]/40 bg-transparent text-sm outline-none"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="rounded-none border-0 border-b border-border bg-transparent px-0"
             />
             <div className="flex flex-wrap items-center gap-4">
-              <button
+              <Button
                 type="submit"
-                className="h-11 min-w-44 rounded-[4px] bg-[#48E1ED] px-6 text-sm font-semibold text-[#0F0F0F]"
+                className="min-w-44 rounded-[4px]"
+                disabled={!identity.trim() || !password.trim()}
               >
                 Đăng nhập
-              </button>
-              <button type="button" className="text-sm font-medium text-[#4349E7]">
+              </Button>
+              <button
+                type="button"
+                className="text-sm font-medium text-(--mirai-sem-accent)"
+              >
                 Quên mật khẩu?
               </button>
             </div>
           </form>
 
-          <p className="mt-8 text-sm text-[#2F2E30]/80">
+          <p className="mt-8 text-sm text-muted-foreground">
             Chưa có tài khoản?{" "}
             <Link href="/signup" className="font-semibold underline">
               Tạo tài khoản

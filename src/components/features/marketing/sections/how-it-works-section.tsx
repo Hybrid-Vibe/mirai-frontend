@@ -60,7 +60,7 @@ export function HowItWorksSection() {
       <div className="page-shell">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-[color:var(--mirai-color-brand-strong)]">
+            <p className="text-sm font-medium text-(--mirai-color-brand-strong)">
               Browse by category
             </p>
             <h2 className="mt-2 font-heading text-3xl font-semibold md:text-4xl">
@@ -68,8 +68,8 @@ export function HowItWorksSection() {
             </h2>
           </div>
           <p className="hidden max-w-xl text-sm text-muted-foreground md:block">
-            Từ custom bằng AI đến các mẫu in sẵn, bạn có thể bắt đầu từ danh mục phù hợp nhất
-            với nhu cầu hiện tại.
+            Từ custom bằng AI đến các mẫu in sẵn, bạn có thể bắt đầu từ danh mục
+            phù hợp nhất với nhu cầu hiện tại.
           </p>
         </div>
 
@@ -77,14 +77,18 @@ export function HowItWorksSection() {
           {categories.map((category) => (
             <article
               key={category.name}
-              className="rounded-[10px] border border-border bg-card p-5 transition-colors hover:border-[color:var(--mirai-color-brand)]"
+              className="rounded-[10px] border border-border bg-card p-5 transition-colors hover:border-(--mirai-color-brand)"
             >
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-[color:var(--mirai-color-brand)]/15 text-[color:var(--mirai-color-brand-strong)]">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-(--mirai-color-brand)/15 text-(--mirai-color-brand-strong)">
                 <category.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 font-heading text-xl font-semibold">{category.name}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{category.description}</p>
-              <p className="mt-4 text-xs font-medium text-[color:var(--mirai-color-brand-strong)]">
+              <h3 className="mt-4 font-heading text-xl font-semibold">
+                {category.name}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {category.description}
+              </p>
+              <p className="mt-4 text-xs font-medium text-(--mirai-color-brand-strong)">
                 {category.quantity}
               </p>
             </article>

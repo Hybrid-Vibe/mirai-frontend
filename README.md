@@ -49,7 +49,6 @@ Mở trình duyệt tại:
 http://localhost:3000
 ```
 
-
 ## Trạng thái dự án
 
 - [x] Có bộ khung giao diện theo design

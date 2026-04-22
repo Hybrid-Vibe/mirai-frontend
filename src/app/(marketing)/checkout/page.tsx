@@ -1,98 +1,209 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const checkoutItems = [
+  { id: "co-1", name: "Ốp Lưng ASA STAR HEART", price: 85000 },
+  { id: "co-2", name: "Ốp Lưng Customize", price: 150000 },
+];
+
+const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
+
 export default function CheckoutPage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [coupon, setCoupon] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("cod");
+  const [saveInfo, setSaveInfo] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+
+  const subtotal = useMemo(
+    () => checkoutItems.reduce((sum, item) => sum + item.price, 0),
+    [],
+  );
+  const total = subtotal;
+
+  const hasError =
+    !firstName.trim() ||
+    !address.trim() ||
+    !city.trim() ||
+    !phone.trim() ||
+    !email.trim();
+
+  const handleOrder = () => {
+    setSubmitted(true);
+    if (hasError) {
+      return;
+    }
+  };
+
   return (
-    <main className="bg-background py-14">
+    <main className="bg-background py-16">
       <div className="page-shell">
-        <p className="text-sm text-[#2F2E30]/70">
-          Home / Cart / <span className="font-semibold text-[#0F0F0F]">Checkout</span>
+        <p className="text-sm text-muted-foreground">
+          Tài khoản / Tài Khoản Của Tôi / Sản phẩm / Giỏ Hàng /{" "}
+          <span className="font-semibold text-foreground">Thanh Toán</span>
         </p>
 
-        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_500px]">
+        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_520px]">
           <section>
-            <h1 className="font-heading text-3xl font-semibold text-[#0F0F0F] md:text-4xl">Chi tiết thanh toán</h1>
+            <h1 className="font-heading text-4xl font-semibold text-foreground">
+              Chi tiết thanh toán
+            </h1>
             <form className="mt-8 space-y-5">
-              {[
-                "Họ*",
-                "Tên",
-                "Địa Chỉ*",
-                "Apartment, floor, etc. (optional)",
-                "Tỉnh/ Thành Phố",
-                "Số Điện Thoại *",
-                "Email *",
-              ].map((label) => (
-                <label key={label} className="block text-sm text-[#2F2E30]/80">
-                  {label}
-                  <input className="mt-2 h-11 w-full rounded-[4px] border border-[color:var(--mirai-color-line)] bg-[#F5F5F5] px-4" />
-                </label>
-              ))}
+              <label className="block text-sm text-muted-foreground">
+                Họ*
+                <Input
+                  className="mt-2"
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  aria-invalid={submitted && !firstName.trim()}
+                />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Tên
+                <Input
+                  className="mt-2"
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Địa Chỉ*
+                <Input
+                  className="mt-2"
+                  value={address}
+                  onChange={(event) => setAddress(event.target.value)}
+                  aria-invalid={submitted && !address.trim()}
+                />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Apartment, floor, etc. (optional)
+                <Input className="mt-2" />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Tỉnh/ Thành Phố*
+                <Input
+                  className="mt-2"
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  aria-invalid={submitted && !city.trim()}
+                />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Số Điện Thoại *
+                <Input
+                  className="mt-2"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  aria-invalid={submitted && !phone.trim()}
+                />
+              </label>
+              <label className="block text-sm text-muted-foreground">
+                Email *
+                <Input
+                  className="mt-2"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  aria-invalid={submitted && !email.trim()}
+                />
+              </label>
 
-              <label className="mt-5 flex items-center gap-3 text-sm text-[#0F0F0F]">
-                <input type="checkbox" defaultChecked className="h-4 w-4 accent-[#4349E7]" />
+              <label className="mt-5 flex items-center gap-3 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={saveInfo}
+                  onChange={(event) => setSaveInfo(event.target.checked)}
+                  className="h-4 w-4 accent-(--mirai-sem-accent)"
+                />
                 Lưu thông tin này để thanh toán nhanh hơn lần sau
               </label>
+              {submitted && hasError && (
+                <p className="text-sm text-(--mirai-sem-danger)">
+                  Vui lòng điền đầy đủ các trường bắt buộc (*).
+                </p>
+              )}
             </form>
           </section>
 
-          <section className="rounded-[4px] border border-[color:var(--mirai-color-line)] bg-white p-6 lg:p-8">
-            <div className="space-y-4 text-sm text-[#0F0F0F]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="h-11 w-8 rounded-md bg-gradient-to-b from-[#2F2E30] to-[#4349E7]" />
-                  <span>Ốp Lưng ASA STAR HEART</span>
+          <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-6 lg:p-8">
+            <div className="space-y-4 text-sm text-foreground">
+              {checkoutItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="h-11 w-8 rounded-md bg-gradient-to-b from-(--mirai-sem-text-muted) to-(--mirai-sem-accent)" />
+                    <span>{item.name}</span>
+                  </div>
+                  <span>{formatPrice(item.price)}</span>
                 </div>
-                <span>85.000đ</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="h-11 w-8 rounded-md bg-gradient-to-b from-[#2F2E30] to-[#4349E7]" />
-                  <span>Ốp Lưng Customize</span>
-                </div>
-                <span>150.000đ</span>
-              </div>
+              ))}
             </div>
 
             <div className="mt-8 space-y-4 text-sm">
-              <div className="flex items-center justify-between border-b border-[color:var(--mirai-color-line)] pb-3">
+              <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
                 <span>Subtotal:</span>
-                <span>235.000đ</span>
+                <span>{formatPrice(subtotal)}</span>
               </div>
-              <div className="flex items-center justify-between border-b border-[color:var(--mirai-color-line)] pb-3">
+              <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
                 <span>Shipping:</span>
                 <span>Miễn phí</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Total:</span>
-                <span className="font-semibold">235.000đ</span>
+                <span className="font-semibold">{formatPrice(total)}</span>
               </div>
             </div>
 
             <div className="mt-8 space-y-3 text-sm">
-              <label className="flex items-center gap-3">
-                <input type="radio" name="payment-method" className="h-4 w-4" />
-                Thanh Toán Trực Tuyến
+              <label className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    className="h-4 w-4"
+                    checked={paymentMethod === "online"}
+                    onChange={() => setPaymentMethod("online")}
+                  />
+                  Thanh Toán Trực Tuyến
+                </span>
+                <span className="text-xs text-muted-foreground">MOMO  VISA  MC</span>
               </label>
               <label className="flex items-center gap-3">
-                <input type="radio" name="payment-method" defaultChecked className="h-4 w-4" />
+                <input
+                  type="radio"
+                  name="payment-method"
+                  className="h-4 w-4"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                />
                 COD
               </label>
             </div>
 
             <div className="mt-6 flex gap-3">
-              <input
-                type="text"
+              <Input
                 placeholder="Mã giảm giá"
-                className="h-11 w-full rounded-[4px] border border-[#2F2E30]/40 bg-white px-4 text-sm"
+                value={coupon}
+                onChange={(event) => setCoupon(event.target.value)}
               />
-              <button type="button" className="h-11 min-w-36 rounded-[4px] bg-[#48E1ED] px-4 text-sm font-semibold text-[#0F0F0F]">
+              <Button type="button" className="min-w-36 rounded-[4px]">
                 Áp Dụng
-              </button>
+              </Button>
             </div>
 
-            <button
+            <Button
               type="button"
-              className="mt-6 inline-flex h-11 min-w-44 items-center justify-center rounded-[4px] bg-[#48E1ED] px-8 text-sm font-semibold text-[#0F0F0F]"
+              onClick={handleOrder}
+              className="mt-6 min-w-44 rounded-[4px]"
             >
-              Order
-            </button>
+              {hasError && submitted ? "Kiểm tra lại thông tin" : "Order"}
+            </Button>
           </section>
         </div>
       </div>

@@ -3,33 +3,44 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 type-caption font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
+        primary:
+          "border-transparent bg-primary text-foreground hover:bg-(--mirai-state-primary-hover)",
+        accent:
+          "border-transparent bg-accent text-background hover:bg-(--mirai-state-accent-hover)",
+        muted: "border-transparent bg-secondary text-foreground hover:bg-muted",
+        danger:
+          "border-transparent bg-destructive text-background hover:bg-destructive/90",
+        success:
+          "border-transparent bg-(--mirai-sem-success) text-(--mirai-sem-text)",
+        warning:
+          "border-transparent bg-(--mirai-sem-warning) text-(--mirai-sem-text)",
+        outline: "border-border bg-transparent text-foreground",
+
+        /* Legacy aliases kept to avoid regressions in current screens. */
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-primary text-foreground hover:bg-(--mirai-state-primary-hover)",
+        secondary: "border-transparent bg-secondary text-foreground hover:bg-muted",
         destructive:
-          "border-transparent bg-destructive text-white hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-transparent bg-destructive text-background hover:bg-destructive/90",
         brand:
-          "border-[rgba(0,102,255,0.4)] bg-[rgba(0,102,255,0.15)] text-[#3385FF] hover:bg-[rgba(0,102,255,0.25)]",
-        cyan:
-          "border-[rgba(0,212,255,0.4)] bg-[rgba(0,212,255,0.15)] text-[#00D4FF] hover:bg-[rgba(0,212,255,0.25)]",
-        hot:
-          "border-transparent bg-gradient-to-r from-[#FF6B35] to-[#FF3D00] text-white",
+          "border-(--mirai-sem-accent)/35 bg-(--mirai-sem-accent)/12 text-(--mirai-sem-accent) hover:bg-(--mirai-sem-accent)/18",
+        cyan: "border-(--mirai-sem-primary)/45 bg-(--mirai-sem-primary)/14 text-(--mirai-sem-primary) hover:bg-(--mirai-sem-primary)/20",
+        hot: "border-transparent bg-(--mirai-sem-warning) text-(--mirai-sem-text) hover:brightness-95",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
     },
-  }
+  },
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
