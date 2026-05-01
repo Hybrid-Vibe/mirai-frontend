@@ -53,9 +53,8 @@ const products = [
 const filters = ["all", "iPhone", "Samsung", "Xiaomi"] as const;
 
 export function FeaturesSection() {
-  const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>(
-    "all",
-  );
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof filters)[number]>("all");
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
   const visibleProducts = useMemo(() => {
@@ -82,11 +81,13 @@ export function FeaturesSection() {
             <p className="text-sm font-medium text-(--mirai-color-brand-strong)">
               Best selling products
             </p>
-            <h2 className="mt-2 type-heading-md">
-              Sản phẩm bán chạy
-            </h2>
+            <h2 className="mt-2 type-heading-md">Sản phẩm bán chạy</h2>
           </div>
-          <Button asChild variant="outline" className="hidden rounded-[6px] md:inline-flex">
+          <Button
+            asChild
+            variant="outline"
+            className="hidden rounded-[6px] md:inline-flex"
+          >
             <Link href="/shop">Xem tất cả</Link>
           </Button>
         </div>
@@ -114,55 +115,58 @@ export function FeaturesSection() {
             const isWishlisted = wishlistIds.includes(product.id);
 
             return (
-            <article
-              key={product.id}
-              className="overflow-hidden rounded-[10px] border border-border bg-card"
-            >
-              <div
-                className={`relative flex h-52 items-center justify-center bg-gradient-to-br ${product.color}`}
+              <article
+                key={product.id}
+                className="overflow-hidden rounded-[10px] border border-border bg-card"
               >
-                {product.isNew && (
-                  <Badge className="absolute left-3 top-3 bg-card text-foreground">
-                    NEW
-                  </Badge>
-                )}
-                <button
-                  type="button"
-                  aria-label={`Add ${product.name} to wishlist`}
-                  onClick={() => toggleWishlist(product.id)}
-                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-[6px] bg-card/90 text-foreground"
+                <div
+                  className={`relative flex h-52 items-center justify-center bg-gradient-to-br ${product.color}`}
                 >
-                  <Heart
-                    className={cn(
-                      "h-4 w-4 transition",
-                      isWishlisted && "fill-current text-(--mirai-sem-danger)",
-                    )}
-                  />
-                </button>
-                <div className="h-36 w-20 rounded-[18px] border border-white/40 bg-black/10" />
-              </div>
-
-              <div className="p-4">
-                <p className="text-xs text-muted-foreground">{product.model}</p>
-                <h3 className="mt-1 font-heading text-lg font-semibold">
-                  {product.name}
-                </h3>
-
-                <div className="mt-2 flex items-center gap-1 text-xs">
-                  <Star className="h-3.5 w-3.5 fill-current text-(--mirai-sem-warning)" />
-                  <span>{product.rating}</span>
+                  {product.isNew && (
+                    <Badge className="absolute left-3 top-3 bg-card text-foreground">
+                      NEW
+                    </Badge>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={`Add ${product.name} to wishlist`}
+                    onClick={() => toggleWishlist(product.id)}
+                    className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-[6px] bg-card/90 text-foreground"
+                  >
+                    <Heart
+                      className={cn(
+                        "h-4 w-4 transition",
+                        isWishlisted &&
+                          "fill-current text-(--mirai-sem-danger)",
+                      )}
+                    />
+                  </button>
+                  <div className="h-36 w-20 rounded-[18px] border border-white/40 bg-black/10" />
                 </div>
 
-                <div className="mt-3 flex items-center gap-2">
-                  <p className="font-heading text-lg font-semibold text-(--mirai-color-brand-strong)">
-                    {product.price}
+                <div className="p-4">
+                  <p className="text-xs text-muted-foreground">
+                    {product.model}
                   </p>
-                  <p className="text-sm text-muted-foreground line-through">
-                    {product.oldPrice}
-                  </p>
+                  <h3 className="mt-1 font-heading text-lg font-semibold">
+                    {product.name}
+                  </h3>
+
+                  <div className="mt-2 flex items-center gap-1 text-xs">
+                    <Star className="h-3.5 w-3.5 fill-current text-(--mirai-sem-warning)" />
+                    <span>{product.rating}</span>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2">
+                    <p className="font-heading text-lg font-semibold text-(--mirai-color-brand-strong)">
+                      {product.price}
+                    </p>
+                    <p className="text-sm text-muted-foreground line-through">
+                      {product.oldPrice}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
             );
           })}
         </div>

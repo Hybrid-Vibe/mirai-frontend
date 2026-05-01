@@ -86,7 +86,9 @@ export default function WishlistPage() {
                 <Button
                   type="button"
                   size="sm"
-                  variant={movedToCartIds.includes(item.id) ? "secondary" : "primary"}
+                  variant={
+                    movedToCartIds.includes(item.id) ? "secondary" : "primary"
+                  }
                   className="mt-5 w-full rounded-[2px] bg-(--mirai-sem-text) text-(--mirai-sem-background)"
                   onClick={() => moveToCart(item.id)}
                 >
@@ -108,7 +110,10 @@ export default function WishlistPage() {
               </p>
               <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={`${item.id}-${i}`} className="h-3.5 w-3.5 fill-current" />
+                  <Star
+                    key={`${item.id}-${i}`}
+                    className="h-3.5 w-3.5 fill-current"
+                  />
                 ))}
                 <span className="ml-1 text-xs text-muted-foreground">(65)</span>
               </div>
@@ -166,7 +171,10 @@ export default function WishlistPage() {
               </p>
               <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={`${item.id}-${i}`} className="h-3.5 w-3.5 fill-current" />
+                  <Star
+                    key={`${item.id}-${i}`}
+                    className="h-3.5 w-3.5 fill-current"
+                  />
                 ))}
                 <span className="ml-1 text-xs text-muted-foreground">(65)</span>
               </div>

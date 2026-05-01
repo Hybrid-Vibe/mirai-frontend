@@ -32,7 +32,7 @@ export const useCartStore = create<CartState>()(
               items: state.items.map((i) =>
                 i.id === item.id
                   ? { ...i, quantity: i.quantity + item.quantity }
-                  : i
+                  : i,
               ),
             };
           }
@@ -45,7 +45,9 @@ export const useCartStore = create<CartState>()(
       updateQuantity: (id, quantity) =>
         set((state) => ({
           items: state.items.map((i) =>
-            i.id === id ? { ...i, quantity: Math.max(1, Math.min(quantity, 10)) } : i
+            i.id === id
+              ? { ...i, quantity: Math.max(1, Math.min(quantity, 10)) }
+              : i,
           ),
         })),
       clearCart: () => set({ items: [] }),
@@ -55,11 +57,14 @@ export const useCartStore = create<CartState>()(
       },
       getSubtotal: () => {
         const state = get();
-        return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return state.items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0,
+        );
       },
     }),
     {
       name: "mirai-cart-storage",
-    }
-  )
+    },
+  ),
 );

@@ -17,10 +17,13 @@ export default function AdminLayout({
             href="/admin"
             className="font-brand text-2xl font-black text-(--mirai-color-brand-strong) tracking-wide"
           >
-            MIRAI <span className="text-sm font-medium text-muted-foreground uppercase ml-1">Admin</span>
+            MIRAI{" "}
+            <span className="text-sm font-medium text-muted-foreground uppercase ml-1">
+              Admin
+            </span>
           </Link>
         </div>
-        
+
         <AdminNav />
 
         <div className="p-4 border-t border-border mt-auto">
@@ -44,10 +47,8 @@ export default function AdminLayout({
             </div>
           </div>
         </header>
-        
-        <main className="flex-1 p-6 overflow-y-auto">
-          {children}
-        </main>
+
+        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

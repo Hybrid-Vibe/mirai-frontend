@@ -174,10 +174,7 @@ export function EditorInterface() {
               <Box className="w-4 h-4 mr-2" />
               Xem AR
             </Button>
-            <Separator
-              orientation="vertical"
-              className="h-6 bg-border"
-            />
+            <Separator orientation="vertical" className="h-6 bg-border" />
             <Button
               variant="ghost"
               size="sm"

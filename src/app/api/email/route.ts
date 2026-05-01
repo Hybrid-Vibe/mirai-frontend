@@ -20,24 +20,21 @@ export async function POST(req: NextRequest) {
     if (!to || !template) {
       return NextResponse.json(
         { error: "to and template are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!VALID_TEMPLATES.includes(template)) {
       return NextResponse.json(
         { error: `Invalid template. Use: ${VALID_TEMPLATES.join(", ")}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const result = await sendEmail(to, template, data ?? {});
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: result.error }, { status: 502 });
     }
 
     return NextResponse.json({
@@ -48,7 +45,7 @@ export async function POST(req: NextRequest) {
     console.error("[API] Email error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

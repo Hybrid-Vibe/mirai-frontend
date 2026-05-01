@@ -19,7 +19,11 @@ const EditorCanvas = () => {
 
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[3rem] border-8 border-(--mirai-sem-border) bg-(--mirai-sem-text) shadow-2xl">
-      <Stage width={300} height={600} className="bg-(--mirai-sem-text) shadow-2xl">
+      <Stage
+        width={300}
+        height={600}
+        className="bg-(--mirai-sem-text) shadow-2xl"
+      >
         <Layer>
           {img && (
             <KonvaImage image={img} width={300} height={600} id="background" />

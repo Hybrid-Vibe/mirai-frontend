@@ -97,9 +97,7 @@ export function FlashSalesSection() {
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
                 Today
               </p>
-              <h2 className="type-heading-md">
-                Flash Sales
-              </h2>
+              <h2 className="type-heading-md">Flash Sales</h2>
             </div>
             <Badge variant="danger" className="ml-1 hidden sm:inline-flex">
               HOT

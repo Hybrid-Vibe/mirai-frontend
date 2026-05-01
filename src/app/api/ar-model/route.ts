@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     if (!designUrl || !phoneModel) {
       return NextResponse.json(
         { error: "designUrl and phoneModel are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,8 +22,10 @@ export async function POST(req: NextRequest) {
     // 6. Upload both files to Cloudinary or AWS S3
     // 7. Return the URLs
 
-    console.log(`[API] Simulating AR model generation for ${phoneModel} with design ${designUrl}...`);
-    
+    console.log(
+      `[API] Simulating AR model generation for ${phoneModel} with design ${designUrl}...`,
+    );
+
     // Simulate processing time
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
     console.error("[API] AR model generation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

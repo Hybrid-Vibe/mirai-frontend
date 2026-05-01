@@ -10,7 +10,7 @@ const supportLinks = [
 const accountLinks = [
   { label: "My Account", href: "/account" },
   { label: "Login", href: "/login" },
-  {label: "Register", href: "/register"},
+  { label: "Register", href: "/register" },
   { label: "Cart", href: "/cart" },
   { label: "Wishlist", href: "/wishlist" },
   { label: "Shop", href: "/shop" },
@@ -48,7 +48,10 @@ export function SiteFooter() {
                 placeholder="Enter your email"
                 className="w-full bg-transparent font-[var(--font-body)] text-base text-(--mirai-sem-background) outline-none placeholder:opacity-40"
               />
-              <button type="button" className="transition-transform hover:text-(--mirai-sem-primary) active:scale-[0.95]">
+              <button
+                type="button"
+                className="transition-transform hover:text-(--mirai-sem-primary) active:scale-[0.95]"
+              >
                 <Send className="h-5 w-5" />
               </button>
             </label>
@@ -74,7 +77,12 @@ export function SiteFooter() {
             <ul className="space-y-4 font-[var(--font-body)] text-base">
               {accountLinks.map((item) => (
                 <li key={item.label}>
-                  <Link href={item.href} className="transition-colors hover:text-(--mirai-sem-primary)">{item.label}</Link>
+                  <Link
+                    href={item.href}
+                    className="transition-colors hover:text-(--mirai-sem-primary)"
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -87,7 +95,12 @@ export function SiteFooter() {
             <ul className="space-y-4 font-[var(--font-body)] text-base">
               {quickLinks.map((item) => (
                 <li key={item.label}>
-                  <Link href={item.href} className="transition-colors hover:text-(--mirai-sem-primary)">{item.label}</Link>
+                  <Link
+                    href={item.href}
+                    className="transition-colors hover:text-(--mirai-sem-primary)"
+                  >
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -122,16 +135,32 @@ export function SiteFooter() {
             </div>
 
             <div className="flex items-center gap-6">
-              <Link href="#" aria-label="Website" className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)">
+              <Link
+                href="#"
+                aria-label="Website"
+                className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)"
+              >
                 <Globe className="h-5 w-5" />
               </Link>
-              <Link href="#" aria-label="Socials" className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)">
+              <Link
+                href="#"
+                aria-label="Socials"
+                className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)"
+              >
                 <MessageCircle className="h-5 w-5" />
               </Link>
-              <Link href="#" aria-label="Email" className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)">
+              <Link
+                href="#"
+                aria-label="Email"
+                className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)"
+              >
                 <AtSign className="h-5 w-5" />
               </Link>
-              <Link href="#" aria-label="Share" className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)">
+              <Link
+                href="#"
+                aria-label="Share"
+                className="transition-all hover:-translate-y-1 hover:text-(--mirai-sem-primary)"
+              >
                 <Share2 className="h-5 w-5" />
               </Link>
             </div>

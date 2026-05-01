@@ -16,7 +16,10 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "MIRAI <noreply@mirai.vn>";
 // In production, you'd likely use React Email or a templating engine.
 // ----------------------------------------------------------------------
 
-function getEmailSubject(template: EmailTemplateType, data: Record<string, unknown>): string {
+function getEmailSubject(
+  template: EmailTemplateType,
+  data: Record<string, unknown>,
+): string {
   const subjects: Record<EmailTemplateType, string> = {
     order_confirmation: `MIRAI — Xác nhận đơn hàng #${data.orderNumber ?? ""}`,
     order_shipped: `MIRAI — Đơn hàng #${data.orderNumber ?? ""} đã được giao cho đơn vị vận chuyển`,
@@ -28,7 +31,10 @@ function getEmailSubject(template: EmailTemplateType, data: Record<string, unkno
   return subjects[template];
 }
 
-function renderTemplate(template: EmailTemplateType, data: Record<string, unknown>): string {
+function renderTemplate(
+  template: EmailTemplateType,
+  data: Record<string, unknown>,
+): string {
   const baseStyle = `
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 600px;
@@ -156,7 +162,7 @@ function renderTemplate(template: EmailTemplateType, data: Record<string, unknow
 export async function sendEmail(
   to: string,
   template: EmailTemplateType,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<SendEmailResult> {
   try {
     const subject = getEmailSubject(template, data);
@@ -196,7 +202,7 @@ export async function sendEmail(
  */
 export async function sendWelcomeEmail(
   to: string,
-  fullName: string
+  fullName: string,
 ): Promise<SendEmailResult> {
   return sendEmail(to, "welcome", {
     fullName,
@@ -214,7 +220,7 @@ export async function sendOrderConfirmationEmail(
     customerName: string;
     totalAmount: string;
     paymentMethod: string;
-  }
+  },
 ): Promise<SendEmailResult> {
   return sendEmail(to, "order_confirmation", {
     ...data,
@@ -227,7 +233,7 @@ export async function sendOrderConfirmationEmail(
  */
 export async function sendPasswordResetEmail(
   to: string,
-  resetUrl: string
+  resetUrl: string,
 ): Promise<SendEmailResult> {
   return sendEmail(to, "password_reset", { resetUrl });
 }

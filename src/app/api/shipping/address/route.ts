@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
         if (!id) {
           return NextResponse.json(
             { error: "id (provinceId) is required" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const districts = await getDistricts(parseInt(id, 10));
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
         if (!id) {
           return NextResponse.json(
             { error: "id (districtId) is required" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const wards = await getWards(parseInt(id, 10));
@@ -38,14 +38,16 @@ export async function GET(req: NextRequest) {
       default:
         return NextResponse.json(
           { error: "Invalid type. Use: provinces, districts, or wards" },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
     console.error("[API] Address lookup error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 },
     );
   }
 }

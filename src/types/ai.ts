@@ -34,8 +34,16 @@ export interface GenerateResponse {
 /** Error response from POST /api/generate */
 export interface GenerateErrorResponse {
   error: string;
-  code: "INVALID_PROMPT" | "GENERATION_FAILED" | "RATE_LIMITED" | "SERVER_ERROR";
+  code:
+    | "INVALID_PROMPT"
+    | "GENERATION_FAILED"
+    | "RATE_LIMITED"
+    | "SERVER_ERROR";
 }
 
 /** Status for async generation jobs (future use with polling) */
-export type GenerationStatus = "pending" | "processing" | "completed" | "failed";
+export type GenerationStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";

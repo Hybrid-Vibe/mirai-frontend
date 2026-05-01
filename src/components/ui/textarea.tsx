@@ -29,11 +29,15 @@ const textareaVariants = cva(
 );
 
 export interface TextareaProps
-  extends React.ComponentProps<"textarea">,
+  extends
+    React.ComponentProps<"textarea">,
     VariantProps<typeof textareaVariants> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, variant, size, "aria-invalid": ariaInvalid, ...props }, ref) => {
+  (
+    { className, variant, size, "aria-invalid": ariaInvalid, ...props },
+    ref,
+  ) => {
     const resolvedVariant = ariaInvalid ? "error" : variant;
 
     return (
@@ -41,7 +45,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         ref={ref}
         data-slot="textarea"
         data-variant={resolvedVariant ?? "default"}
-        className={cn(textareaVariants({ variant: resolvedVariant, size }), className)}
+        className={cn(
+          textareaVariants({ variant: resolvedVariant, size }),
+          className,
+        )}
         aria-invalid={ariaInvalid}
         {...props}
       />

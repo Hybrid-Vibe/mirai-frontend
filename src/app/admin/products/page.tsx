@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -25,11 +25,46 @@ import { Search, MoreHorizontal, Plus, Filter } from "lucide-react";
 
 // Mock data
 const mockProducts = [
-  { id: "PROD-001", name: "iPhone 15 Pro Max Case", category: "Apple", price: "120.000đ", stock: 150, status: "Đang bán" },
-  { id: "PROD-002", name: "iPhone 15 Pro Case", category: "Apple", price: "120.000đ", stock: 85, status: "Đang bán" },
-  { id: "PROD-003", name: "Samsung S24 Ultra Case", category: "Samsung", price: "120.000đ", stock: 0, status: "Hết hàng" },
-  { id: "PROD-004", name: "iPhone 14 Pro Max Case", category: "Apple", price: "100.000đ", stock: 45, status: "Đang bán" },
-  { id: "PROD-005", name: "Oppo Reno 10 Case", category: "Oppo", price: "90.000đ", stock: 12, status: "Sắp hết" },
+  {
+    id: "PROD-001",
+    name: "iPhone 15 Pro Max Case",
+    category: "Apple",
+    price: "120.000đ",
+    stock: 150,
+    status: "Đang bán",
+  },
+  {
+    id: "PROD-002",
+    name: "iPhone 15 Pro Case",
+    category: "Apple",
+    price: "120.000đ",
+    stock: 85,
+    status: "Đang bán",
+  },
+  {
+    id: "PROD-003",
+    name: "Samsung S24 Ultra Case",
+    category: "Samsung",
+    price: "120.000đ",
+    stock: 0,
+    status: "Hết hàng",
+  },
+  {
+    id: "PROD-004",
+    name: "iPhone 14 Pro Max Case",
+    category: "Apple",
+    price: "100.000đ",
+    stock: 45,
+    status: "Đang bán",
+  },
+  {
+    id: "PROD-005",
+    name: "Oppo Reno 10 Case",
+    category: "Oppo",
+    price: "90.000đ",
+    stock: 12,
+    status: "Sắp hết",
+  },
 ];
 
 export default function ProductsPage() {
@@ -39,8 +74,12 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-foreground">Quản lý Sản phẩm</h1>
-          <p className="text-muted-foreground mt-1">Quản lý danh sách phôi ốp và dòng máy hỗ trợ.</p>
+          <h1 className="text-3xl font-heading font-bold text-foreground">
+            Quản lý Sản phẩm
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Quản lý danh sách phôi ốp và dòng máy hỗ trợ.
+          </p>
         </div>
         <Button className="h-10">
           <Plus className="h-4 w-4 mr-2" />
@@ -81,20 +120,28 @@ export default function ProductsPage() {
           <TableBody>
             {mockProducts.map((product) => (
               <TableRow key={product.id}>
-                <TableCell className="font-medium text-muted-foreground">{product.id}</TableCell>
+                <TableCell className="font-medium text-muted-foreground">
+                  {product.id}
+                </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell>{product.price}</TableCell>
                 <TableCell>{product.stock}</TableCell>
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant={
-                      product.status === "Đang bán" ? "default" :
-                      product.status === "Sắp hết" ? "secondary" : "destructive"
+                      product.status === "Đang bán"
+                        ? "default"
+                        : product.status === "Sắp hết"
+                          ? "secondary"
+                          : "destructive"
                     }
                     className={
-                      product.status === "Đang bán" ? "bg-green-500 hover:bg-green-600" :
-                      product.status === "Sắp hết" ? "bg-yellow-500 hover:bg-yellow-600 text-white" : ""
+                      product.status === "Đang bán"
+                        ? "bg-green-500 hover:bg-green-600"
+                        : product.status === "Sắp hết"
+                          ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                          : ""
                     }
                   >
                     {product.status}
@@ -114,7 +161,9 @@ export default function ProductsPage() {
                         <DropdownMenuItem>Ẩn sản phẩm</DropdownMenuItem>
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">Xóa</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Xóa
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

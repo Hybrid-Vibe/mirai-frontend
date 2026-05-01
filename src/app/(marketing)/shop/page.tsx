@@ -22,14 +22,74 @@ type Product = {
 };
 
 const products: Product[] = [
-  { id: "p-1", name: "Phone Case Aurora", category: "Phone Cases", model: "iPhone 15", price: 120000, oldPrice: 150000, badge: "-35%", rating: 4.9 },
-  { id: "p-2", name: "Laptop Sleeve Pixel", category: "Laptop Cases", model: "MacBook Air", price: 229000, rating: 4.7 },
-  { id: "p-3", name: "Airpod Case Chrome", category: "Airpod Cases", model: "AirPods Pro", price: 125000, badge: "NEW", rating: 4.8 },
-  { id: "p-4", name: "Phone Case Mirror", category: "Phone Cases", model: "Samsung S24", price: 120000, rating: 4.6 },
-  { id: "p-5", name: "Charm Set", category: "Phụ kiện", model: "Universal", price: 99000, oldPrice: 150000, rating: 4.5 },
-  { id: "p-6", name: "Laptop Skin Neon", category: "Laptop Cases", model: "ThinkPad X1", price: 180000, rating: 4.7 },
-  { id: "p-7", name: "Phone Case Frost", category: "Phone Cases", model: "Xiaomi 14", price: 129000, rating: 4.8 },
-  { id: "p-8", name: "Airpod Loop", category: "Airpod Cases", model: "AirPods 3", price: 120000, rating: 4.6 },
+  {
+    id: "p-1",
+    name: "Phone Case Aurora",
+    category: "Phone Cases",
+    model: "iPhone 15",
+    price: 120000,
+    oldPrice: 150000,
+    badge: "-35%",
+    rating: 4.9,
+  },
+  {
+    id: "p-2",
+    name: "Laptop Sleeve Pixel",
+    category: "Laptop Cases",
+    model: "MacBook Air",
+    price: 229000,
+    rating: 4.7,
+  },
+  {
+    id: "p-3",
+    name: "Airpod Case Chrome",
+    category: "Airpod Cases",
+    model: "AirPods Pro",
+    price: 125000,
+    badge: "NEW",
+    rating: 4.8,
+  },
+  {
+    id: "p-4",
+    name: "Phone Case Mirror",
+    category: "Phone Cases",
+    model: "Samsung S24",
+    price: 120000,
+    rating: 4.6,
+  },
+  {
+    id: "p-5",
+    name: "Charm Set",
+    category: "Phụ kiện",
+    model: "Universal",
+    price: 99000,
+    oldPrice: 150000,
+    rating: 4.5,
+  },
+  {
+    id: "p-6",
+    name: "Laptop Skin Neon",
+    category: "Laptop Cases",
+    model: "ThinkPad X1",
+    price: 180000,
+    rating: 4.7,
+  },
+  {
+    id: "p-7",
+    name: "Phone Case Frost",
+    category: "Phone Cases",
+    model: "Xiaomi 14",
+    price: 129000,
+    rating: 4.8,
+  },
+  {
+    id: "p-8",
+    name: "Airpod Loop",
+    category: "Airpod Cases",
+    model: "AirPods 3",
+    price: 120000,
+    rating: 4.6,
+  },
 ];
 
 const categories: Category[] = [
@@ -57,7 +117,9 @@ export default function ShopPage() {
       const matchPrice =
         priceFilter === "all" ||
         (priceFilter === "under-100" && product.price < 100000) ||
-        (priceFilter === "100-200" && product.price >= 100000 && product.price <= 200000) ||
+        (priceFilter === "100-200" &&
+          product.price >= 100000 &&
+          product.price <= 200000) ||
         (priceFilter === "over-200" && product.price > 200000);
 
       return matchCategory && matchPrice;
@@ -100,7 +162,11 @@ export default function ShopPage() {
             onClick={() => setShowMobileFilters((prev) => !prev)}
             className="inline-flex h-10 items-center gap-2 rounded-[4px] border border-(--mirai-color-line) px-3 text-sm font-medium text-foreground md:hidden"
           >
-            {showMobileFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+            {showMobileFilters ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <SlidersHorizontal className="h-4 w-4" />
+            )}
             {showMobileFilters ? "Đóng" : "Filter"}
           </button>
         </div>
@@ -128,7 +194,8 @@ export default function ShopPage() {
                       type="button"
                       className={cn(
                         "transition",
-                        activeCategory === "all" && "font-semibold text-foreground",
+                        activeCategory === "all" &&
+                          "font-semibold text-foreground",
                       )}
                       onClick={() => setActiveCategory("all")}
                     >
@@ -141,7 +208,8 @@ export default function ShopPage() {
                         type="button"
                         className={cn(
                           "transition",
-                          activeCategory === category && "font-semibold text-foreground",
+                          activeCategory === category &&
+                            "font-semibold text-foreground",
                         )}
                         onClick={() => setActiveCategory(category)}
                       >
@@ -159,7 +227,10 @@ export default function ShopPage() {
                     <button
                       type="button"
                       onClick={() => setPriceFilter("under-100")}
-                      className={cn(priceFilter === "under-100" && "font-semibold text-foreground")}
+                      className={cn(
+                        priceFilter === "under-100" &&
+                          "font-semibold text-foreground",
+                      )}
                     >
                       Dưới 100.000đ
                     </button>
@@ -168,7 +239,10 @@ export default function ShopPage() {
                     <button
                       type="button"
                       onClick={() => setPriceFilter("100-200")}
-                      className={cn(priceFilter === "100-200" && "font-semibold text-foreground")}
+                      className={cn(
+                        priceFilter === "100-200" &&
+                          "font-semibold text-foreground",
+                      )}
                     >
                       100.000đ - 200.000đ
                     </button>
@@ -177,7 +251,10 @@ export default function ShopPage() {
                     <button
                       type="button"
                       onClick={() => setPriceFilter("over-200")}
-                      className={cn(priceFilter === "over-200" && "font-semibold text-foreground")}
+                      className={cn(
+                        priceFilter === "over-200" &&
+                          "font-semibold text-foreground",
+                      )}
                     >
                       Trên 200.000đ
                     </button>
@@ -194,15 +271,13 @@ export default function ShopPage() {
                     "var(--mirai-sem-text)",
                     "var(--mirai-sem-danger)",
                     "var(--mirai-sem-warning)",
-                  ].map(
-                    (color) => (
-                      <span
-                        key={color}
-                        className="h-5 w-5 rounded-full border border-(--mirai-sem-border)"
-                        style={{ backgroundColor: color }}
-                      />
-                    ),
-                  )}
+                  ].map((color) => (
+                    <span
+                      key={color}
+                      className="h-5 w-5 rounded-full border border-(--mirai-sem-border)"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
                 </div>
               </div>
 
@@ -230,7 +305,9 @@ export default function ShopPage() {
                 <select
                   className="h-8 rounded-[4px] border border-border bg-card px-2"
                   value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value as SortOption)}
+                  onChange={(event) =>
+                    setSortBy(event.target.value as SortOption)
+                  }
                 >
                   <option value="newest">Mới nhất</option>
                   <option value="price-asc">Giá tăng dần</option>
@@ -257,7 +334,8 @@ export default function ShopPage() {
                       <Heart
                         className={cn(
                           "h-4 w-4",
-                          wishlisted.includes(product.id) && "fill-current text-(--mirai-sem-danger)",
+                          wishlisted.includes(product.id) &&
+                            "fill-current text-(--mirai-sem-danger)",
                         )}
                       />
                     </button>
@@ -269,16 +347,22 @@ export default function ShopPage() {
                       onClick={() => handleAdd(product.id)}
                       className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2 text-xs font-medium text-(--mirai-sem-background)"
                     >
-                      {addingId === product.id ? "Đang thêm..." : "Thêm vào giỏ"}
+                      {addingId === product.id
+                        ? "Đang thêm..."
+                        : "Thêm vào giỏ"}
                     </button>
                   </div>
 
                   <h2 className="mt-4 font-body text-base font-semibold text-foreground">
                     {product.name}
                   </h2>
-                  <p className="mt-1 text-xs text-muted-foreground">{product.model}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {product.model}
+                  </p>
                   <p className="mt-1 text-sm text-(--mirai-sem-danger)">
-                    <span className="font-semibold">{formatPrice(product.price)}</span>{" "}
+                    <span className="font-semibold">
+                      {formatPrice(product.price)}
+                    </span>{" "}
                     {product.oldPrice && (
                       <span className="text-muted-foreground line-through">
                         {formatPrice(product.oldPrice)}

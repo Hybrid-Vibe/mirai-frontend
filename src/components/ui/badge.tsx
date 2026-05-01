@@ -23,7 +23,8 @@ const badgeVariants = cva(
         /* Legacy aliases kept to avoid regressions in current screens. */
         default:
           "border-transparent bg-primary text-foreground hover:bg-(--mirai-state-primary-hover)",
-        secondary: "border-transparent bg-secondary text-foreground hover:bg-muted",
+        secondary:
+          "border-transparent bg-secondary text-foreground hover:bg-muted",
         destructive:
           "border-transparent bg-destructive text-background hover:bg-destructive/90",
         brand:

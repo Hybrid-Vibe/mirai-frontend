@@ -44,7 +44,9 @@ export function PhoneSelector({ onNext }: { onNext: () => void }) {
           </div>
 
           <div>
-            <div className="mb-1 text-xs text-muted-foreground">{model.brand}</div>
+            <div className="mb-1 text-xs text-muted-foreground">
+              {model.brand}
+            </div>
             <div className="font-heading font-bold text-foreground transition-colors group-hover:text-primary">
               {model.name}
             </div>

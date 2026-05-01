@@ -348,7 +348,8 @@
   }
 
   .card-brand {
-    border: 1px solid color-mix(in srgb, var(--mirai-sem-background) 14%, transparent);
+    border: 1px solid
+      color-mix(in srgb, var(--mirai-sem-background) 14%, transparent);
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--mirai-sem-background) 10%, transparent) 0%,

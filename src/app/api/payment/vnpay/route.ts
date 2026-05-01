@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!orderId || !amount) {
       return NextResponse.json(
         { error: "orderId and amount are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,10 +26,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.message },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: result.message }, { status: 502 });
     }
 
     return NextResponse.json({
@@ -40,7 +37,7 @@ export async function POST(req: NextRequest) {
     console.error("[API] VNPay payment error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

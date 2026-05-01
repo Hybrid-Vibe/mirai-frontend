@@ -12,7 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const buttonVariants = ["primary", "secondary", "outline", "ghost", "danger"] as const;
+const buttonVariants = [
+  "primary",
+  "secondary",
+  "outline",
+  "ghost",
+  "danger",
+] as const;
 const buttonSizes = ["sm", "md", "lg"] as const;
 const inputSizes = ["sm", "md", "lg"] as const;
 const cardVariants = ["default", "elevated", "interactive"] as const;
@@ -32,8 +38,12 @@ export default function ComponentsPreviewPage() {
     <main className="bg-background py-12">
       <div className="page-shell space-y-10">
         <header className="space-y-3">
-          <p className="type-caption text-(--mirai-sem-accent)">Core Component Library</p>
-          <h1 className="type-display-lg text-foreground">Components Preview</h1>
+          <p className="type-caption text-(--mirai-sem-accent)">
+            Core Component Library
+          </p>
+          <h1 className="type-display-lg text-foreground">
+            Components Preview
+          </h1>
           <p className="type-body-md max-w-3xl text-muted-foreground">
             Preview noi bo cho Phase 2. Tat ca components su dung semantic token
             contract va typography utility classes.
@@ -52,10 +62,16 @@ export default function ComponentsPreviewPage() {
             <div className="grid gap-4">
               {buttonVariants.map((variant) => (
                 <div key={variant} className="space-y-2">
-                  <p className="type-caption text-muted-foreground">variant: {variant}</p>
+                  <p className="type-caption text-muted-foreground">
+                    variant: {variant}
+                  </p>
                   <div className="flex flex-wrap items-center gap-3">
                     {buttonSizes.map((size) => (
-                      <Button key={`${variant}-${size}`} variant={variant} size={size}>
+                      <Button
+                        key={`${variant}-${size}`}
+                        variant={variant}
+                        size={size}
+                      >
                         {variant} {size}
                       </Button>
                     ))}
@@ -73,7 +89,10 @@ export default function ComponentsPreviewPage() {
               <Button variant="outline" className="translate-y-px">
                 Active (preview)
               </Button>
-              <Button variant="ghost" className="ring-2 ring-ring ring-offset-2 ring-offset-background">
+              <Button
+                variant="ghost"
+                className="ring-2 ring-ring ring-offset-2 ring-offset-background"
+              >
                 Focus (preview)
               </Button>
             </div>
@@ -90,19 +109,36 @@ export default function ComponentsPreviewPage() {
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="space-y-4">
-              <p className="type-body-sm font-semibold text-foreground">Input sizes</p>
+              <p className="type-body-sm font-semibold text-foreground">
+                Input sizes
+              </p>
               <div className="grid gap-3 md:max-w-xl">
                 {inputSizes.map((size) => (
-                  <Input key={`input-${size}`} size={size} placeholder={`Input ${size}`} />
+                  <Input
+                    key={`input-${size}`}
+                    size={size}
+                    placeholder={`Input ${size}`}
+                  />
                 ))}
                 <Input placeholder="Focus state (autoFocus)" autoFocus />
-                <Input placeholder="Disabled state" disabled defaultValue="Khong the chinh sua" />
-                <Input placeholder="Error state" variant="error" aria-invalid defaultValue="Gia tri khong hop le" />
+                <Input
+                  placeholder="Disabled state"
+                  disabled
+                  defaultValue="Khong the chinh sua"
+                />
+                <Input
+                  placeholder="Error state"
+                  variant="error"
+                  aria-invalid
+                  defaultValue="Gia tri khong hop le"
+                />
               </div>
             </div>
 
             <div className="space-y-4">
-              <p className="type-body-sm font-semibold text-foreground">Textarea sizes</p>
+              <p className="type-body-sm font-semibold text-foreground">
+                Textarea sizes
+              </p>
               <div className="grid gap-3 md:max-w-xl">
                 {inputSizes.map((size) => (
                   <Textarea
@@ -142,7 +178,8 @@ export default function ComponentsPreviewPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="type-body-sm text-muted-foreground">
-                    Card variant nay su dung semantic token va tuong thich dark mode.
+                    Card variant nay su dung semantic token va tuong thich dark
+                    mode.
                   </p>
                 </CardContent>
                 <CardFooter className="justify-end">
@@ -160,7 +197,9 @@ export default function ComponentsPreviewPage() {
                   <CardTitle>padding: {padding}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="type-body-sm text-muted-foreground">Khoang cach noi bo cua card.</p>
+                  <p className="type-body-sm text-muted-foreground">
+                    Khoang cach noi bo cua card.
+                  </p>
                 </CardContent>
               </Card>
             ))}

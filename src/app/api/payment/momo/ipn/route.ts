@@ -10,8 +10,14 @@ export async function POST(req: NextRequest) {
     const isValid = verifyMoMoIPN(payload);
 
     if (!isValid) {
-      console.warn("[MoMo IPN] Invalid signature or failed payment:", payload.orderId);
-      return NextResponse.json({ message: "Invalid signature" }, { status: 400 });
+      console.warn(
+        "[MoMo IPN] Invalid signature or failed payment:",
+        payload.orderId,
+      );
+      return NextResponse.json(
+        { message: "Invalid signature" },
+        { status: 400 },
+      );
     }
 
     // TODO: Update order status in database
@@ -26,7 +32,12 @@ export async function POST(req: NextRequest) {
     // TODO: Send order confirmation email
     // await sendOrderConfirmationEmail(...)
 
-    console.log("[MoMo IPN] Payment confirmed:", payload.orderId, "Amount:", payload.amount);
+    console.log(
+      "[MoMo IPN] Payment confirmed:",
+      payload.orderId,
+      "Amount:",
+      payload.amount,
+    );
 
     return NextResponse.json({ message: "OK" });
   } catch (error) {

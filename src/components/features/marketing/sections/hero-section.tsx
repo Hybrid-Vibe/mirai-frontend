@@ -48,9 +48,7 @@ export function HeroSection() {
 
           <h1 className="font-heading text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl">
             Thiết kế ốp lưng theo vibe của bạn với{" "}
-            <span className="text-(--mirai-color-brand-strong)">
-              MIRAI AI
-            </span>
+            <span className="text-(--mirai-color-brand-strong)">MIRAI AI</span>
           </h1>
 
           <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">

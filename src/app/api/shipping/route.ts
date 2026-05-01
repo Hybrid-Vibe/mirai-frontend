@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         if (!orderCode) {
           return NextResponse.json(
             { error: "orderCode is required" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         const result = await trackShipment(orderCode);
@@ -41,14 +41,16 @@ export async function POST(req: NextRequest) {
       default:
         return NextResponse.json(
           { error: "Invalid action. Use: calculate_fee, create, or track" },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
     console.error("[API] Shipping error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 },
     );
   }
 }

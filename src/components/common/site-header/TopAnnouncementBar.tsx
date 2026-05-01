@@ -38,7 +38,9 @@ export function TopAnnouncementBar() {
               <span className="font-body text-[14px] font-normal leading-[21px]">
                 {lang}
               </span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {isOpen && (

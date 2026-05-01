@@ -30,18 +30,11 @@ const cardVariants = cva(
 type LegacySize = "default" | "sm";
 
 interface CardProps
-  extends React.ComponentProps<"div">,
-    VariantProps<typeof cardVariants> {
+  extends React.ComponentProps<"div">, VariantProps<typeof cardVariants> {
   size?: LegacySize;
 }
 
-function Card({
-  className,
-  size,
-  variant,
-  padding,
-  ...props
-}: CardProps) {
+function Card({ className, size, variant, padding, ...props }: CardProps) {
   const resolvedPadding = padding ?? (size === "sm" ? "sm" : "md");
 
   return (

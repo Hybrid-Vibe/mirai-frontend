@@ -24,7 +24,9 @@ export default function AccountPage() {
           <p className="text-sm text-muted-foreground">Home / My Account</p>
           <p className="text-sm text-foreground">
             Welcome!{" "}
-            <span className="font-semibold text-(--mirai-sem-danger)">Sharon</span>
+            <span className="font-semibold text-(--mirai-sem-danger)">
+              Sharon
+            </span>
           </p>
         </div>
 
@@ -146,11 +148,7 @@ export default function AccountPage() {
               <Button type="button" variant="ghost" className="min-w-28">
                 Huỷ
               </Button>
-              <Button
-                type="button"
-                className="min-w-44"
-                onClick={handleSave}
-              >
+              <Button type="button" className="min-w-44" onClick={handleSave}>
                 {saved ? "Đã lưu" : "Lưu Thay Đổi"}
               </Button>
             </div>

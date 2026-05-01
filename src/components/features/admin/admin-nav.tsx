@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -58,10 +58,15 @@ export function AdminNav() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-md font-medium text-sm transition-all duration-200",
                 isActive
                   ? "bg-(--mirai-color-surface-muted) text-(--mirai-sem-primary) shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
               )}
             >
-              <item.icon className={cn("h-4 w-4", isActive ? "text-(--mirai-sem-primary)" : "")} />
+              <item.icon
+                className={cn(
+                  "h-4 w-4",
+                  isActive ? "text-(--mirai-sem-primary)" : "",
+                )}
+              />
               {item.title}
             </Link>
           );
@@ -79,10 +84,15 @@ export function AdminNav() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-md font-medium text-sm transition-all duration-200",
                 isActive
                   ? "bg-(--mirai-color-surface-muted) text-(--mirai-sem-primary) shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
               )}
             >
-              <item.icon className={cn("h-4 w-4", isActive ? "text-(--mirai-sem-primary)" : "")} />
+              <item.icon
+                className={cn(
+                  "h-4 w-4",
+                  isActive ? "text-(--mirai-sem-primary)" : "",
+                )}
+              />
               {item.title}
             </Link>
           );

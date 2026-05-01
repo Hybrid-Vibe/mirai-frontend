@@ -81,8 +81,7 @@ export async function POST(request: Request) {
     // Check for quota / rate limit errors
     const message =
       error instanceof Error ? error.message : "Unknown error occurred.";
-    const isRateLimit =
-      message.includes("429") || message.includes("quota");
+    const isRateLimit = message.includes("429") || message.includes("quota");
 
     return NextResponse.json<GenerateErrorResponse>(
       {

@@ -15,7 +15,9 @@ import type {
 const GHN_CONFIG = {
   token: process.env.GHN_TOKEN ?? "",
   shopId: process.env.GHN_SHOP_ID ?? "",
-  baseUrl: process.env.GHN_API_URL ?? "https://dev-online-gateway.ghn.vn/shiip/public-api",
+  baseUrl:
+    process.env.GHN_API_URL ??
+    "https://dev-online-gateway.ghn.vn/shiip/public-api",
 };
 
 /**
@@ -55,7 +57,7 @@ function mapGHNStatus(status: string): ShippingStatusType {
  * Calculate shipping fee for a given destination and package weight.
  */
 export async function calculateShippingFee(
-  params: ShippingFeeRequest
+  params: ShippingFeeRequest,
 ): Promise<ShippingFeeResult> {
   const body = {
     service_type_id: params.serviceTypeId ?? 2, // 2 = standard delivery
@@ -92,7 +94,7 @@ export async function calculateShippingFee(
  * Create a shipment order on GHN.
  */
 export async function createShipment(
-  params: CreateShipmentRequest
+  params: CreateShipmentRequest,
 ): Promise<CreateShipmentResult> {
   const body = {
     to_name: params.toName,
@@ -140,7 +142,7 @@ export async function createShipment(
  * Track a shipment order on GHN.
  */
 export async function trackShipment(
-  orderCode: string
+  orderCode: string,
 ): Promise<TrackingResult> {
   const res = await fetch(`${GHN_CONFIG.baseUrl}/v2/shipping-order/detail`, {
     method: "POST",
@@ -166,7 +168,7 @@ export async function trackShipment(
         status: log.status,
         description: log.status,
         timestamp: log.updated_date,
-      })
+      }),
     ),
   };
 }
@@ -177,13 +179,10 @@ export async function trackShipment(
 export async function getProvinces(): Promise<
   Array<{ ProvinceID: number; ProvinceName: string }>
 > {
-  const res = await fetch(
-    `${GHN_CONFIG.baseUrl}/master-data/province`,
-    {
-      method: "GET",
-      headers: getHeaders(),
-    }
-  );
+  const res = await fetch(`${GHN_CONFIG.baseUrl}/master-data/province`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
 
   const json = await res.json();
   return json.data ?? [];
@@ -193,16 +192,13 @@ export async function getProvinces(): Promise<
  * Get list of districts by province from GHN.
  */
 export async function getDistricts(
-  provinceId: number
+  provinceId: number,
 ): Promise<Array<{ DistrictID: number; DistrictName: string }>> {
-  const res = await fetch(
-    `${GHN_CONFIG.baseUrl}/master-data/district`,
-    {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify({ province_id: provinceId }),
-    }
-  );
+  const res = await fetch(`${GHN_CONFIG.baseUrl}/master-data/district`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ province_id: provinceId }),
+  });
 
   const json = await res.json();
   return json.data ?? [];
@@ -212,16 +208,13 @@ export async function getDistricts(
  * Get list of wards by district from GHN.
  */
 export async function getWards(
-  districtId: number
+  districtId: number,
 ): Promise<Array<{ WardCode: string; WardName: string }>> {
-  const res = await fetch(
-    `${GHN_CONFIG.baseUrl}/master-data/ward`,
-    {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify({ district_id: districtId }),
-    }
-  );
+  const res = await fetch(`${GHN_CONFIG.baseUrl}/master-data/ward`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ district_id: districtId }),
+  });
 
   const json = await res.json();
   return json.data ?? [];

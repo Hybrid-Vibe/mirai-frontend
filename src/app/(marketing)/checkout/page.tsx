@@ -135,7 +135,10 @@ export default function CheckoutPage() {
           <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-6 lg:p-8">
             <div className="space-y-4 text-sm text-foreground">
               {checkoutItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <span className="h-11 w-8 rounded-md bg-gradient-to-b from-(--mirai-sem-text-muted) to-(--mirai-sem-accent)" />
                     <span>{item.name}</span>
@@ -172,7 +175,9 @@ export default function CheckoutPage() {
                   />
                   Thanh Toán Trực Tuyến
                 </span>
-                <span className="text-xs text-muted-foreground">MOMO  VISA  MC</span>
+                <span className="text-xs text-muted-foreground">
+                  MOMO VISA MC
+                </span>
               </label>
               <label className="flex items-center gap-3">
                 <input

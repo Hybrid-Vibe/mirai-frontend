@@ -10,7 +10,9 @@ export default function ContactPage() {
     <main className="bg-background pb-24 pt-12">
       <div className="page-shell max-w-6xl">
         <header className="mb-16 text-center">
-          <h1 className="font-heading text-4xl font-bold md:text-5xl">Liên hệ MIRAI</h1>
+          <h1 className="font-heading text-4xl font-bold md:text-5xl">
+            Liên hệ MIRAI
+          </h1>
           <p className="mt-4 text-muted-foreground">
             Chúng tôi luôn ở đây để lắng nghe và hỗ trợ bạn.
           </p>
@@ -23,7 +25,9 @@ export default function ContactPage() {
               Thông tin liên hệ
             </h2>
             <p className="text-muted-foreground">
-              Nhóm Hybrid Vibe rất mong nhận được phản hồi từ bạn. Dù là thắc mắc về quá trình tạo ốp lưng AI hay góp ý về dịch vụ, hãy liên lạc với chúng tôi!
+              Nhóm Hybrid Vibe rất mong nhận được phản hồi từ bạn. Dù là thắc
+              mắc về quá trình tạo ốp lưng AI hay góp ý về dịch vụ, hãy liên lạc
+              với chúng tôi!
             </p>
 
             <div className="space-y-6 pt-4">
@@ -32,9 +36,12 @@ export default function ContactPage() {
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-foreground">Văn phòng</h3>
+                  <h3 className="font-heading text-lg font-semibold text-foreground">
+                    Văn phòng
+                  </h3>
                   <p className="mt-1 text-muted-foreground">
-                    123, Lê Văn Việt, phường Hiệp Phú,<br />
+                    123, Lê Văn Việt, phường Hiệp Phú,
+                    <br />
                     Thủ Đức, TPHCM
                   </p>
                 </div>
@@ -45,8 +52,12 @@ export default function ContactPage() {
                   <Phone className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-foreground">Điện thoại</h3>
-                  <p className="mt-1 text-muted-foreground">+88015-88888-9999</p>
+                  <h3 className="font-heading text-lg font-semibold text-foreground">
+                    Điện thoại
+                  </h3>
+                  <p className="mt-1 text-muted-foreground">
+                    +88015-88888-9999
+                  </p>
                 </div>
               </div>
 
@@ -55,8 +66,12 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-foreground">Email</h3>
-                  <p className="mt-1 text-muted-foreground">miraicases@gmail.com</p>
+                  <h3 className="font-heading text-lg font-semibold text-foreground">
+                    Email
+                  </h3>
+                  <p className="mt-1 text-muted-foreground">
+                    miraicases@gmail.com
+                  </p>
                 </div>
               </div>
 
@@ -65,9 +80,15 @@ export default function ContactPage() {
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-foreground">Giờ làm việc</h3>
-                  <p className="mt-1 text-muted-foreground">Thứ 2 - Thứ 6: 08:00 - 18:00</p>
-                  <p className="text-muted-foreground">Thứ 7 - CN: 09:00 - 15:00</p>
+                  <h3 className="font-heading text-lg font-semibold text-foreground">
+                    Giờ làm việc
+                  </h3>
+                  <p className="mt-1 text-muted-foreground">
+                    Thứ 2 - Thứ 6: 08:00 - 18:00
+                  </p>
+                  <p className="text-muted-foreground">
+                    Thứ 7 - CN: 09:00 - 15:00
+                  </p>
                 </div>
               </div>
             </div>
@@ -81,7 +102,10 @@ export default function ContactPage() {
             <form className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Họ và tên
                   </label>
                   <input
@@ -93,7 +117,10 @@ export default function ContactPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Email
                   </label>
                   <input
@@ -107,7 +134,10 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="subject" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="subject"
+                  className="text-sm font-medium text-foreground"
+                >
                   Chủ đề
                 </label>
                 <input
@@ -120,7 +150,10 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="message"
+                  className="text-sm font-medium text-foreground"
+                >
                   Nội dung tin nhắn
                 </label>
                 <textarea

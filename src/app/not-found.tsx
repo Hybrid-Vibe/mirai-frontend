@@ -12,19 +12,16 @@ export default function NotFound() {
           Không tìm thấy trang
         </h2>
         <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-          Xin lỗi, trang bạn đang tìm kiếm không tồn tại, đã bị gỡ bỏ, đổi tên hoặc tạm thời không khả dụng.
+          Xin lỗi, trang bạn đang tìm kiếm không tồn tại, đã bị gỡ bỏ, đổi tên
+          hoặc tạm thời không khả dụng.
         </p>
-        
+
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild className="rounded-[4px] h-11 px-8">
-            <Link href="/">
-              Về trang chủ
-            </Link>
+            <Link href="/">Về trang chủ</Link>
           </Button>
           <Button asChild variant="outline" className="rounded-[4px] h-11 px-8">
-            <Link href="/shop">
-              Xem sản phẩm
-            </Link>
+            <Link href="/shop">Xem sản phẩm</Link>
           </Button>
         </div>
       </main>
