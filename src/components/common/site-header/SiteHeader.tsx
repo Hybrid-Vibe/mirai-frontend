@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -49,7 +50,8 @@ export function SiteHeader() {
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const isAuthenticated = status === "authenticated";
@@ -150,9 +152,11 @@ export function SiteHeader() {
                   aria-label="Open account menu"
                 >
                   {session?.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
-                      alt=""
+                      alt={session.user.name ?? ""}
+                      width={20}
+                      height={20}
                       className="h-5 w-5 rounded-full"
                     />
                   ) : (
@@ -289,9 +293,11 @@ export function SiteHeader() {
                 {session?.user && (
                   <div className="mb-2 flex items-center gap-2 border-b border-(--mirai-color-line) pb-2">
                     {session.user.image ? (
-                      <img
+                      <Image
                         src={session.user.image}
-                        alt=""
+                        alt={session.user.name ?? ""}
+                        width={28}
+                        height={28}
                         className="h-7 w-7 rounded-full"
                       />
                     ) : (

@@ -28,7 +28,8 @@ export default function AboutPage() {
             <p className="mt-8 text-lg font-medium leading-relaxed text-(--mirai-sem-background)/90 md:text-xl">
               Phản chiếu cá tính của bạn qua lăng kính công nghệ.
               <br className="hidden md:block" />
-              Khởi đầu từ chiếc ốp lưng điện thoại, hướng tới một nền tảng phụ kiện cá nhân hoá toàn diện.
+              Khởi đầu từ chiếc ốp lưng điện thoại, hướng tới một nền tảng phụ
+              kiện cá nhân hoá toàn diện.
             </p>
           </div>
           {/* Decorative Background Elements */}
@@ -48,9 +49,9 @@ export default function AboutPage() {
               <strong className="font-semibold text-foreground">Mirror</strong>{" "}
               (Tấm gương) và{" "}
               <strong className="font-semibold text-foreground">AI</strong> (Trí
-              tuệ nhân tạo). Chúng tôi tạo ra một "tấm gương" công nghệ, phản
-              chiếu chính xác cá tính, phong cách và cái tôi độc bản của mỗi người
-              dùng.
+              tuệ nhân tạo). Chúng tôi tạo ra một &quot;tấm gương&quot; công
+              nghệ, phản chiếu chính xác cá tính, phong cách và cái tôi độc bản
+              của mỗi người dùng.
             </p>
           </div>
 
@@ -58,13 +59,17 @@ export default function AboutPage() {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-(--mirai-sem-accent)/10 text-(--mirai-sem-accent) transition-transform duration-300 group-hover:scale-110 group-hover:bg-(--mirai-sem-accent)/20">
               <Zap className="h-7 w-7" />
             </div>
-            <h2 className="font-heading text-3xl font-bold">未来 (Tương lai)</h2>
+            <h2 className="font-heading text-3xl font-bold">
+              未来 (Tương lai)
+            </h2>
             <p className="leading-relaxed text-muted-foreground">
               Trong tiếng Nhật, MIRAI (未来) có nghĩa là{" "}
-              <strong className="font-semibold text-foreground">Tương lai</strong>. Chúng
-              tôi tin rằng cá nhân hoá không chỉ là xu hướng, mà là tương lai của
-              thương mại điện tử, nơi mọi sản phẩm đều mang đậm dấu ấn cá nhân và
-              không đụng hàng.
+              <strong className="font-semibold text-foreground">
+                Tương lai
+              </strong>
+              . Chúng tôi tin rằng cá nhân hoá không chỉ là xu hướng, mà là
+              tương lai của thương mại điện tử, nơi mọi sản phẩm đều mang đậm
+              dấu ấn cá nhân và không đụng hàng.
             </p>
           </div>
         </section>
@@ -83,9 +88,9 @@ export default function AboutPage() {
               <strong className="font-semibold text-(--mirai-sem-primary)">
                 Phụ kiện cá nhân hoá
               </strong>
-              . Khởi nguồn với sản phẩm cốt lõi là ốp lưng điện thoại, MIRAI trao
-              quyền cho người dùng tự do sáng tạo và thiết kế những món đồ mang
-              đậm bản sắc riêng, phá vỡ rào cản của những sản phẩm đại trà.
+              . Khởi nguồn với sản phẩm cốt lõi là ốp lưng điện thoại, MIRAI
+              trao quyền cho người dùng tự do sáng tạo và thiết kế những món đồ
+              mang đậm bản sắc riêng, phá vỡ rào cản của những sản phẩm đại trà.
             </p>
           </div>
 
@@ -115,7 +120,8 @@ export default function AboutPage() {
               Đội ngũ Hybrid Vibe
             </h2>
             <p className="mt-6 text-lg text-muted-foreground">
-              5 mảnh ghép, 1 tầm nhìn chung về tương lai của trải nghiệm cá nhân hoá.
+              5 mảnh ghép, 1 tầm nhìn chung về tương lai của trải nghiệm cá nhân
+              hoá.
             </p>
           </div>
 

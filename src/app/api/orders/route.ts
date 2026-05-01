@@ -6,17 +6,21 @@ import type { Order } from "@/types";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, items, shippingAddressId, paymentMethod, shippingFee } = body;
+    const { userId, items, paymentMethod, shippingFee } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json(
         { error: "Order items are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 1. Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    const subtotal = items.reduce(
+      (sum: number, item: { price: number; quantity: number }) =>
+        sum + item.price * item.quantity,
+      0,
+    );
     const totalAmount = subtotal + (shippingFee ?? 30000);
 
     // 2. Mock DB Insertion (In real app: Prisma/Drizzle transaction)
@@ -49,7 +53,7 @@ export async function POST(req: NextRequest) {
       customerName: body.customerName ?? "Khách hàng",
       totalAmount: mockOrder.TotalAmount.toLocaleString("vi-VN"),
       paymentMethod: paymentMethod ?? "COD",
-    }).catch(err => console.error("[API] Failed to send order email:", err));
+    }).catch((err) => console.error("[API] Failed to send order email:", err));
 
     return NextResponse.json({
       success: true,
@@ -60,7 +64,7 @@ export async function POST(req: NextRequest) {
     console.error("[API] Order creation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

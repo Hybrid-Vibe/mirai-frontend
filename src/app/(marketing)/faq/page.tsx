@@ -41,9 +41,12 @@ export default function FAQPage() {
           <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)">
             <HelpCircle className="h-8 w-8" />
           </div>
-          <h1 className="font-heading text-4xl font-bold md:text-5xl">Câu hỏi thường gặp</h1>
+          <h1 className="font-heading text-4xl font-bold md:text-5xl">
+            Câu hỏi thường gặp
+          </h1>
           <p className="mt-4 text-muted-foreground">
-            Giải đáp mọi thắc mắc của bạn về trải nghiệm "Mirror + AI".
+            Giải đáp mọi thắc mắc của bạn về trải nghiệm &quot;Mirror +
+            AI&quot;.
           </p>
         </header>
 

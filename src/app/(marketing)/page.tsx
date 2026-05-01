@@ -5,11 +5,9 @@ import {
   Camera,
   Headphones,
   Headset,
-  Heart,
   Laptop,
   ShieldCheck,
   Smartphone,
-  Star,
   Truck,
   Watch,
 } from "lucide-react";
@@ -120,7 +118,9 @@ function SectionHeading({ label, title }: { label: string; title: string }) {
       <div>
         <div className="mb-2 flex items-center gap-2">
           <span className="inline-block h-8 w-2 rounded-sm bg-(--mirai-sem-accent)" />
-          <span className="text-sm font-semibold text-(--mirai-sem-accent)">{label}</span>
+          <span className="text-sm font-semibold text-(--mirai-sem-accent)">
+            {label}
+          </span>
         </div>
         <h2 className="font-heading text-3xl font-semibold text-foreground md:text-4xl">
           {title}
@@ -162,7 +162,9 @@ export default function HomePage() {
                     className="group flex items-center justify-between text-sm text-foreground transition-all duration-200 hover:text-(--mirai-sem-primary) hover:translate-x-1 active:scale-[0.98]"
                   >
                     <span>{item.label}</span>
-                    <ArrowRight className={`h-3.5 w-3.5 transition-transform duration-200 ${idx < 2 ? "opacity-100 group-hover:translate-x-1" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-1"}`} />
+                    <ArrowRight
+                      className={`h-3.5 w-3.5 transition-transform duration-200 ${idx < 2 ? "opacity-100 group-hover:translate-x-1" : "opacity-0 group-hover:opacity-100 group-hover:translate-x-1"}`}
+                    />
                   </Link>
                 </li>
               ))}
@@ -172,7 +174,9 @@ export default function HomePage() {
           <div className="grid gap-4">
             <div className="grid min-h-[330px] items-center gap-6 rounded-[4px] bg-(--mirai-sem-text) px-8 py-8 text-(--mirai-sem-background) md:grid-cols-2 md:px-12">
               <div>
-                <p className="mb-3 text-sm text-(--mirai-sem-primary)">AI Custom Case</p>
+                <p className="mb-3 text-sm text-(--mirai-sem-primary)">
+                  AI Custom Case
+                </p>
                 <h1 className="font-heading text-4xl font-semibold leading-tight md:text-5xl">
                   Thiết kế ốp lưng mang dấu ấn riêng của bạn
                 </h1>
@@ -206,7 +210,13 @@ export default function HomePage() {
 
       <section className="page-shell py-16">
         <SectionHeading label="Hôm nay" title="Flash Sales" />
-        <CountdownTimer initialDays={3} initialHours={23} initialMinutes={19} initialSeconds={56} format="block" />
+        <CountdownTimer
+          initialDays={3}
+          initialHours={23}
+          initialMinutes={19}
+          initialSeconds={56}
+          format="block"
+        />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {flashSales.map((product) => (
             <InteractiveProductCard key={product.id} product={product} />
@@ -275,11 +285,19 @@ export default function HomePage() {
       <section className="page-shell py-16">
         <div className="grid min-h-[320px] items-center gap-8 rounded-[4px] bg-(--mirai-sem-text) px-8 py-10 text-(--mirai-sem-background) md:grid-cols-2">
           <div>
-            <p className="mb-3 text-sm text-(--mirai-sem-primary)">Bộ sưu tập tháng</p>
+            <p className="mb-3 text-sm text-(--mirai-sem-primary)">
+              Bộ sưu tập tháng
+            </p>
             <h2 className="font-heading text-4xl font-semibold leading-tight md:text-5xl">
               Khám phá phong cách của riêng bạn
             </h2>
-            <CountdownTimer initialDays={23} initialHours={5} initialMinutes={39} initialSeconds={35} format="inline" />
+            <CountdownTimer
+              initialDays={23}
+              initialHours={5}
+              initialMinutes={39}
+              initialSeconds={35}
+              format="inline"
+            />
             <Link
               href="/customize"
               className="mt-8 inline-flex min-w-36 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"

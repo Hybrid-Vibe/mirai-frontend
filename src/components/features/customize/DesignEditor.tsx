@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { Stage, Layer, Text, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
-import { useDesignStore } from "@/lib/store";
+import { useDesignStore, type CanvasElement } from "@/lib/store";
 
 // Helper component to render images safely in Konva
-const URLImage = ({ element }: { element: any }) => {
+const URLImage = ({ element }: { element: CanvasElement }) => {
   const [image] = useImage(element.imageUrl || "", "anonymous");
   return (
     <KonvaImage
@@ -14,7 +14,7 @@ const URLImage = ({ element }: { element: any }) => {
       x={element.x}
       y={element.y}
       draggable
-      onDragEnd={(e) => {
+      onDragEnd={() => {
         // Here we could update the store with new x,y if needed
       }}
     />
@@ -26,7 +26,8 @@ export default function DesignEditor() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) return null;
@@ -35,8 +36,10 @@ export default function DesignEditor() {
     <Stage width={280} height={560} className="w-full h-full">
       <Layer>
         {/* Background if any selected from AI */}
-        {selectedImage && <URLImage element={{ imageUrl: selectedImage, x: 0, y: 0 }} />}
-        
+        {selectedImage && (
+          <URLImage element={{ imageUrl: selectedImage, x: 0, y: 0 }} />
+        )}
+
         {/* User Added Elements */}
         {elements.map((el) => {
           if (el.type === "text") {

@@ -8,11 +8,14 @@ import { toast } from "sonner";
 
 const DynamicDesignEditor = dynamic(
   () => import("@/components/features/customize/DesignEditor"),
-  { ssr: false, loading: () => <div className="animate-pulse bg-muted w-full h-full rounded-[3rem]" /> }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse bg-muted w-full h-full rounded-[3rem]" />
+    ),
+  },
 );
 import { useDesignStore } from "@/lib/store";
-
-
 
 const customColors = [
   "var(--mirai-sem-primary)",
@@ -66,13 +69,19 @@ export default function CustomizePage() {
       }
 
       if (data.designs && data.designs.length > 0) {
-        const imageUrls = data.designs.map((d: any) => d.imageUrl);
+        const imageUrls = data.designs.map(
+          (d: { imageUrl: string }) => d.imageUrl,
+        );
         setGeneratedImages(imageUrls);
         setSelectedImage(imageUrls[0]);
         toast.success("Đã tạo thiết kế thành công!");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra. Vui lòng thử lại.",
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -91,7 +100,10 @@ export default function CustomizePage() {
               <div
                 className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[34px] text-center font-heading text-6xl font-semibold"
                 style={{
-                  color: mode === "self" ? selectedColor : "var(--mirai-sem-surface)",
+                  color:
+                    mode === "self"
+                      ? selectedColor
+                      : "var(--mirai-sem-surface)",
                   background:
                     mode === "self"
                       ? "linear-gradient(180deg, #2e2f38 0%, #0f1013 100%)"
@@ -111,7 +123,9 @@ export default function CustomizePage() {
                 ) : isGenerating ? (
                   <div className="flex flex-col items-center gap-2">
                     <Sparkles className="h-8 w-8 animate-pulse text-(--mirai-sem-primary)" />
-                    <span className="text-sm font-medium text-white/80 font-body">Đang vẽ...</span>
+                    <span className="text-sm font-medium text-white/80 font-body">
+                      Đang vẽ...
+                    </span>
                   </div>
                 ) : (
                   "AI"
@@ -215,7 +229,9 @@ export default function CustomizePage() {
                         disabled={isGenerating || !prompt.trim()}
                         className="inline-flex h-28 items-center justify-center gap-2 rounded-[4px] bg-(--mirai-sem-primary) px-4 text-sm font-semibold text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Sparkles className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
+                        <Sparkles
+                          className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                        />
                         {isGenerating ? "Đang vẽ..." : "Generate"}
                       </button>
                     </div>
@@ -240,7 +256,11 @@ export default function CustomizePage() {
                           >
                             <div className="mx-auto h-28 w-full rounded-md border border-white/10 bg-muted overflow-hidden">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={imageUrl} alt={`Option ${index + 1}`} className="w-full h-full object-cover" />
+                              <img
+                                src={imageUrl}
+                                alt={`Option ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <span className="text-xs text-foreground mt-2 block font-medium">
                               Option {index + 1}
@@ -249,7 +269,9 @@ export default function CustomizePage() {
                         ))
                       ) : (
                         <div className="col-span-full py-8 text-center text-sm text-muted-foreground border border-dashed rounded-[4px]">
-                          Chưa có thiết kế nào.<br/>Nhập mô tả và nhấn Generate để tạo!
+                          Chưa có thiết kế nào.
+                          <br />
+                          Nhập mô tả và nhấn Generate để tạo!
                         </div>
                       )}
                     </div>
@@ -266,9 +288,9 @@ export default function CustomizePage() {
                       <span className="text-xs">
                         Kéo thả ảnh hoặc click để chọn
                       </span>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
@@ -397,24 +419,28 @@ export default function CustomizePage() {
                     return;
                   }
                   if (!selectedImage) {
-                    toast.error("Vui lòng generate và chọn một thiết kế trước!");
+                    toast.error(
+                      "Vui lòng generate và chọn một thiết kế trước!",
+                    );
                     return;
                   }
                   toast.success("Thiết kế đã được lưu vào bộ sưu tập!");
                 }}
-                className={`inline-flex h-12 min-w-44 items-center justify-center rounded-[4px] border border-(--mirai-color-line) bg-card px-6 text-sm font-semibold text-foreground transition-opacity ${mode !== "self" && !selectedImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}`}
+                className={`inline-flex h-12 min-w-44 items-center justify-center rounded-[4px] border border-(--mirai-color-line) bg-card px-6 text-sm font-semibold text-foreground transition-opacity ${mode !== "self" && !selectedImage ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"}`}
               >
                 Lưu thiết kế
               </button>
               <Link
-                href={(mode === "self" || selectedImage) ? "/cart" : "#"}
+                href={mode === "self" || selectedImage ? "/cart" : "#"}
                 onClick={(e) => {
                   if (mode !== "self" && !selectedImage) {
                     e.preventDefault();
-                    toast.error("Vui lòng generate và chọn một thiết kế trước!");
+                    toast.error(
+                      "Vui lòng generate và chọn một thiết kế trước!",
+                    );
                   }
                 }}
-                className={`inline-flex h-12 min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground transition-opacity ${mode !== "self" && !selectedImage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-(--mirai-sem-primary)/90'}`}
+                className={`inline-flex h-12 min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground transition-opacity ${mode !== "self" && !selectedImage ? "opacity-50 cursor-not-allowed" : "hover:bg-(--mirai-sem-primary)/90"}`}
               >
                 Đặt hàng ngay
               </Link>

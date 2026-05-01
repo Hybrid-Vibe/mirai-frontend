@@ -29,13 +29,13 @@ export function CountdownTimer({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    
+    const timerId = setTimeout(() => setMounted(true), 0);
+
     // Calculate total seconds
-    let totalSeconds = 
-      initialDays * 86400 + 
-      initialHours * 3600 + 
-      initialMinutes * 60 + 
+    let totalSeconds =
+      initialDays * 86400 +
+      initialHours * 3600 +
+      initialMinutes * 60 +
       initialSeconds;
 
     const timer = setInterval(() => {
@@ -43,9 +43,9 @@ export function CountdownTimer({
         clearInterval(timer);
         return;
       }
-      
+
       totalSeconds -= 1;
-      
+
       setTimeLeft({
         days: Math.floor(totalSeconds / 86400),
         hours: Math.floor((totalSeconds % 86400) / 3600),
@@ -54,7 +54,10 @@ export function CountdownTimer({
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(timerId);
+      clearInterval(timer);
+    };
   }, [initialDays, initialHours, initialMinutes, initialSeconds]);
 
   // Prevent hydration mismatch
@@ -66,7 +69,7 @@ export function CountdownTimer({
             `${initialDays.toString().padStart(2, "0")} ngày`,
             `${initialHours.toString().padStart(2, "0")} giờ`,
             `${initialMinutes.toString().padStart(2, "0")} phút`,
-            `${initialSeconds.toString().padStart(2, "0")} giây`
+            `${initialSeconds.toString().padStart(2, "0")} giây`,
           ].map((value) => (
             <span
               key={value}
@@ -78,7 +81,7 @@ export function CountdownTimer({
         </div>
       );
     }
-    
+
     return (
       <div className="mb-8 flex flex-wrap items-end gap-6">
         {[
@@ -112,7 +115,7 @@ export function CountdownTimer({
           `${values[0]} ngày`,
           `${values[1]} giờ`,
           `${values[2]} phút`,
-          `${values[3]} giây`
+          `${values[3]} giây`,
         ].map((value) => (
           <span
             key={value}

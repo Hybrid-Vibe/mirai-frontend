@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,13 +11,19 @@ import { useCartStore } from "@/stores";
 const formatCurrency = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 export default function CartPage() {
-  const { items: cartRows, updateQuantity, removeItem: removeStoreItem, getSubtotal } = useCartStore();
+  const {
+    items: cartRows,
+    updateQuantity,
+    removeItem: removeStoreItem,
+    getSubtotal,
+  } = useCartStore();
   const [coupon, setCoupon] = useState("");
   const [mounted, setMounted] = useState(false);
 
   // Fix hydration mismatch since we use localStorage persist
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const subtotal = getSubtotal();
@@ -88,7 +94,9 @@ export default function CartPage() {
                     <select
                       className="h-10 w-20 rounded-[4px] border border-(--mirai-color-line) bg-card px-2 text-sm"
                       value={row.quantity}
-                      onChange={(event) => updateQuantity(row.id, Number(event.target.value))}
+                      onChange={(event) =>
+                        updateQuantity(row.id, Number(event.target.value))
+                      }
                     >
                       {Array.from({ length: 10 }).map((_, i) => (
                         <option key={i + 1} value={i + 1}>
