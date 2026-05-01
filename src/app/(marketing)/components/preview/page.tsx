@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 const buttonVariants = [
-  "primary",
+  "default",
   "secondary",
   "outline",
   "ghost",
-  "danger",
+  "destructive",
 ] as const;
-const buttonSizes = ["sm", "md", "lg"] as const;
+const buttonSizes = ["xs", "sm", "default", "lg"] as const;
 const inputSizes = ["sm", "md", "lg"] as const;
 const cardVariants = ["default", "elevated", "interactive"] as const;
 const cardPaddings = ["sm", "md", "lg"] as const;
@@ -80,10 +80,10 @@ export default function ComponentsPreviewPage() {
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
-              <Button variant="primary" disabled>
+              <Button variant="default" disabled>
                 Disabled
               </Button>
-              <Button variant="primary" loading loadingText="Dang xu ly...">
+              <Button variant="default" loading loadingText="Dang xu ly...">
                 Loading
               </Button>
               <Button variant="outline" className="translate-y-px">

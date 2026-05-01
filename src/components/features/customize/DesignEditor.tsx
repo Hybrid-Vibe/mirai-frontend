@@ -37,7 +37,15 @@ export default function DesignEditor() {
       <Layer>
         {/* Background if any selected from AI */}
         {selectedImage && (
-          <URLImage element={{ imageUrl: selectedImage, x: 0, y: 0 }} />
+          <URLImage
+            element={{
+              id: "bg",
+              type: "image",
+              imageUrl: selectedImage,
+              x: 0,
+              y: 0,
+            }}
+          />
         )}
 
         {/* User Added Elements */}

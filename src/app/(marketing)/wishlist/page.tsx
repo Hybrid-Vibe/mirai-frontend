@@ -87,7 +87,7 @@ export default function WishlistPage() {
                   type="button"
                   size="sm"
                   variant={
-                    movedToCartIds.includes(item.id) ? "secondary" : "primary"
+                    movedToCartIds.includes(item.id) ? "secondary" : "default"
                   }
                   className="mt-5 w-full rounded-[2px] bg-(--mirai-sem-text) text-(--mirai-sem-background)"
                   onClick={() => moveToCart(item.id)}

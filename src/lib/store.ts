@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface CanvasElement {
+export interface CanvasElement {
   id: string;
   type: "text" | "image";
   x: number;
