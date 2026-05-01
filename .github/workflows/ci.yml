@@ -26,8 +26,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Format Check
-        run: npm run format:check
+      - name: Format
+        run: npm run format
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: format with prettier [skip ci]"
+          commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
 
       - name: Type Check
         run: npm run type-check
