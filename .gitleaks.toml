@@ -4,7 +4,7 @@ title = "MIRAI gitleaks config"
 useDefault = true
 
 [allowlist]
-description = "Ignore generated outputs and dependencies"
+description = "Ignore generated outputs, dependencies and local env files"
 paths = [
   '''(^|/)node_modules/''',
   '''(^|/)\.next/''',
@@ -12,4 +12,5 @@ paths = [
   '''(^|/)dist/''',
   '''(^|/)build/''',
   '''(^|/)out/''',
+  '''\.env.*$''',
 ]

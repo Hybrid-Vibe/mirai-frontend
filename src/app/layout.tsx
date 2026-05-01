@@ -1,24 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Inter, Poppins } from "next/font/google";
+import { Bricolage_Grotesque } from "next/font/google";
 import { Toaster } from "sonner";
+import { SessionProvider } from "@/components/common";
 import "./globals.css";
 
 const fontDisplay = Bricolage_Grotesque({
   variable: "--font-display",
+  weight: ["600", "700", "800"],
   subsets: ["latin"],
   display: "swap",
 });
 
-const fontBody = Poppins({
+const fontBody = Bricolage_Grotesque({
   variable: "--font-body",
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
 });
 
-const fontUi = Inter({
+const fontUi = Bricolage_Grotesque({
   variable: "--font-ui",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700", "800"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -40,8 +42,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
-    { media: "(prefers-color-scheme: dark)", color: "#111216" },
+    { media: "(prefers-color-scheme: light)", color: "#FFFAEE" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F0F0F" },
   ],
 };
 
@@ -71,15 +73,15 @@ export default function RootLayout({
       <body
         className={`${fontDisplay.variable} ${fontBody.variable} ${fontUi.variable} min-h-screen bg-background text-foreground antialiased`}
       >
-        {children}
+        <SessionProvider>{children}</SessionProvider>
         <Toaster
           theme="light"
           position="top-right"
           toastOptions={{
             style: {
-              background: "#FFFFFF",
-              border: "1px solid rgba(15,15,15,0.14)",
-              color: "#0F0F0F",
+              background: "var(--mirai-sem-surface)",
+              border: "1px solid var(--mirai-sem-border)",
+              color: "var(--mirai-sem-text)",
             },
           }}
         />

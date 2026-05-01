@@ -7,26 +7,27 @@
 @theme inline {
   --font-sans: var(--font-body);
   --font-heading: var(--font-display);
+  --font-brand: var(--font-brand);
   --font-mono: var(--font-ui);
 
-  --color-background: var(--mirai-color-bg);
-  --color-foreground: var(--mirai-color-ink);
-  --color-card: var(--mirai-color-surface);
-  --color-card-foreground: var(--mirai-color-ink);
-  --color-popover: var(--mirai-color-surface);
-  --color-popover-foreground: var(--mirai-color-ink);
-  --color-primary: var(--mirai-color-brand);
-  --color-primary-foreground: var(--mirai-color-ink);
-  --color-secondary: var(--mirai-color-surface-muted);
-  --color-secondary-foreground: var(--mirai-color-ink);
-  --color-muted: var(--mirai-color-surface-muted);
-  --color-muted-foreground: var(--mirai-color-ink-2);
-  --color-accent: var(--mirai-color-brand-strong);
-  --color-accent-foreground: var(--mirai-color-surface);
-  --color-destructive: var(--mirai-color-danger);
-  --color-border: var(--mirai-color-line);
-  --color-input: var(--mirai-color-line);
-  --color-ring: var(--mirai-color-brand-strong);
+  --color-background: var(--mirai-sem-background);
+  --color-foreground: var(--mirai-sem-text);
+  --color-card: var(--mirai-sem-surface);
+  --color-card-foreground: var(--mirai-sem-text);
+  --color-popover: var(--mirai-sem-surface);
+  --color-popover-foreground: var(--mirai-sem-text);
+  --color-primary: var(--mirai-sem-primary);
+  --color-primary-foreground: var(--mirai-sem-text);
+  --color-secondary: var(--mirai-sem-surface-muted);
+  --color-secondary-foreground: var(--mirai-sem-text);
+  --color-muted: var(--mirai-sem-surface-muted);
+  --color-muted-foreground: var(--mirai-sem-text-muted);
+  --color-accent: var(--mirai-sem-accent);
+  --color-accent-foreground: var(--mirai-sem-background);
+  --color-destructive: var(--mirai-sem-danger);
+  --color-border: var(--mirai-sem-border);
+  --color-input: var(--mirai-sem-border);
+  --color-ring: var(--mirai-state-focus-ring);
 
   --radius-sm: var(--mirai-radius-xs);
   --radius-md: var(--mirai-radius-sm);
@@ -37,27 +38,83 @@
 :root {
   color-scheme: light;
 
-  /* Figma Light Mode color tokens */
-  --mirai-color-bg: #ffffff;
-  --mirai-color-surface: #ffffff;
-  --mirai-color-surface-muted: #f5f5f5;
-  --mirai-color-ink: #0f0f0f;
-  --mirai-color-ink-2: #2f2e30;
-  --mirai-color-brand: #48e1ed;
-  --mirai-color-brand-strong: #4349e7;
-  --mirai-color-danger: #db4444;
-  --mirai-color-line: rgba(15, 15, 15, 0.12);
+  /* Primitive tokens */
+  --mirai-primitive-brand-cyan: #48e1ed;
+  --mirai-primitive-brand-indigo: #4349e7;
+  --mirai-primitive-ink: #0f0f0f;
+  --mirai-primitive-cream: #fffaee;
 
-  /* Typography tokens from Figma variables */
-  --mirai-font-title-12-regular: 400 12px/18px var(--font-body);
-  --mirai-font-title-14-semibold: 600 14px/21px var(--font-body);
-  --mirai-font-title-16-regular: 400 16px/24px var(--font-body);
-  --mirai-font-heading-24-bold: 700 24px/24px var(--font-ui);
-  --mirai-font-heading-24-semibold: 600 24px/24px var(--font-ui);
-  --mirai-font-bri-button: 400 16px/24px var(--font-display);
-  --mirai-font-bri-name: 600 36px/48px var(--font-display);
-  --mirai-font-bri-body: 400 18px/24px var(--font-display);
-  --mirai-font-bri-product: 600 18px/24px var(--font-display);
+  --mirai-primitive-white: #ffffff;
+  --mirai-primitive-neutral-100: #f5f5f5;
+  --mirai-primitive-neutral-500: #2f2e30;
+  --mirai-primitive-danger: #db4444;
+  --mirai-primitive-success: #2fc05d;
+  --mirai-primitive-warning: #ffad33;
+
+  /* Semantic tokens */
+  --mirai-sem-background: var(--mirai-primitive-white);
+  --mirai-sem-surface: var(--mirai-primitive-white);
+  --mirai-sem-surface-muted: var(--mirai-primitive-neutral-100);
+  --mirai-sem-text: var(--mirai-primitive-ink);
+  --mirai-sem-text-muted: var(--mirai-primitive-neutral-500);
+  --mirai-sem-primary: var(--mirai-primitive-brand-cyan);
+  --mirai-sem-accent: var(--mirai-primitive-brand-indigo);
+  --mirai-sem-border: rgba(15, 15, 15, 0.14);
+  --mirai-sem-danger: var(--mirai-primitive-danger);
+  --mirai-sem-success: var(--mirai-primitive-success);
+  --mirai-sem-warning: var(--mirai-primitive-warning);
+
+  /* State tokens */
+  --mirai-state-primary-hover: #3fd3de;
+  --mirai-state-accent-hover: #3b40cf;
+  --mirai-state-focus-ring: rgba(67, 73, 231, 0.26);
+  --mirai-state-disabled-bg: #ececec;
+  --mirai-state-disabled-text: #909090;
+  --mirai-state-active: var(--mirai-sem-accent);
+
+  /* Brand gradients mapped from MIRAI_CP3 board */
+  --mirai-gradient-brand-hero: linear-gradient(
+    135deg,
+    var(--mirai-sem-accent) 0%,
+    var(--mirai-sem-primary) 100%
+  );
+  --mirai-gradient-brand-soft: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mirai-sem-accent) 88%, var(--mirai-sem-text) 12%)
+      0%,
+    var(--mirai-sem-text) 100%
+  );
+
+  /* Backward-compatible aliases */
+  --mirai-color-bg: var(--mirai-sem-background);
+  --mirai-color-surface: var(--mirai-sem-surface);
+  --mirai-color-surface-muted: var(--mirai-sem-surface-muted);
+  --mirai-color-ink: var(--mirai-sem-text);
+  --mirai-color-ink-2: var(--mirai-sem-text-muted);
+  --mirai-color-brand: var(--mirai-sem-primary);
+  --mirai-color-brand-strong: var(--mirai-sem-accent);
+  --mirai-color-danger: var(--mirai-sem-danger);
+  --mirai-color-line: var(--mirai-sem-border);
+
+  /* Typography tokens */
+  --mirai-font-brand: "Creating Families Demo", var(--font-display);
+  --mirai-type-display-xl: 700 72px/1.04 var(--font-display);
+  --mirai-type-display-lg: 700 64px/1.08 var(--font-display);
+  --mirai-type-heading-md: 600 32px/1.2 var(--font-display);
+  --mirai-type-body-md: 400 16px/1.55 var(--font-body);
+  --mirai-type-body-sm: 400 14px/1.5 var(--font-body);
+  --mirai-type-caption: 600 12px/1.4 var(--font-body);
+
+  /* Legacy aliases for old classes/components */
+  --mirai-font-title-12-regular: var(--mirai-type-caption);
+  --mirai-font-title-14-semibold: 600 14px/1.5 var(--font-body);
+  --mirai-font-title-16-regular: var(--mirai-type-body-md);
+  --mirai-font-heading-24-bold: 700 24px/1.2 var(--font-display);
+  --mirai-font-heading-24-semibold: 600 24px/1.2 var(--font-display);
+  --mirai-font-bri-button: 600 16px/1.4 var(--font-display);
+  --mirai-font-bri-name: var(--mirai-type-display-lg);
+  --mirai-font-bri-body: var(--mirai-type-body-md);
+  --mirai-font-bri-product: 600 18px/1.35 var(--font-display);
 
   /* Spacing tokens (extracted from header/footer/button) */
   --mirai-space-2: 8px;
@@ -83,19 +140,37 @@
 .dark {
   color-scheme: dark;
 
-  --mirai-color-bg: #111216;
-  --mirai-color-surface: #181a20;
-  --mirai-color-surface-muted: #242733;
-  --mirai-color-ink: #f7f8fa;
-  --mirai-color-ink-2: #c8ccd5;
-  --mirai-color-brand: #48e1ed;
-  --mirai-color-brand-strong: #7480ff;
-  --mirai-color-danger: #ff6f6f;
-  --mirai-color-line: rgba(247, 248, 250, 0.14);
+  --mirai-sem-background: #0f0f0f;
+  --mirai-sem-surface: #161922;
+  --mirai-sem-surface-muted: #242733;
+  --mirai-sem-text: #fffaee;
+  --mirai-sem-text-muted: #d3d3d3;
+  --mirai-sem-primary: var(--mirai-primitive-brand-cyan);
+  --mirai-sem-accent: #7d84ff;
+  --mirai-sem-danger: #ff8a8a;
+  --mirai-sem-success: #58d689;
+  --mirai-sem-warning: #ffc96b;
+  --mirai-sem-border: rgba(255, 250, 238, 0.2);
+
+  --mirai-state-primary-hover: #5ce7f2;
+  --mirai-state-accent-hover: #98a0ff;
+  --mirai-state-focus-ring: rgba(125, 132, 255, 0.34);
+  --mirai-state-disabled-bg: #2b2b2b;
+  --mirai-state-disabled-text: #939393;
+
+  --mirai-color-bg: var(--mirai-sem-background);
+  --mirai-color-surface: var(--mirai-sem-surface);
+  --mirai-color-surface-muted: var(--mirai-sem-surface-muted);
+  --mirai-color-ink: var(--mirai-sem-text);
+  --mirai-color-ink-2: var(--mirai-sem-text-muted);
+  --mirai-color-brand: var(--mirai-sem-primary);
+  --mirai-color-brand-strong: var(--mirai-sem-accent);
+  --mirai-color-danger: var(--mirai-sem-danger);
+  --mirai-color-line: var(--mirai-sem-border);
 
   --mirai-shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.22);
   --mirai-shadow-md: 0 16px 30px rgba(0, 0, 0, 0.3);
-  --mirai-shadow-focus: 0 0 0 3px rgba(116, 128, 255, 0.25);
+  --mirai-shadow-focus: 0 0 0 3px var(--mirai-state-focus-ring);
 }
 
 @layer base {
@@ -124,7 +199,7 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-display);
+    font-family: var(--mirai-font-brand);
   }
 
   a {
@@ -198,6 +273,33 @@
     @apply inline-flex items-center rounded-[4px] border border-border bg-secondary px-2 py-1 text-xs;
   }
 
+  .type-display-xl {
+    font: var(--mirai-type-display-xl);
+    letter-spacing: -0.02em;
+  }
+
+  .type-display-lg {
+    font: var(--mirai-type-display-lg);
+    letter-spacing: -0.015em;
+  }
+
+  .type-heading-md {
+    font: var(--mirai-type-heading-md);
+  }
+
+  .type-body-md {
+    font: var(--mirai-type-body-md);
+  }
+
+  .type-body-sm {
+    font: var(--mirai-type-body-sm);
+  }
+
+  .type-caption {
+    font: var(--mirai-type-caption);
+    letter-spacing: 0.01em;
+  }
+
   .bg-grid {
     background-color: #050814;
     background-image:
@@ -207,36 +309,58 @@
   }
 
   .bg-dots {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.12) 1px,
+      transparent 1px
+    );
     background-size: 16px 16px;
   }
 
   .gradient-text {
-    background: linear-gradient(120deg, #3385ff 0%, #6ea8ff 100%);
+    background: linear-gradient(
+      120deg,
+      var(--mirai-sem-accent) 0%,
+      var(--mirai-sem-primary) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .gradient-text-cyan {
-    background: linear-gradient(120deg, #00d4ff 0%, #8ceaff 100%);
+    background: linear-gradient(
+      120deg,
+      var(--mirai-sem-primary) 0%,
+      color-mix(in srgb, var(--mirai-sem-primary) 45%, white) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .glass {
-    background: linear-gradient(180deg, rgba(15, 20, 36, 0.72) 0%, rgba(8, 12, 28, 0.72) 100%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mirai-sem-text) 88%, transparent) 0%,
+      color-mix(in srgb, var(--mirai-sem-text) 96%, transparent) 100%
+    );
     backdrop-filter: blur(10px);
   }
 
   .card-brand {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid
+      color-mix(in srgb, var(--mirai-sem-background) 14%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mirai-sem-background) 10%, transparent) 0%,
+      color-mix(in srgb, var(--mirai-sem-background) 5%, transparent) 100%
+    );
   }
 
   .glow-blue {
-    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.35), 0 0 26px rgba(0, 102, 255, 0.35);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--mirai-sem-primary) 35%, transparent),
+      0 0 26px color-mix(in srgb, var(--mirai-sem-accent) 35%, transparent);
   }
 
   .animate-float {
@@ -252,7 +376,12 @@
     top: 0;
     bottom: 0;
     width: 40%;
-    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.3) 50%, transparent 80%);
+    background: linear-gradient(
+      110deg,
+      transparent 20%,
+      color-mix(in srgb, var(--mirai-sem-background) 30%, transparent) 50%,
+      transparent 80%
+    );
     animation: mirai-shimmer 2.8s ease-in-out infinite;
     pointer-events: none;
   }

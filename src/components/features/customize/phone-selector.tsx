@@ -20,50 +20,56 @@ export function PhoneSelector({ onNext }: { onNext: () => void }) {
   const { phoneModel, setPhoneModel } = useDesignStore();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {phoneModels.map((model) => (
         <motion.div
           key={model.id}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setPhoneModel(model.name)}
-          className={`relative p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col gap-4 group ${
+          className={`group relative flex cursor-pointer flex-col gap-4 rounded-2xl border p-6 transition-all duration-300 ${
             phoneModel === model.name
-              ? "bg-[rgba(0,102,255,0.1)] border-[#0066FF] glow-blue"
-              : "bg-[#0A0F1E] border-[rgba(255,255,255,0.06)] hover:border-[rgba(0,102,255,0.3)]"
+              ? "border-accent bg-accent/10 glow-blue"
+              : "border-border bg-card hover:border-accent/40"
           }`}
         >
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-            phoneModel === model.name ? "bg-[#0066FF] text-white" : "bg-[#0D1830] text-[#6B85B0] group-hover:text-[#00D4FF]"
-          }`}>
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
+              phoneModel === model.name
+                ? "bg-accent text-background"
+                : "bg-secondary text-muted-foreground group-hover:text-primary"
+            }`}
+          >
             <Smartphone className="w-6 h-6" />
           </div>
-          
+
           <div>
-            <div className="text-xs text-[#6B85B0] mb-1">{model.brand}</div>
-            <div className="font-heading font-bold text-white group-hover:text-[#00D4FF] transition-colors">
+            <div className="mb-1 text-xs text-muted-foreground">
+              {model.brand}
+            </div>
+            <div className="font-heading font-bold text-foreground transition-colors group-hover:text-primary">
               {model.name}
             </div>
           </div>
 
           {phoneModel === model.name && (
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute top-4 right-4 w-6 h-6 bg-[#00D4FF] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,212,255,0.5)]"
+              className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary shadow-md"
             >
-              <Check className="w-4 h-4 text-[#050814] stroke-[3px]" />
+              <Check className="h-4 w-4 stroke-[3px] text-foreground" />
             </motion.div>
           )}
         </motion.div>
       ))}
 
-      <div className="md:col-span-2 lg:col-span-4 flex justify-end mt-8">
+      <div className="mt-8 flex justify-end md:col-span-2 lg:col-span-4">
         <Button
           size="lg"
           disabled={!phoneModel}
           onClick={onNext}
-          className="bg-[#0066FF] hover:bg-[#3385FF] text-white font-bold px-12 py-6 rounded-2xl shadow-[0_8px_30px_rgba(0,102,255,0.4)] disabled:opacity-50 disabled:shadow-none transition-all duration-300"
+          className="rounded-2xl bg-accent px-12 py-6 font-bold text-background shadow-md transition-all duration-300 hover:opacity-90 disabled:opacity-50 disabled:shadow-none"
         >
           Tiếp tục
         </Button>

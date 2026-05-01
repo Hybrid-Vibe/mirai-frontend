@@ -7,9 +7,21 @@ import { Sparkles, Check, RefreshCw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const mockResults = [
-  { id: "gen-1", color: "from-[#0066FF] to-[#00D4FF]", label: "Cyberpunk Glow" },
-  { id: "gen-2", color: "from-[#7B2FFF] to-[#FF00D4]", label: "Ethereal Dream" },
-  { id: "gen-3", color: "from-[#00D4FF] to-[#00FF87]", label: "Neon Nature" },
+  {
+    id: "gen-1",
+    color: "from-(--mirai-sem-accent) to-(--mirai-sem-primary)",
+    label: "Cyberpunk Glow",
+  },
+  {
+    id: "gen-2",
+    color: "from-(--mirai-sem-text) to-(--mirai-sem-accent)",
+    label: "Ethereal Dream",
+  },
+  {
+    id: "gen-3",
+    color: "from-(--mirai-sem-primary) to-(--mirai-sem-success)",
+    label: "Neon Nature",
+  },
 ];
 
 export function GenerationDisplay({ onNext }: { onNext: () => void }) {
@@ -32,7 +44,7 @@ export function GenerationDisplay({ onNext }: { onNext: () => void }) {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl">
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div
@@ -42,33 +54,35 @@ export function GenerationDisplay({ onNext }: { onNext: () => void }) {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center py-20"
           >
-            <div className="relative w-32 h-32 mb-8">
+            <div className="relative mb-8 h-32 w-32">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 4, repeat: Infinity }}
-                className="absolute inset-0 rounded-full border-t-2 border-r-2 border-[#0066FF] glow-blue"
+                className="absolute inset-0 rounded-full border-r-2 border-t-2 border-(--mirai-sem-accent) glow-blue"
               />
-              <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-[#00D4FF] opacity-50" />
+              <div className="absolute inset-4 rounded-full border-b-2 border-l-2 border-(--mirai-sem-primary) opacity-50" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-[#00D4FF] animate-pulse" />
+                <Sparkles className="h-10 w-10 animate-pulse text-(--mirai-sem-primary)" />
               </div>
             </div>
 
-            <h3 className="font-heading text-2xl font-bold text-white mb-2">
+            <h3 className="mb-2 font-heading text-2xl font-bold text-foreground">
               Đang dệt ý tưởng của bạn...
             </h3>
-            <p className="text-[#6B85B0] mb-8 text-center max-w-md">
+            <p className="mb-8 max-w-md text-center text-muted-foreground">
               AI của chúng tôi đang phân tích prompt: &quot;{prompt}&quot;
             </p>
 
-            <div className="w-full max-w-md h-2 bg-[#0D1830] rounded-full overflow-hidden">
+            <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-secondary">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                className="h-full bg-gradient-to-r from-[#0066FF] to-[#00D4FF] glow-blue"
+                className="h-full bg-gradient-to-r from-(--mirai-sem-accent) to-(--mirai-sem-primary) glow-blue"
               />
             </div>
-            <div className="mt-2 text-[#00D4FF] font-mono font-bold">{progress}%</div>
+            <div className="mt-2 font-mono font-bold text-(--mirai-sem-primary)">
+              {progress}%
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -77,44 +91,50 @@ export function GenerationDisplay({ onNext }: { onNext: () => void }) {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-12"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {mockResults.map((result) => (
                 <motion.div
                   key={result.id}
                   whileHover={{ y: -10 }}
                   onClick={() => setSelectedImage(result.id)}
-                  className={`relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer border-2 transition-all duration-500 ${
+                  className={`relative aspect-[3/4] cursor-pointer overflow-hidden rounded-3xl border-2 transition-all duration-500 ${
                     selectedImage === result.id
-                      ? "border-[#00D4FF] shadow-[0_0_40px_rgba(0,212,255,0.3)]"
+                      ? "border-(--mirai-sem-primary) glow-blue"
                       : "border-transparent grayscale-[0.5] hover:grayscale-0"
                   }`}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${result.color} opacity-80`} />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${result.color} opacity-80`}
+                  />
                   <div className="absolute inset-0 bg-grid opacity-20" />
-                  
+
                   {/* Phone Silhouette Over Design */}
                   <div className="absolute inset-0 flex items-center justify-center p-8">
-                     <div className="w-full h-full border-4 border-white/20 rounded-[3rem] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]" />
+                    <div className="h-full w-full rounded-[3rem] border-4 border-(--mirai-sem-border) shadow-inner" />
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6">
-                    <div className="text-white font-bold text-lg mb-1">{result.label}</div>
-                    <div className="text-white/60 text-xs">AI Generated Variant</div>
+                    <div className="mb-1 text-lg font-bold text-(--mirai-sem-background)">
+                      {result.label}
+                    </div>
+                    <div className="text-xs text-background/70">
+                      AI Generated Variant
+                    </div>
                   </div>
 
                   {selectedImage === result.id && (
-                    <div className="absolute top-6 right-6 w-10 h-10 bg-[#00D4FF] rounded-full flex items-center justify-center shadow-lg">
-                      <Check className="w-6 h-6 text-[#050814] stroke-[3px]" />
+                    <div className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-(--mirai-sem-primary) shadow-lg">
+                      <Check className="h-6 w-6 stroke-[3px] text-(--mirai-sem-text)" />
                     </div>
                   )}
                 </motion.div>
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-[rgba(0,102,255,0.1)]">
+            <div className="flex flex-col items-center justify-between gap-6 border-t border-border pt-8 sm:flex-row">
               <Button
                 variant="ghost"
-                className="text-[#6B85B0] hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setLoading(true);
                   setProgress(0);
@@ -124,10 +144,10 @@ export function GenerationDisplay({ onNext }: { onNext: () => void }) {
                 Tạo lại các mẫu khác
               </Button>
 
-              <div className="flex gap-4 w-full sm:w-auto">
+              <div className="flex w-full gap-4 sm:w-auto">
                 <Button
                   variant="outline"
-                  className="flex-1 sm:flex-none border-[rgba(0,102,255,0.2)] text-white hover:bg-[rgba(0,102,255,0.05)] rounded-2xl"
+                  className="flex-1 rounded-2xl border-accent/30 text-foreground hover:bg-accent/10 sm:flex-none"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
                   Chia sẻ
@@ -135,7 +155,7 @@ export function GenerationDisplay({ onNext }: { onNext: () => void }) {
                 <Button
                   disabled={!selectedImage}
                   onClick={onNext}
-                  className="flex-1 sm:flex-none bg-[#0066FF] hover:bg-[#3385FF] text-white font-bold px-8 py-6 rounded-2xl shadow-[0_8px_30px_rgba(0,102,255,0.4)] disabled:opacity-50"
+                  className="flex-1 rounded-2xl bg-accent px-8 py-6 font-bold text-background shadow-md hover:opacity-90 disabled:opacity-50 sm:flex-none"
                 >
                   <RefreshCw className="w-5 h-5 mr-2" />
                   Chỉnh sửa thiết kế

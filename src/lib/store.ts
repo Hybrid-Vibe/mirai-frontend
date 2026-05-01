@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface CanvasElement {
+export interface CanvasElement {
   id: string;
   type: "text" | "image";
   x: number;
@@ -17,7 +17,7 @@ interface DesignState {
   generatedImages: string[];
   selectedImage: string | null;
   elements: CanvasElement[];
-  
+
   setPhoneModel: (model: string) => void;
   setPrompt: (prompt: string) => void;
   setGeneratedImages: (images: string[]) => void;
@@ -39,6 +39,14 @@ export const useDesignStore = create<DesignState>((set) => ({
   setGeneratedImages: (generatedImages) => set({ generatedImages }),
   setSelectedImage: (selectedImage) => set({ selectedImage }),
   setElements: (elements) => set({ elements }),
-  addElement: (element) => set((state) => ({ elements: [...state.elements, element] })),
-  reset: () => set({ phoneModel: "", prompt: "", generatedImages: [], selectedImage: null, elements: [] }),
+  addElement: (element) =>
+    set((state) => ({ elements: [...state.elements, element] })),
+  reset: () =>
+    set({
+      phoneModel: "",
+      prompt: "",
+      generatedImages: [],
+      selectedImage: null,
+      elements: [],
+    }),
 }));

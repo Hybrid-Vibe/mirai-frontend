@@ -17,7 +17,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       onClick={toggleTheme}
       className={
         className ||
-        "inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[color:var(--mirai-color-line)] bg-transparent text-[color:var(--mirai-color-ink)] transition hover:bg-[color:var(--mirai-color-surface-muted)]"
+        "inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-(--mirai-color-line) bg-transparent text-(--mirai-color-ink) transition hover:bg-(--mirai-color-surface-muted)"
       }
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}

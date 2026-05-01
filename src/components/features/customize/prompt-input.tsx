@@ -24,25 +24,25 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto max-w-3xl">
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-2xl opacity-20 group-focus-within:opacity-40 blur-lg transition-opacity" />
+        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-(--mirai-sem-accent) to-(--mirai-sem-primary) opacity-20 blur-lg transition-opacity group-focus-within:opacity-40" />
         <div className="relative">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Mô tả ý tưởng của bạn (ví dụ: 'Cô gái anime phong cách cyberpunk với tóc xanh dương'...)"
-            className="w-full h-48 bg-[#0A0F1E] border border-[rgba(0,102,255,0.2)] rounded-2xl p-6 text-white text-lg placeholder-[#4A5D7E] focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF] transition-all resize-none"
+            className="h-48 w-full resize-none rounded-2xl border border-accent/20 bg-card p-6 text-lg text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all"
           />
-          <div className="absolute bottom-4 right-4 text-[#4A5D7E] text-sm">
+          <div className="absolute bottom-4 right-4 text-sm text-muted-foreground">
             {prompt.length}/200
           </div>
         </div>
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center gap-2 mb-4 text-[#A0B4D8] text-sm font-medium">
-          <Sparkles className="w-4 h-4 text-[#00D4FF]" />
+        <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Sparkles className="h-4 w-4 text-primary" />
           Gợi ý cho bạn:
         </div>
         <div className="flex flex-wrap gap-2">
@@ -51,7 +51,7 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
               key={suggestion}
               variant="outline"
               onClick={() => handleSuggestionClick(suggestion)}
-              className="cursor-pointer py-2 px-4 rounded-xl border-[rgba(0,102,255,0.2)] bg-[#0A0F1E] text-[#A0B4D8] hover:text-[#00D4FF] hover:border-[#00D4FF] hover:bg-[rgba(0,212,255,0.05)] transition-all"
+              className="cursor-pointer rounded-xl border-accent/20 bg-card px-4 py-2 text-muted-foreground transition-all hover:border-primary hover:bg-primary/10 hover:text-primary"
             >
               {suggestion}
             </Badge>
@@ -59,12 +59,12 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
-      <div className="flex justify-end mt-12 gap-4">
+      <div className="mt-12 flex justify-end gap-4">
         {prompt && (
           <Button
             variant="ghost"
             onClick={() => setPrompt("")}
-            className="text-[#6B85B0] hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4 mr-2" />
             Xóa hết
@@ -74,7 +74,7 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
           size="lg"
           disabled={!prompt || prompt.length < 3}
           onClick={onNext}
-          className="bg-gradient-to-r from-[#0066FF] to-[#00D4FF] hover:from-[#3385FF] hover:to-[#00D4FF] text-white font-bold px-12 py-6 rounded-2xl shadow-[0_8px_30px_rgba(0,102,255,0.4)] disabled:opacity-50 transition-all duration-300"
+          className="rounded-2xl bg-gradient-to-r from-(--mirai-sem-accent) to-(--mirai-sem-primary) px-12 py-6 font-bold text-(--mirai-sem-background) shadow-md transition-all duration-300 hover:opacity-90 disabled:opacity-50"
         >
           <Wand2 className="w-5 h-5 mr-2" />
           Tiếp tục
