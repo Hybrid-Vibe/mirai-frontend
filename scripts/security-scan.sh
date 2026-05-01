@@ -23,11 +23,12 @@ if command -v gitleaks >/dev/null 2>&1; then
 elif command -v trufflehog >/dev/null 2>&1; then
   action_run_trufflehog
 else
-  echo "[security] No scanner found. Install one of: gitleaks or trufflehog."
+  echo "[security] WARNING: No scanner found. Secret scan skipped."
+  echo "[security] It is highly recommended to install one of: gitleaks or trufflehog."
   echo "[security] Examples:"
   echo "  brew install gitleaks"
   echo "  brew install trufflesecurity/trufflehog/trufflehog"
-  exit 1
+  exit 0
 fi
 
 echo "[security] Secret scan passed."
