@@ -1,40 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-const initialCartRows = [
-  { id: "row-1", name: "Ốp Lưng ASA STAR HEART", price: 85000, quantity: 1 },
-  { id: "row-2", name: "Ốp Lưng Customize", price: 150000, quantity: 1 },
-];
+import { useCartStore } from "@/stores";
 
 const formatCurrency = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 export default function CartPage() {
-  const [cartRows, setCartRows] = useState(initialCartRows);
+  const { items: cartRows, updateQuantity, removeItem: removeStoreItem, getSubtotal } = useCartStore();
   const [coupon, setCoupon] = useState("");
+  const [mounted, setMounted] = useState(false);
 
-  const subtotal = useMemo(
-    () => cartRows.reduce((sum, row) => sum + row.price * row.quantity, 0),
-    [cartRows],
-  );
+  // Fix hydration mismatch since we use localStorage persist
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const subtotal = getSubtotal();
   const total = subtotal;
 
-  const updateQuantity = (id: string, nextQuantity: number) => {
-    setCartRows((prev) =>
-      prev.map((row) =>
-        row.id === id
-          ? { ...row, quantity: Math.max(1, Math.min(nextQuantity, 10)) }
-          : row,
-      ),
-    );
+  const removeItem = (id: string) => {
+    removeStoreItem(id);
+    toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
-  const removeItem = (id: string) => {
-    setCartRows((prev) => prev.filter((row) => row.id !== id));
+  const handleApplyCoupon = () => {
+    if (!coupon.trim()) return;
+    toast.success(`Áp dụng mã ${coupon} thành công!`);
+    // Mock logic: clear coupon after success or show discount
   };
+
+  if (!mounted) return null;
 
   return (
     <main className="bg-background py-16">
@@ -109,13 +109,10 @@ export default function CartPage() {
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/shop"
-            className="inline-flex h-11 min-w-52 items-center justify-center rounded-[4px] border border-(--mirai-sem-text-muted)/40 px-6 text-sm font-semibold"
+            className="inline-flex h-11 min-w-52 items-center justify-center rounded-[4px] border border-(--mirai-sem-text-muted)/40 px-6 text-sm font-semibold hover:bg-muted transition-colors"
           >
             Trở về Cửa Hàng
           </Link>
-          <Button type="button" variant="outline" className="min-w-52">
-            Update Giỏ Hàng
-          </Button>
         </div>
 
         <div className="mt-14 grid gap-8 lg:grid-cols-2">
@@ -129,7 +126,9 @@ export default function CartPage() {
             />
             <Button
               type="button"
-              className="min-w-44"
+              onClick={handleApplyCoupon}
+              disabled={!coupon.trim()}
+              className="min-w-44 disabled:opacity-50"
             >
               Áp Dụng
             </Button>
@@ -153,12 +152,21 @@ export default function CartPage() {
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
-            <Link
-              href="/checkout"
-              className="mx-auto mt-8 inline-flex h-11 min-w-64 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground"
-            >
-              Tiếp tục thanh toán
-            </Link>
+            {cartRows.length > 0 ? (
+              <Link
+                href="/checkout"
+                className="mx-auto mt-8 inline-flex h-11 w-full max-w-64 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground hover:bg-(--mirai-sem-primary)/90 transition-colors"
+              >
+                Tiếp tục thanh toán
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="mx-auto mt-8 inline-flex h-11 w-full max-w-64 items-center justify-center rounded-[4px] bg-muted px-6 text-sm font-semibold text-muted-foreground cursor-not-allowed opacity-50"
+              >
+                Giỏ hàng trống
+              </button>
+            )}
           </section>
         </div>
       </div>
