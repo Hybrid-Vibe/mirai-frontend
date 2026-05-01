@@ -6,7 +6,21 @@
 import { Resend } from "resend";
 import type { EmailTemplateType, SendEmailResult } from "@/types";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy client — instantiated on first use so the build doesn't crash
+// when RESEND_API_KEY is absent from the CI / build environment.
+let _resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!_resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "[email] RESEND_API_KEY environment variable is not set.",
+      );
+    }
+    _resend = new Resend(apiKey);
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "MIRAI <noreply@mirai.vn>";
 
@@ -168,7 +182,7 @@ export async function sendEmail(
     const subject = getEmailSubject(template, data);
     const html = renderTemplate(template, data);
 
-    const result = await resend.emails.send({
+    const result = await getResendClient().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
