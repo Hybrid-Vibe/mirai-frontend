@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthShowcase } from "@/components/features/marketing/auth-showcase";
+import { GoogleSignInButton } from "@/components/common";
 
 export default function LoginPage() {
   const [identity, setIdentity] = useState("");
@@ -46,14 +47,16 @@ export default function LoginPage() {
               >
                 Đăng nhập
               </Button>
-              <button
-                type="button"
-                className="text-sm font-medium text-(--mirai-sem-accent)"
+              <Link
+                href="/forgot-password"
+                className="text-sm font-medium text-(--mirai-sem-accent) hover:underline"
               >
                 Quên mật khẩu?
-              </button>
+              </Link>
             </div>
           </form>
+
+          <GoogleSignInButton label="Đăng nhập với Google" />
 
           <p className="mt-8 text-sm text-muted-foreground">
             Chưa có tài khoản?{" "}

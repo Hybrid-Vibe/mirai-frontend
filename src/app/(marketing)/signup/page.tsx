@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthShowcase } from "@/components/features/marketing/auth-showcase";
+import { GoogleSignInButton } from "@/components/common";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -49,24 +50,13 @@ export default function SignupPage() {
             <Button
               type="submit"
               className="w-full rounded-[4px]"
-              disabled={
-                !name.trim() ||
-                !identity.trim() ||
-                !password.trim()
-              }
+              disabled={!name.trim() || !identity.trim() || !password.trim()}
             >
               Tạo tài khoản
             </Button>
           </form>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-4 inline-flex h-11 w-full items-center justify-center gap-3 rounded-[4px]"
-          >
-            <span className="text-lg">G</span>
-            Sign up with Google
-          </Button>
+          <GoogleSignInButton label="Đăng ký với Google" />
 
           <p className="mt-8 text-sm text-muted-foreground">
             Bạn đã có tài khoản?{" "}
