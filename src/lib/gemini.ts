@@ -4,29 +4,32 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Gemini Client — singleton, server-side only
 // ---------------------------------------------------------------------------
 
-const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error(
-    "GEMINI_API_KEY is not set. Add it to .env.local (server-side only, never NEXT_PUBLIC_).",
-  );
+// Lazy initialization functions to prevent build crash when keys are missing in CI
+let _genAI: GoogleGenerativeAI | null = null;
+function getGenAI(): GoogleGenerativeAI {
+  if (!_genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "GEMINI_API_KEY is not set. Add it to .env.local (server-side only).",
+      );
+    }
+    _genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return _genAI;
 }
 
-export const genAI = new GoogleGenerativeAI(apiKey);
+function getTextModel() {
+  return getGenAI().getGenerativeModel({
+    model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
+  });
+}
 
-// ---------------------------------------------------------------------------
-// Models
-// ---------------------------------------------------------------------------
-
-/** Text model for prompt enhancement (fast, cheap) */
-export const textModel = genAI.getGenerativeModel({
-  model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
-});
-
-/** Image model for design generation */
-export const imageModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-preview-image-generation",
-});
+function getImageModel() {
+  return getGenAI().getGenerativeModel({
+    model: "gemini-2.0-flash-preview-image-generation",
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Prompt Enhancement
@@ -51,7 +54,7 @@ export async function enhancePrompt(
   rawPrompt: string,
   phoneModel: string,
 ): Promise<string> {
-  const result = await textModel.generateContent([
+  const result = await getTextModel().generateContent([
     { text: ENHANCE_SYSTEM_PROMPT },
     {
       text: `Phone model: ${phoneModel}\nCustomer prompt: ${rawPrompt}`,
@@ -79,7 +82,7 @@ export async function enhancePrompt(
 export async function generateDesignImage(
   enhancedPrompt: string,
 ): Promise<string> {
-  const result = await imageModel.generateContent({
+  const result = await getImageModel().generateContent({
     contents: [
       {
         role: "user",
