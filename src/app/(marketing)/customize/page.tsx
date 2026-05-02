@@ -290,7 +290,10 @@ export default function CustomizePage() {
 
             {/* Phone Model Dropdown */}
             <div className="mt-4">
-              <Select value={phoneModel} onValueChange={setPhoneModel}>
+              <Select
+                value={phoneModel}
+                onValueChange={(val) => val && setPhoneModel(val)}
+              >
                 <SelectTrigger className="h-12 w-full text-sm font-semibold bg-card">
                   <SelectValue placeholder="Chọn dòng điện thoại">
                     {PHONE_MODELS.find((m) => m.value === phoneModel)?.label}

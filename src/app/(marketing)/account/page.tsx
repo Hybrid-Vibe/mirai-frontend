@@ -165,7 +165,12 @@ export default function AccountPage() {
 function ProfileSection({
   user,
 }: {
-  user: { name: string; email: string; avatar_url: string; id?: string } | null;
+  user: {
+    name: string;
+    email: string;
+    avatar_url?: string;
+    id?: string;
+  } | null;
 }) {
   if (!user) return null;
   return <ProfileForm key={user.id || user.email} user={user} />;
@@ -174,7 +179,7 @@ function ProfileSection({
 function ProfileForm({
   user,
 }: {
-  user: { name: string; email: string; avatar_url: string };
+  user: { name: string; email: string; avatar_url?: string };
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const parts = user.name?.split(" ") || [];
@@ -302,14 +307,16 @@ function ProfileForm({
               open={showPasswordChange}
               onOpenChange={setShowPasswordChange}
             >
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="text-(--mirai-sem-danger) border-(--mirai-sem-danger) hover:bg-red-50"
-                >
-                  Thay đổi mật khẩu
-                </Button>
-              </DialogTrigger>
+              <DialogTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    className="text-(--mirai-sem-danger) border-(--mirai-sem-danger) hover:bg-red-50"
+                  >
+                    Thay đổi mật khẩu
+                  </Button>
+                }
+              />
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Thay đổi mật khẩu</DialogTitle>
@@ -568,8 +575,13 @@ function AddressSection({
       setSelectedProvince(address.rawDetails.province);
       // Wait for effects to load districts/wards could be tricky here, but we set states.
       // A more robust implementation would fetch the specific nested areas, but for demo:
-      setTimeout(() => setSelectedDistrict(address.rawDetails.district), 500);
-      setTimeout(() => setSelectedWard(address.rawDetails.ward), 1000);
+      setTimeout(() => {
+        if (address.rawDetails)
+          setSelectedDistrict(address.rawDetails.district);
+      }, 500);
+      setTimeout(() => {
+        if (address.rawDetails) setSelectedWard(address.rawDetails.ward);
+      }, 1000);
     } else {
       setAddressLine(address.addressLine);
     }
