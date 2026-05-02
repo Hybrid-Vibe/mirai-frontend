@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, ImagePlus, Sparkles, Type } from "lucide-react";
+import { ImagePlus, Sparkles, Type, Trash2, Layers } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import { aiApi } from "@/lib/api-client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DynamicDesignEditor = dynamic(
   () => import("@/components/features/customize/DesignEditor"),
@@ -15,7 +23,112 @@ const DynamicDesignEditor = dynamic(
     ),
   },
 );
+
+const DynamicPhoneCaseViewer = dynamic(
+  () => import("@/components/features/customize/PhoneCaseViewer"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse bg-muted/50 w-full h-full rounded-2xl flex items-center justify-center">
+        <div className="text-sm text-muted-foreground">
+          Đang tải 3D viewer...
+        </div>
+      </div>
+    ),
+  },
+);
+
 import { useDesignStore } from "@/lib/store";
+
+const SUPABASE_STORAGE_URL =
+  "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/phone-models";
+
+const PHONE_MODELS = [
+  {
+    label: "iPhone 12 Mini",
+    value: "iphone_12_mini",
+    glbFile: "iphone_12_mini.glb",
+  },
+  {
+    label: "iPhone 12 Pro",
+    value: "iphone_12_pro",
+    glbFile: "iphone_12_pro.glb",
+  },
+  { label: "iPhone 13", value: "iphone_13", glbFile: "iphone_13.glb" },
+  {
+    label: "iPhone 13 Pro",
+    value: "iphone_13_pro",
+    glbFile: "iphone_13_pro.glb",
+  },
+  {
+    label: "iPhone 13 Pro Max",
+    value: "iphone_13_pro_max",
+    glbFile: "iphone_13_pro_max.glb",
+  },
+  { label: "iPhone 14", value: "iphone_14", glbFile: "iphone_14.glb" },
+  {
+    label: "iPhone 14 Pro",
+    value: "iphone_14_pro",
+    glbFile: "iphone_14_pro.glb",
+  },
+  {
+    label: "iPhone 14 Pro Max",
+    value: "iphone_14_pro_max",
+    glbFile: "iphone_14_pro_max.glb",
+  },
+  { label: "iPhone 15", value: "iphone_15", glbFile: "iphone_15.glb" },
+  {
+    label: "iPhone 15 Pro",
+    value: "iphone_15_pro",
+    glbFile: "iphone_15_pro.glb",
+  },
+  {
+    label: "iPhone 15 Pro Max",
+    value: "iphone_15_pro_max",
+    glbFile: "iphone_15_pro_max.glb",
+  },
+  { label: "iPhone 16", value: "iphone_16", glbFile: "iphone_16.glb" },
+  {
+    label: "iPhone 16 Plus",
+    value: "iphone_16_plus",
+    glbFile: "iphone_16_plus.glb",
+  },
+  {
+    label: "iPhone 16 Pro",
+    value: "iphone_16_pro",
+    glbFile: "iphone_16_pro.glb",
+  },
+  {
+    label: "iPhone 16 Pro Max",
+    value: "iphone_16_pro_max",
+    glbFile: "iphone_16_pro_max.glb",
+  },
+  {
+    label: "iPhone 17 Air",
+    value: "iphone_17_air",
+    glbFile: "iphone_17_air.glb",
+  },
+  {
+    label: "iPhone 17 Pro",
+    value: "iphone_17_pro",
+    glbFile: "iphone_17_pro.glb",
+  },
+  {
+    label: "iPhone 17 Pro Max",
+    value: "iphone_17_pro_max",
+    glbFile: "iphone_17_pro_max.glb",
+  },
+  {
+    label: "Samsung Galaxy S21 Ultra",
+    value: "samsung_galaxy_s21_ultra",
+    glbFile: "samsung_galaxy_s21_ultra.glb",
+  },
+  {
+    label: "Samsung Galaxy S25 Ultra",
+    value: "samsung_galaxy_s25_ultra",
+    glbFile: "samsung_galaxy_s25_ultra.glb",
+  },
+];
 
 const customColors = [
   "var(--mirai-sem-primary)",
@@ -39,10 +152,27 @@ export default function CustomizePage() {
     selectedImage,
     setSelectedImage,
     addElement,
+    removeElement,
+    elements,
+    selectedElementId,
+    setSelectedElementId,
+    canvasDataUrl,
+    setCanvasDataUrl,
   } = useDesignStore();
   const [mode, setMode] = useState<"ai" | "self">("ai");
   const [selectedColor, setSelectedColor] = useState(customColors[0]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [textInput, setTextInput] = useState("");
+  const [bgColor, setBgColor] = useState("#1a1a2e");
+  const [fontSize, setFontSize] = useState(32);
+  const [fontFamily, setFontFamily] = useState("Bricolage Grotesque");
+
+  // Derive model URL from selected phoneModel
+  const currentPhoneConfig = PHONE_MODELS.find((m) => m.value === phoneModel);
+  const modelUrl = currentPhoneConfig
+    ? `${SUPABASE_STORAGE_URL}/${currentPhoneConfig.glbFile}`
+    : null;
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -56,17 +186,10 @@ export default function CustomizePage() {
 
     setIsGenerating(true);
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, phoneModel }),
+      const data = await aiApi.generateImage({
+        prompt,
+        phoneModel,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Có lỗi xảy ra khi tạo thiết kế");
-      }
 
       if (data.designs && data.designs.length > 0) {
         const imageUrls = data.designs.map(
@@ -74,14 +197,31 @@ export default function CustomizePage() {
         );
         setGeneratedImages(imageUrls);
         setSelectedImage(imageUrls[0]);
-        toast.success("Đã tạo thiết kế thành công!");
+        toast.success(
+          `Đã tạo ${data.designs.length} thiết kế trong ${(data.durationMs / 1000).toFixed(1)}s ✨`,
+        );
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Có lỗi xảy ra. Vui lòng thử lại.",
-      );
+    } catch (error: unknown) {
+      let message = "Có lỗi xảy ra. Vui lòng thử lại.";
+
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosErr = error as {
+          response?: { data?: { error?: string; code?: string } };
+        };
+        const code = axiosErr.response?.data?.code;
+
+        if (code === "RATE_LIMITED") {
+          message = "Hệ thống AI đang quá tải. Vui lòng thử lại sau ít phút 🙏";
+        } else if (code === "INVALID_PROMPT") {
+          message = "Prompt không hợp lệ — hãy thử mô tả chi tiết hơn.";
+        } else if (axiosErr.response?.data?.error) {
+          message = axiosErr.response.data.error;
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
+      toast.error(message);
     } finally {
       setIsGenerating(false);
     }
@@ -90,87 +230,86 @@ export default function CustomizePage() {
   return (
     <main className="bg-background py-10">
       <div className="page-shell">
-        <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+          {/* LEFT: 3D Preview Panel */}
           <section>
             <h2 className="mb-5 font-body text-lg font-semibold text-foreground">
               Preview thiết kế
             </h2>
 
-            <div className="mx-auto flex h-[560px] w-[280px] items-center justify-center rounded-[44px] border-[6px] border-[#222] bg-gradient-to-b from-[#545454] to-[#1f1f1f] p-4 shadow-[0_24px_40px_rgba(15,15,15,0.2)]">
-              <div
-                className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[34px] text-center font-heading text-6xl font-semibold"
-                style={{
-                  color:
-                    mode === "self"
-                      ? selectedColor
-                      : "var(--mirai-sem-surface)",
-                  background:
-                    mode === "self"
-                      ? "linear-gradient(180deg, #2e2f38 0%, #0f1013 100%)"
-                      : "linear-gradient(180deg, #6f75ff 0%, #272935 100%)",
-                }}
-              >
-                <span className="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-black/50 z-10" />
-                {mode === "self" ? (
-                  <DynamicDesignEditor />
-                ) : selectedImage ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={selectedImage}
-                    alt="Generated Design"
-                    className="h-full w-full object-cover"
-                  />
-                ) : isGenerating ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Sparkles className="h-8 w-8 animate-pulse text-(--mirai-sem-primary)" />
-                    <span className="text-sm font-medium text-white/80 font-body">
-                      Đang vẽ...
-                    </span>
-                  </div>
-                ) : (
-                  "AI"
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-3 w-3 rounded-full ${i === 2 ? "bg-(--mirai-sem-primary)" : "bg-(--mirai-sem-surface-muted)"}`}
+            <div className="relative w-full aspect-[3/4] rounded-2xl border border-(--mirai-color-line) bg-gradient-to-b from-muted/30 to-muted/10 overflow-hidden">
+              {modelUrl ? (
+                <DynamicPhoneCaseViewer
+                  modelUrl={modelUrl}
+                  textureUrl={mode === "self" ? canvasDataUrl : selectedImage}
                 />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="grid gap-3 md:grid-cols-4">
-              {["Phone Cases", "Laptop Cases", "Airpod Cases", "Phụ kiện"].map(
-                (category, i) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={`h-12 rounded-[4px] border text-sm font-medium ${
-                      i === 0
-                        ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary) text-foreground"
-                        : "border-(--mirai-color-line) bg-card text-foreground"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ),
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-center px-6">
+                  <div className="space-y-3">
+                    <div className="mx-auto h-32 w-20 rounded-[2rem] border-4 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-primary/40">
+                        3D
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Chọn dòng điện thoại bên phải
+                      <br />
+                      để xem model 3D ốp lưng
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setPhoneModel("IPHONE 17 PRO MAX")}
-              className="mt-4 flex h-12 w-full items-center justify-between rounded-[4px] border border-(--mirai-color-line) bg-card px-4 text-sm font-semibold text-foreground"
-            >
-              {phoneModel || "IPHONE 17 PRO MAX"}
-              <ChevronDown className="h-5 w-5" />
-            </button>
+            {modelUrl && (
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                🖱️ Kéo để xoay · Scroll để zoom · Trên mobile: hỗ trợ AR
+              </p>
+            )}
+          </section>
 
+          {/* RIGHT: Controls Panel */}
+          <section>
+            {/* Category Tabs — only Phone Cases & Airpod Cases */}
+            <div className="grid gap-3 md:grid-cols-2">
+              {["Phone Cases", "Airpod Cases"].map((category, i) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(i)}
+                  className={`h-12 rounded-[4px] border text-sm font-medium transition-colors ${
+                    selectedCategory === i
+                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary) text-foreground"
+                      : "border-(--mirai-color-line) bg-card text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {/* Phone Model Dropdown */}
+            <div className="mt-4">
+              <Select
+                value={phoneModel}
+                onValueChange={(val) => val && setPhoneModel(val)}
+              >
+                <SelectTrigger className="h-12 w-full text-sm font-semibold bg-card">
+                  <SelectValue placeholder="Chọn dòng điện thoại">
+                    {PHONE_MODELS.find((m) => m.value === phoneModel)?.label}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {PHONE_MODELS.map((model) => (
+                    <SelectItem key={model.value} value={model.value}>
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Mode Tabs: AI Generate / Tự Custom */}
             <div className="mt-4 rounded-[4px] border border-(--mirai-color-line) bg-card">
               <div className="grid grid-cols-2">
                 <button
@@ -279,15 +418,53 @@ export default function CustomizePage() {
                 </div>
               ) : (
                 <div className="space-y-5 p-6">
+                  {/* 2D Canvas Editor */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-semibold text-foreground">
+                        Canvas Editor
+                      </label>
+                      {selectedElementId && (
+                        <button
+                          type="button"
+                          onClick={() => removeElement(selectedElementId)}
+                          className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Xoá
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      className="rounded-lg border border-(--mirai-color-line) overflow-hidden bg-[#1a1a2e]"
+                      style={{ maxHeight: 340 }}
+                    >
+                      <div
+                        style={{
+                          transform: "scale(0.72)",
+                          transformOrigin: "top left",
+                          width: 400,
+                          height: 340,
+                        }}
+                      >
+                        <DynamicDesignEditor
+                          onCanvasExport={setCanvasDataUrl}
+                          backgroundColor={bgColor}
+                        />
+                      </div>
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Click chọn → kéo di chuyển · Kéo góc để resize/xoay
+                    </p>
+                  </div>
+
+                  {/* Upload Image */}
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">
                       Upload hình ảnh
                     </label>
-                    <label className="flex h-28 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-[4px] border border-dashed border-(--mirai-color-line) bg-(--mirai-sem-surface-muted) text-foreground hover:bg-muted transition-colors">
-                      <ImagePlus className="h-5 w-5" />
-                      <span className="text-xs">
-                        Kéo thả ảnh hoặc click để chọn
-                      </span>
+                    <label className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[4px] border border-dashed border-(--mirai-color-line) bg-(--mirai-sem-surface-muted) text-foreground hover:bg-muted transition-colors">
+                      <ImagePlus className="h-4 w-4" />
+                      <span className="text-xs">Click để chọn ảnh</span>
                       <input
                         type="file"
                         className="hidden"
@@ -301,86 +478,104 @@ export default function CustomizePage() {
                               type: "image",
                               imageUrl: url,
                               x: 50,
-                              y: 100,
+                              y: 80,
                             });
-                            toast.success("Đã thêm ảnh vào thiết kế");
+                            toast.success("Đã thêm ảnh vào canvas");
                           }
                         }}
                       />
                     </label>
                   </div>
 
+                  {/* Add Text */}
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">
-                      Nội dung chữ
+                      Thêm chữ
                     </label>
                     <div className="flex gap-2">
                       <input
-                        value={prompt}
-                        onChange={(event) => setPrompt(event.target.value)}
-                        placeholder="Ví dụ: SHARON"
-                        className="h-11 flex-1 rounded-[4px] border border-(--mirai-color-line) px-4"
+                        value={textInput}
+                        onChange={(e) => setTextInput(e.target.value)}
+                        placeholder="Ví dụ: MIRAI"
+                        className="h-10 flex-1 rounded-[4px] border border-(--mirai-color-line) px-3 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => {
-                          if (!prompt.trim()) {
-                            toast.error("Vui lòng nhập nội dung chữ");
+                          if (!textInput.trim()) {
+                            toast.error("Nhập nội dung chữ");
                             return;
                           }
                           addElement({
                             id: `text-${Date.now()}`,
                             type: "text",
-                            text: prompt,
-                            x: 50,
+                            text: textInput,
+                            x: 80,
                             y: 200,
-                            fontSize: 32,
+                            fontSize,
+                            fontFamily,
                             color: selectedColor,
                           });
-                          toast.success("Đã thêm chữ vào thiết kế");
+                          setTextInput("");
+                          toast.success("Đã thêm chữ");
                         }}
-                        className="h-11 px-4 bg-(--mirai-color-surface-muted) hover:bg-muted rounded-[4px] border border-(--mirai-color-line) flex items-center justify-center transition-colors"
+                        className="h-10 px-3 bg-(--mirai-sem-primary) hover:bg-(--mirai-sem-primary)/80 rounded-[4px] flex items-center gap-1.5 text-sm font-medium transition-colors"
                       >
-                        <Type className="h-4 w-4" />
+                        <Type className="h-4 w-4" /> Thêm
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-3">
+                  {/* Font / Size / BG Color */}
+                  <div className="grid gap-3 grid-cols-3">
                     <label className="text-xs text-foreground">
                       Font
-                      <select className="mt-1 h-10 w-full rounded-[4px] border border-(--mirai-color-line) px-2">
+                      <select
+                        value={fontFamily}
+                        onChange={(e) => setFontFamily(e.target.value)}
+                        className="mt-1 h-9 w-full rounded-[4px] border border-(--mirai-color-line) px-2 text-xs"
+                      >
                         <option>Bricolage Grotesque</option>
                         <option>Poppins</option>
+                        <option>Inter</option>
+                        <option>Arial</option>
+                        <option>Georgia</option>
                       </select>
                     </label>
                     <label className="text-xs text-foreground">
                       Size
-                      <select className="mt-1 h-10 w-full rounded-[4px] border border-(--mirai-color-line) px-2">
-                        <option>12pt</option>
-                        <option>16pt</option>
-                        <option>20pt</option>
-                        <option>28pt</option>
+                      <select
+                        value={fontSize}
+                        onChange={(e) => setFontSize(Number(e.target.value))}
+                        className="mt-1 h-9 w-full rounded-[4px] border border-(--mirai-color-line) px-2 text-xs"
+                      >
+                        <option value={16}>16pt</option>
+                        <option value={24}>24pt</option>
+                        <option value={32}>32pt</option>
+                        <option value={48}>48pt</option>
+                        <option value={64}>64pt</option>
                       </select>
                     </label>
                     <label className="text-xs text-foreground">
-                      Bố cục
-                      <select className="mt-1 h-10 w-full rounded-[4px] border border-(--mirai-color-line) px-2">
-                        <option>Dọc</option>
-                        <option>Ngang</option>
-                        <option>Zigzag</option>
-                      </select>
+                      Nền
+                      <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="mt-1 h-9 w-full rounded-[4px] border border-(--mirai-color-line) cursor-pointer"
+                      />
                     </label>
                   </div>
 
+                  {/* Color Picker */}
                   <div>
-                    <h2 className="mb-3 text-sm font-semibold text-foreground">
+                    <h2 className="mb-2 text-sm font-semibold text-foreground">
                       Màu chữ
                     </h2>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       {[
-                        "#0f0f0f",
                         "#ffffff",
+                        "#0f0f0f",
                         "#4349e7",
                         "#48e1ed",
                         "#db4444",
@@ -388,28 +583,57 @@ export default function CustomizePage() {
                         "#ffad33",
                         "#e7b6ff",
                         "#f39ab6",
-                        "#9fa0ad",
-                        ...customColors,
                       ].map((color) => (
                         <button
                           key={color}
                           type="button"
                           onClick={() => setSelectedColor(color)}
-                          className={`h-8 w-8 rounded-full border ${
-                            selectedColor === color
-                              ? "ring-2 ring-(--mirai-sem-primary)"
-                              : "border-black/10"
-                          }`}
+                          className={`h-7 w-7 rounded-full border ${selectedColor === color ? "ring-2 ring-(--mirai-sem-primary)" : "border-black/10"}`}
                           style={{ backgroundColor: color }}
-                          aria-label={`Select ${color}`}
                         />
                       ))}
                     </div>
                   </div>
+
+                  {/* Elements Layer List */}
+                  {elements.length > 0 && (
+                    <div>
+                      <h2 className="mb-2 text-sm font-semibold text-foreground flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5" /> Layers (
+                        {elements.length})
+                      </h2>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {elements.map((el) => (
+                          <div
+                            key={el.id}
+                            onClick={() => setSelectedElementId(el.id)}
+                            className={`flex items-center justify-between px-3 py-1.5 rounded text-xs cursor-pointer transition-colors ${selectedElementId === el.id ? "bg-(--mirai-sem-primary)/20 text-foreground" : "hover:bg-muted text-muted-foreground"}`}
+                          >
+                            <span>
+                              {el.type === "text"
+                                ? `T "${el.text?.slice(0, 15)}"`
+                                : "🖼 Hình ảnh"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeElement(el.id);
+                              }}
+                              className="text-destructive/60 hover:text-destructive"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
+            {/* Action Buttons */}
             <div className="mt-6 flex flex-wrap gap-3">
               <button
                 type="button"

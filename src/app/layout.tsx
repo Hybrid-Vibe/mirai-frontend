@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/common";
+import { SupabaseAuthProvider } from "@/components/providers/supabase-auth-provider";
 import "./globals.css";
 
 const fontDisplay = Bricolage_Grotesque({
@@ -73,7 +74,9 @@ export default function RootLayout({
       <body
         className={`${fontDisplay.variable} ${fontBody.variable} ${fontUi.variable} min-h-screen bg-background text-foreground antialiased`}
       >
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <SupabaseAuthProvider>{children}</SupabaseAuthProvider>
+        </SessionProvider>
         <Toaster
           theme="light"
           position="top-right"

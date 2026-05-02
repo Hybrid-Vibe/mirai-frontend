@@ -1,5 +1,5 @@
-// GET /api/designs/[userId] — Get user's past generated designs
 import { NextRequest, NextResponse } from "next/server";
+import { getBackendUrl, defaultHeaders } from "@/lib/api";
 
 export async function GET(
   req: NextRequest,
@@ -15,7 +15,27 @@ export async function GET(
       );
     }
 
-    // Mock DB fetch for user designs
+    // Proxy request to .NET Backend
+    const backendUrl = getBackendUrl(`/api/designs/${userId}`);
+
+    try {
+      const response = await fetch(backendUrl, {
+        headers: defaultHeaders,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return NextResponse.json(data);
+      }
+
+      console.warn(
+        `[API] Backend returned ${response.status} for /api/designs/${userId}. Falling back to mock data.`,
+      );
+    } catch (fetchError) {
+      console.error("[API] Failed to fetch from backend:", fetchError);
+    }
+
+    // --- FALLBACK MOCK DATA ---
     const mockDesigns = [
       {
         id: "design-1",
