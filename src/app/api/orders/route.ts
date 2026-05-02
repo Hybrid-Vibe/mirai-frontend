@@ -1,6 +1,6 @@
-// POST /api/orders — Create a new order
 import { NextRequest, NextResponse } from "next/server";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { getBackendUrl, defaultHeaders } from "@/lib/api";
 import type { Order } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Calculate totals
+    // Proxy to .NET Backend
+    const backendUrl = getBackendUrl("/api/orders");
+
+    try {
+      const response = await fetch(backendUrl, {
+        method: "POST",
+        headers: defaultHeaders,
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Trigger email notification if backend succeeded
+        const customerEmail = body.customerEmail ?? "test@example.com";
+        sendOrderConfirmationEmail(customerEmail, {
+          orderNumber: data.order?.OrderNumber || data.OrderNumber,
+          customerName: body.customerName ?? "Khách hàng",
+          totalAmount: (
+            data.order?.TotalAmount ||
+            data.TotalAmount ||
+            0
+          ).toLocaleString("vi-VN"),
+          paymentMethod: paymentMethod ?? "COD",
+        }).catch((err) =>
+          console.error("[API] Failed to send order email:", err),
+        );
+
+        return NextResponse.json(data);
+      }
+
+      console.warn(
+        `[API] Backend returned ${response.status} for /api/orders. Falling back to mock data.`,
+      );
+    } catch (fetchError) {
+      console.error("[API] Failed to fetch from backend:", fetchError);
+    }
+
+    // --- FALLBACK MOCK LOGIC ---
     const subtotal = items.reduce(
       (sum: number, item: { price: number; quantity: number }) =>
         sum + item.price * item.quantity,
@@ -23,7 +60,6 @@ export async function POST(req: NextRequest) {
     );
     const totalAmount = subtotal + (shippingFee ?? 30000);
 
-    // 2. Mock DB Insertion (In real app: Prisma/Drizzle transaction)
     const mockOrder: Order = {
       OrderId: Date.now(),
       UserId: userId ?? 1,
@@ -43,10 +79,8 @@ export async function POST(req: NextRequest) {
       CancelledAt: null,
     };
 
-    console.log("[API] Order created in DB:", mockOrder.OrderNumber);
+    console.log("[API] Order created (MOCK):", mockOrder.OrderNumber);
 
-    // 3. Trigger Order Confirmation Email (Fire and forget, don't await blocking)
-    // Assuming we have the user email from auth session or request
     const customerEmail = body.customerEmail ?? "test@example.com";
     sendOrderConfirmationEmail(customerEmail, {
       orderNumber: mockOrder.OrderNumber,
@@ -58,7 +92,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       order: mockOrder,
-      message: "Order created successfully",
+      message: "Order created successfully (Mock)",
     });
   } catch (error) {
     console.error("[API] Order creation error:", error);
