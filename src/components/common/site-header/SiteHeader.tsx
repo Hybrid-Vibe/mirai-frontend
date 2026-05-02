@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
 import {
   ChevronDown,
   Heart,
@@ -17,12 +16,14 @@ import {
   Star,
   LogOut,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MAIN_NAV_ITEMS } from "@/constants/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { TopAnnouncementBar } from "./TopAnnouncementBar";
 import { useCartStore } from "@/stores";
-import { useEffect } from "react";
+import { useDesignStore } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const ACCOUNT_MENU_ITEMS = [
   { href: "/account", label: "Quản lý tài khoản", icon: User },
@@ -41,7 +42,7 @@ const isPathActive = (pathname: string, href: string) => {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const user = useDesignStore((state) => state.user);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -54,16 +55,16 @@ export function SiteHeader() {
     return () => clearTimeout(timer);
   }, []);
 
-  const isAuthenticated = status === "authenticated";
+  const isAuthenticated = !!user;
 
   const closePanels = () => {
     setIsMobileOpen(false);
     setIsAccountOpen(false);
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     closePanels();
-    signOut({ callbackUrl: "/" });
+    await supabase.auth.signOut();
   };
 
   return (
@@ -151,19 +152,17 @@ export function SiteHeader() {
                   aria-expanded={isAccountOpen}
                   aria-label="Open account menu"
                 >
-                  {session?.user?.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name ?? ""}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 rounded-full"
+                  <Avatar className="h-5 w-5 border border-primary">
+                    <AvatarImage
+                      src={user?.avatar_url}
+                      alt={user?.name || "User"}
                     />
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
+                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                      {user?.name?.substring(0, 2).toUpperCase() || "US"}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="max-w-[100px] truncate">
-                    {session?.user?.name ?? "Account"}
+                    {user?.name ?? "Account"}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
@@ -290,21 +289,19 @@ export function SiteHeader() {
           {isAuthenticated ? (
             <>
               <div className="mt-4 rounded-[4px] border border-(--mirai-color-line) px-3 py-3">
-                {session?.user && (
+                {user && (
                   <div className="mb-2 flex items-center gap-2 border-b border-(--mirai-color-line) pb-2">
-                    {session.user.image ? (
-                      <Image
-                        src={session.user.image}
-                        alt={session.user.name ?? ""}
-                        width={28}
-                        height={28}
-                        className="h-7 w-7 rounded-full"
+                    <Avatar className="h-7 w-7 border border-primary">
+                      <AvatarImage
+                        src={user.avatar_url}
+                        alt={user.name || "User"}
                       />
-                    ) : (
-                      <User className="h-5 w-5 text-(--mirai-color-ink-2)" />
-                    )}
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        {user.name?.substring(0, 2).toUpperCase() || "US"}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="truncate text-sm font-medium text-(--mirai-color-ink)">
-                      {session.user.name ?? session.user.email}
+                      {user.name ?? user.email}
                     </span>
                   </div>
                 )}
