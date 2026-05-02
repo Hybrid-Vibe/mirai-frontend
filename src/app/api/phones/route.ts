@@ -1,9 +1,32 @@
-// GET /api/phones — Get supported phone models
 import { NextResponse } from "next/server";
+import { getBackendUrl, defaultHeaders } from "@/lib/api";
 
 export async function GET() {
   try {
-    // In a real app, this would be fetched from the Database
+    // Proxy request to .NET Backend
+    const backendUrl = getBackendUrl("/api/phones");
+
+    try {
+      const response = await fetch(backendUrl, {
+        headers: defaultHeaders,
+        // Cache for 1 hour in production, but revalidate frequently
+        next: { revalidate: 3600 },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return NextResponse.json(data);
+      }
+
+      console.warn(
+        `[API] Backend returned ${response.status} for /api/phones. Falling back to mock data.`,
+      );
+    } catch (fetchError) {
+      console.error("[API] Failed to fetch from backend:", fetchError);
+      // Continue to mock data fallback
+    }
+
+    // --- FALLBACK MOCK DATA ---
     const phones = [
       {
         id: "IPHONE_15_PRO_MAX",
