@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,11 @@ import {
   Edit2,
   Plus,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
+import { userApi, addressApi } from "@/lib/api-client";
+import { GetUserDto } from "@/types/api";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -172,14 +176,48 @@ function ProfileSection({
     id?: string;
   } | null;
 }) {
-  if (!user) return null;
-  return <ProfileForm key={user.id || user.email} user={user} />;
+  const [userData, setUserData] = useState<GetUserDto | null>(null);
+  const [loading, setLoading] = useState(!!user?.id);
+
+  useEffect(() => {
+    if (user?.id) {
+      // Avoid calling setLoading(true) if already true from initialization
+      userApi
+        .getUserById(user.id)
+        .then((data) => setUserData(data))
+        .catch((err) => console.error("Failed to fetch user:", err))
+        .finally(() => setLoading(false));
+    } else if (loading) {
+      Promise.resolve().then(() => setLoading(false));
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-(--mirai-sem-primary)" />
+      </div>
+    );
+  }
+
+  if (!userData) return null;
+  return (
+    <ProfileForm
+      key={userData.userId || userData.email}
+      user={{
+        name: userData.fullName || "User",
+        email: userData.email || "",
+        avatar_url: undefined, // Or map if available
+        id: userData.userId,
+      }}
+    />
+  );
 }
 
 function ProfileForm({
   user,
 }: {
-  user: { name: string; email: string; avatar_url?: string };
+  user: { name: string; email: string; avatar_url?: string; id?: string };
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const parts = user.name?.split(" ") || [];
@@ -426,7 +464,7 @@ function ProfileForm({
 }
 
 interface Address {
-  id: number;
+  id: string;
   addressLine: string;
   phone: string;
   isDefault: boolean;
@@ -450,7 +488,7 @@ function AddressSection({
 }) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form state
   const [addressLine, setAddressLine] = useState("");
@@ -467,6 +505,42 @@ function AddressSection({
   const [selectedWard, setSelectedWard] = useState("");
 
   const [phoneError, setPhoneError] = useState("");
+
+  const [loading, setLoading] = useState(!!user?.id);
+
+  const fetchAddresses = useMemo(
+    () => async () => {
+      if (!user?.id) return;
+      setLoading(true);
+      try {
+        const data = await addressApi.getAddressByUserId(user.id);
+        setAddresses(
+          data.map((addr) => ({
+            id: addr.addressId,
+            addressLine: addr.addressLine,
+            phone: addr.recipientPhone || "",
+            isDefault: addr.isDefault,
+            rawDetails: {
+              addressLine: addr.addressLine,
+              province: addr.province || "",
+              district: addr.district || "",
+              ward: addr.ward || "",
+            },
+          })) as Address[],
+        );
+      } catch (err) {
+        console.error("Error fetching addresses", err);
+        toast.error("Không thể tải danh sách địa chỉ");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user],
+  );
+
+  useEffect(() => {
+    Promise.resolve().then(() => fetchAddresses());
+  }, [fetchAddresses]);
 
   useEffect(() => {
     // Fetch provinces
@@ -507,8 +581,14 @@ function AddressSection({
     return regex.test(p);
   };
 
-  const handleSaveAddress = () => {
-    if (!addressLine || !selectedProvince || !selectedDistrict || !selectedWard)
+  const handleSaveAddress = async () => {
+    if (
+      !addressLine ||
+      !selectedProvince ||
+      !selectedDistrict ||
+      !selectedWard ||
+      !user?.id
+    )
       return;
 
     if (!validatePhone(phone)) {
@@ -523,48 +603,46 @@ function AddressSection({
       districts.find((d) => d.code.toString() === selectedDistrict)?.name || "";
     const wName =
       wards.find((w) => w.code.toString() === selectedWard)?.name || "";
-    const fullAddress = `${addressLine}, ${wName}, ${dName}, ${pName}`;
 
-    if (editingId !== null) {
-      setAddresses(
-        addresses.map((a) =>
-          a.id === editingId
-            ? {
-                ...a,
-                addressLine: fullAddress,
-                phone,
-                isDefault: a.isDefault || isDefault,
-                rawDetails: {
-                  addressLine,
-                  province: selectedProvince,
-                  district: selectedDistrict,
-                  ward: selectedWard,
-                },
-              }
-            : { ...a, isDefault: isDefault ? false : a.isDefault },
-        ),
-      );
-    } else {
-      setAddresses([
-        ...addresses.map((a) => (isDefault ? { ...a, isDefault: false } : a)),
-        {
-          id: addresses.length + 1, // Use length for ID to satisfy purity rule if random/date is flagged
-          addressLine: fullAddress,
-          phone,
-          isDefault: addresses.length === 0 ? true : isDefault,
-          rawDetails: {
-            addressLine,
-            province: selectedProvince,
-            district: selectedDistrict,
-            ward: selectedWard,
-          },
-        },
-      ]);
+    // In actual production, addressLine might be just the specific part
+    const fullAddressLine = addressLine;
+
+    try {
+      if (editingId !== null) {
+        await addressApi.updateAddress(editingId.toString(), {
+          recipientName: user.name,
+          recipientPhone: phone,
+          addressLine: fullAddressLine,
+          ward: wName,
+          district: dName,
+          city: pName, // City maps to Province name in some contexts
+          province: pName,
+          note: "",
+        });
+        toast.success("Đã cập nhật địa chỉ");
+      } else {
+        await addressApi.createAddress({
+          userId: user.id,
+          recipientName: user.name,
+          recipientPhone: phone,
+          addressLine: fullAddressLine,
+          ward: wName,
+          district: dName,
+          city: pName,
+          province: pName,
+          note: "",
+        });
+        toast.success("Đã thêm địa chỉ mới");
+      }
+      fetchAddresses();
+      resetForm();
+    } catch (err) {
+      console.error("Failed to save address", err);
+      toast.error("Có lỗi xảy ra khi lưu địa chỉ");
     }
-    resetForm();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setAddresses(addresses.filter((a) => a.id !== id));
   };
 
@@ -726,7 +804,11 @@ function AddressSection({
         </div>
       ) : (
         <div className="space-y-4">
-          {addresses.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-(--mirai-sem-primary)" />
+            </div>
+          ) : addresses.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
               <MapPin className="w-8 h-8 mx-auto mb-3 opacity-50" />
               <p>Bạn chưa có địa chỉ nào.</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ImagePlus, Sparkles, Type, Trash2, Layers } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -39,6 +39,7 @@ const DynamicPhoneCaseViewer = dynamic(
 );
 
 import { useDesignStore } from "@/lib/store";
+import { useCartStore } from "@/stores/cart-store";
 
 const SUPABASE_STORAGE_URL =
   "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/phone-models";
@@ -142,6 +143,7 @@ const customColors = [
 ];
 
 export default function CustomizePage() {
+  const router = useRouter();
   const {
     phoneModel,
     setPhoneModel,
@@ -654,20 +656,50 @@ export default function CustomizePage() {
               >
                 Lưu thiết kế
               </button>
-              <Link
-                href={mode === "self" || selectedImage ? "/cart" : "#"}
-                onClick={(e) => {
+              <button
+                type="button"
+                onClick={async () => {
                   if (mode !== "self" && !selectedImage) {
-                    e.preventDefault();
                     toast.error(
                       "Vui lòng generate và chọn một thiết kế trước!",
                     );
+                    return;
+                  }
+
+                  // For customize items, we'll use a placeholder variantId or a dedicated one if available
+                  // For now, let's assume we use a generic variant for the selected phone model
+                  // In a real app, this might create a new CustomVariant in the backend
+
+                  try {
+                    await useCartStore.getState().addItem(
+                      {
+                        id: `custom-${phoneModel}-${Date.now()}`, // Temporary ID for custom designs
+                        name: `Ốp lưng Customize - ${currentPhoneConfig?.label}`,
+                        price: 150000,
+                        quantity: 1,
+                        imageUrl:
+                          mode === "self"
+                            ? canvasDataUrl || ""
+                            : selectedImage || "",
+                        phoneModel: currentPhoneConfig?.label || phoneModel,
+                      },
+                      (
+                        useDesignStore.getState().user as unknown as {
+                          id: string;
+                        }
+                      )?.id,
+                    );
+
+                    toast.success("Đã thêm thiết kế tùy chỉnh vào giỏ hàng!");
+                    router.push("/cart");
+                  } catch {
+                    toast.error("Không thể thêm vào giỏ hàng");
                   }
                 }}
                 className={`inline-flex h-12 min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground transition-opacity ${mode !== "self" && !selectedImage ? "opacity-50 cursor-not-allowed" : "hover:bg-(--mirai-sem-primary)/90"}`}
               >
                 Đặt hàng ngay
-              </Link>
+              </button>
             </div>
           </section>
         </div>
