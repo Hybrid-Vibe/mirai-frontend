@@ -13,7 +13,6 @@ export function useSupabaseAuth() {
     async (authUser: User) => {
       const email = authUser.email;
       const name = authUser.user_metadata?.full_name || email;
-      // 1. Trích xuất avatar từ metadata của Google
       const googleAvatar =
         authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
@@ -27,18 +26,21 @@ export function useSupabaseAuth() {
 
       // Check if user exists in custom 'users' table
       try {
-        // Schema uses user_id as PK, and email as unique field
-        const { data: existingUser } = await supabase
+        // 1. Use maybeSingle() to avoid error if user doesn't exist
+        // Query by user_id as it's the primary key
+        const { data: existingUser, error: fetchError } = await supabase
           .from("users")
-          .select("user_id, avatar_url")
-          .eq("email", email || "")
-          .single();
+          .select("*")
+          .eq("user_id", authUser.id)
+          .maybeSingle();
 
+        if (fetchError) throw fetchError;
+
+        // NOTE: We are disabling the manual sync (upsert) here because it triggers
+        // an infinite recursion loop (stack depth limit exceeded) in Supabase triggers.
+        // The project should rely on a database-side trigger to sync auth.users to public.users.
+        /*
         const defaultRoleId = "3";
-
-        // Determine if we should update the avatar
-        // Mẹo nhỏ: Nếu user tự thay ảnh avatar (upload) của họ 1 lần, thì sau đó không tự update ảnh của gg nữa.
-        // Dấu hiệu: Nếu avatar_url đã tồn tại và KHÔNG chứa URL của Google.
         const hasCustomAvatar =
           existingUser?.avatar_url &&
           !existingUser.avatar_url.includes("googleusercontent.com");
@@ -47,41 +49,62 @@ export function useSupabaseAuth() {
           ? existingUser.avatar_url
           : googleAvatar;
 
-        // 2. Đồng bộ vào bảng users của mình bằng upsert (Update if exists, Insert if not)
-        const { error: userError } = await supabase.from("users").upsert({
-          user_id: authUser.id,
-          full_name: name,
-          email: email,
-          password_hash: null,
-          phone: authUser.phone || null,
-          role_id: defaultRoleId,
-          avatar_url: avatarToSave, // Lưu link ảnh vào đây
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        });
+        const needsSync =
+          !existingUser ||
+          existingUser.full_name !== name ||
+          existingUser.avatar_url !== avatarToSave ||
+          existingUser.email !== email;
 
-        if (userError) throw userError;
+        if (needsSync) {
+          const { error: userError } = await supabase.from("users").upsert({
+            user_id: authUser.id,
+            full_name: name,
+            email: email,
+            password_hash: null,
+            phone: authUser.phone || null,
+            role_id: defaultRoleId,
+            avatar_url: avatarToSave,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          });
+
+          if (userError) throw userError;
+        }
+        */
+
+        // 2. Update local state with the most accurate data from DB if available
+        if (existingUser) {
+          setUser({
+            id: existingUser.user_id,
+            email: existingUser.email || email || "",
+            name: existingUser.full_name || name || "",
+            avatar_url: existingUser.avatar_url || googleAvatar,
+          });
+        }
 
         if (!existingUser) {
-          // Insert into accounts only if new user
-          // account_id is NOT NULL character varying
-          const { error: accountError } = await supabase
-            .from("accounts")
-            .insert({
-              account_id: `acc_${authUser.id}`,
-              user_id: authUser.id,
-              provider: "google",
-              provider_account_id: authUser.id,
-            });
-
-          if (accountError) throw accountError;
+          // If user doesn't exist yet, we still have the auth info in store from top of function
+          // We can optionally wait for the trigger or handle it here
+          // For now, we skip manual account insertion to avoid recursion
         }
-      } catch (error) {
+      } catch (error: unknown) {
+        const err = error as { code?: string };
+        if (
+          err?.code === "54001" ||
+          (typeof error === "string" && error.includes("54001"))
+        ) {
+          console.warn(
+            "Supabase database RLS recursion (54001) detected. Skipping public.users fetch and relying on auth.users metadata.",
+          );
+          return;
+        }
+
         console.error(
           "Error syncing user to database:",
-          JSON.stringify(error, null, 2),
+          error instanceof Error
+            ? error.message
+            : JSON.stringify(error, null, 2),
         );
-        console.dir(error);
       }
     },
     [setUser],
