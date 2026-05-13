@@ -113,6 +113,24 @@ export interface AddressDto {
   note?: string;
 }
 
+/** Address response — maps to Mirai.Domain.Entities.Address */
+export interface AddressResponseDto {
+  addressId: string;
+  userId: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  addressLine: string;
+  ward?: string;
+  district?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  note?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 /** PUT /api/Address/Update-Address{id} — Request body */
 export interface UpdateAddressDto {
   recipientName?: string;
@@ -135,14 +153,34 @@ export interface BrandDto {
   description?: string;
 }
 
+/** Brand response — maps to Mirai.Domain.Entities.Brand */
+export interface BrandResponseDto {
+  brandId: string;
+  brandName: string;
+  description?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // ----------------------------------------------------------------------
 // Category DTOs
 // ----------------------------------------------------------------------
 
 /** POST /api/Category/Create-Category — Request body */
 export interface CategoryDto {
-  categoryName: string;
+  name: string;
   description?: string;
+}
+
+/** Category response — maps to Mirai.Domain.Entities.Category */
+export interface CategoryResponseDto {
+  categoryId: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 // ----------------------------------------------------------------------
@@ -203,6 +241,22 @@ export interface CreateProductVariantDto {
   compareAtPrice?: number;
   costPrice?: number;
   stock?: number;
+}
+
+/** Product variant response */
+export interface ProductVariantDto {
+  variantId: string;
+  productId: string;
+  color?: string;
+  phoneModel?: string;
+  price?: number;
+  compareAtPrice?: number;
+  costPrice?: number;
+  barcode?: string;
+  stock?: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 /** Variant summary in filter results */
@@ -328,4 +382,41 @@ export interface PaymentResponseModel {
 /** Create payment URL response */
 export interface CreatePaymentUrlResponse {
   paymentUrl: string;
+}
+
+// ----------------------------------------------------------------------
+// Cart DTOs
+// ----------------------------------------------------------------------
+
+/** GET /api/CartItem/Get-cart-by-id — Query parameters */
+export interface CartSearchFilter {
+  userId?: string;
+  cartId?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+/** Cart item response item */
+export interface CartItemDto {
+  cartItemId?: string;
+  variantId?: string;
+  productName?: string;
+  image?: string;
+  price?: number;
+  quantity?: number;
+  total?: number;
+}
+
+/** Cart response */
+export interface CartDto {
+  cartId?: string;
+  items?: CartItemDto[];
+  totalPrice: number;
+}
+
+/** POST /api/CartItem/Create-cart-items — Request body */
+export interface CreateCartDto {
+  userId: string;
+  variantId: string;
+  quantity: number;
 }

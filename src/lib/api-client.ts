@@ -18,10 +18,13 @@ import type {
   // Address
   AddressDto,
   UpdateAddressDto,
+  AddressResponseDto,
   // Brand
   BrandDto,
+  BrandResponseDto,
   // Category
   CategoryDto,
+  CategoryResponseDto,
   // Product
   ProductDto,
   CreateProductDto,
@@ -42,6 +45,12 @@ import type {
   PaymentResponseModel,
   PaymentStatusInPayment,
   CreatePaymentUrlResponse,
+  // Cart
+  CartDto,
+  CreateCartDto,
+  CartSearchFilter,
+  // Product Variant
+  ProductVariantDto,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 
@@ -94,12 +103,12 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
+      const responseData = error.response.data;
 
       if (status === 401) {
         // Token expired or invalid — clear and redirect to login
         if (typeof window !== "undefined") {
           localStorage.removeItem(TOKEN_KEY);
-          // Don't force redirect — let components handle auth state
           console.warn("[API] Unauthorized (401) — token cleared.");
         }
       }
@@ -109,13 +118,31 @@ apiClient.interceptors.response.use(
       }
 
       if (status >= 500) {
-        console.error("[API] Server error:", error.response.data);
+        // Improved logging for server errors
+        console.group("[API] Server Error (500+)");
+        console.error("Status:", status);
+        console.error("URL:", error.config?.url);
+        console.error(
+          "Response Data:",
+          responseData || "No data received from server",
+        );
+        if (
+          typeof responseData === "string" &&
+          responseData.includes("ConnectionString")
+        ) {
+          console.error(
+            "HINT: Backend Database ConnectionString is likely not configured.",
+          );
+        }
+        console.groupEnd();
       }
     } else if (error.request) {
       console.error(
         "[API] Network error — no response received:",
         error.message,
       );
+    } else {
+      console.error("[API] Request configuration error:", error.message);
     }
 
     return Promise.reject(error);
@@ -244,16 +271,20 @@ export const productApi = {
 
 export const productVariantApi = {
   /** GET /api/ProductVariant/Get-ProductVariant/{productVariantId} */
-  getProductVariantById: async (productVariantId: string) => {
-    const { data } = await apiClient.get(
+  getProductVariantById: async (
+    productVariantId: string,
+  ): Promise<ProductVariantDto> => {
+    const { data } = await apiClient.get<ProductVariantDto>(
       `/ProductVariant/Get-ProductVariant/${productVariantId}`,
     );
     return data;
   },
 
   /** POST /api/ProductVariant/Create-ProductVariant */
-  createProductVariant: async (dto: CreateProductVariantDto) => {
-    const { data } = await apiClient.post(
+  createProductVariant: async (
+    dto: CreateProductVariantDto,
+  ): Promise<ProductVariantDto> => {
+    const { data } = await apiClient.post<ProductVariantDto>(
       "/ProductVariant/Create-ProductVariant",
       dto,
     );
@@ -264,8 +295,8 @@ export const productVariantApi = {
   updateProductVariant: async (
     productVariantId: string,
     dto: CreateProductVariantDto,
-  ) => {
-    const { data } = await apiClient.put(
+  ): Promise<ProductVariantDto> => {
+    const { data } = await apiClient.put<ProductVariantDto>(
       `/ProductVariant/Update-ProductVariant/${productVariantId}`,
       dto,
     );
@@ -416,40 +447,55 @@ export const paymentApi = {
 
 export const brandApi = {
   /** GET /api/Brand/Get-All-Brands */
-  getAllBrands: async () => {
-    const { data } = await apiClient.get("/Brand/Get-All-Brands");
+  getAllBrands: async (): Promise<BrandResponseDto[]> => {
+    const { data } = await apiClient.get<BrandResponseDto[]>(
+      "/Brand/Get-All-Brands",
+    );
     return data;
   },
 
   /** GET /api/Brand/Get-All-Brands-Active */
-  getAllBrandsActive: async () => {
-    const { data } = await apiClient.get("/Brand/Get-All-Brands-Active");
+  getAllBrandsActive: async (): Promise<BrandResponseDto[]> => {
+    const { data } = await apiClient.get<BrandResponseDto[]>(
+      "/Brand/Get-All-Brands-Active",
+    );
     return data;
   },
 
   /** GET /api/Brand/Get-Brand-By-Id-{brandId} */
-  getBrandById: async (brandId: string) => {
-    const { data } = await apiClient.get(`/Brand/Get-Brand-By-Id-${brandId}`);
+  getBrandById: async (brandId: string): Promise<BrandResponseDto> => {
+    const { data } = await apiClient.get<BrandResponseDto>(
+      `/Brand/Get-Brand-By-Id-${brandId}`,
+    );
     return data;
   },
 
   /** GET /api/Brand/Get-Brand-Active-By-Id-{brandId} */
-  getBrandActiveById: async (brandId: string) => {
-    const { data } = await apiClient.get(
+  getBrandActiveById: async (brandId: string): Promise<BrandResponseDto> => {
+    const { data } = await apiClient.get<BrandResponseDto>(
       `/Brand/Get-Brand-Active-By-Id-${brandId}`,
     );
     return data;
   },
 
   /** POST /api/Brand/Create-Brand */
-  createBrand: async (dto: BrandDto) => {
-    const { data } = await apiClient.post("/Brand/Create-Brand", dto);
+  createBrand: async (dto: BrandDto): Promise<BrandResponseDto> => {
+    const { data } = await apiClient.post<BrandResponseDto>(
+      "/Brand/Create-Brand",
+      dto,
+    );
     return data;
   },
 
   /** PUT /api/Brand/Update-Brand-{brandId} */
-  updateBrand: async (brandId: string, dto: BrandDto) => {
-    const { data } = await apiClient.put(`/Brand/Update-Brand-${brandId}`, dto);
+  updateBrand: async (
+    brandId: string,
+    dto: BrandDto,
+  ): Promise<BrandResponseDto> => {
+    const { data } = await apiClient.put<BrandResponseDto>(
+      `/Brand/Update-Brand-${brandId}`,
+      dto,
+    );
     return data;
   },
 
@@ -468,40 +514,52 @@ export const brandApi = {
 
 export const categoryApi = {
   /** GET /api/Category/Get-All-Categories */
-  getAllCategories: async () => {
-    const { data } = await apiClient.get("/Category/Get-All-Categories");
+  getAllCategories: async (): Promise<CategoryResponseDto[]> => {
+    const { data } = await apiClient.get<CategoryResponseDto[]>(
+      "/Category/Get-All-Categories",
+    );
     return data;
   },
 
   /** GET /api/Category/Get-All-Categories-Active */
-  getAllCategoriesActive: async () => {
-    const { data } = await apiClient.get("/Category/Get-All-Categories-Active");
+  getAllCategoriesActive: async (): Promise<CategoryResponseDto[]> => {
+    const { data } = await apiClient.get<CategoryResponseDto[]>(
+      "/Category/Get-All-Categories-Active",
+    );
     return data;
   },
 
   /** GET /api/Category/Get-Category-By-Id/{id} */
-  getCategoryById: async (id: string) => {
-    const { data } = await apiClient.get(`/Category/Get-Category-By-Id/${id}`);
+  getCategoryById: async (id: string): Promise<CategoryResponseDto> => {
+    const { data } = await apiClient.get<CategoryResponseDto>(
+      `/Category/Get-Category-By-Id/${id}`,
+    );
     return data;
   },
 
   /** GET /api/Category/Get-Category-Active-By-Id/{id} */
-  getCategoryActiveById: async (id: string) => {
-    const { data } = await apiClient.get(
+  getCategoryActiveById: async (id: string): Promise<CategoryResponseDto> => {
+    const { data } = await apiClient.get<CategoryResponseDto>(
       `/Category/Get-Category-Active-By-Id/${id}`,
     );
     return data;
   },
 
   /** POST /api/Category/Create-Category */
-  createCategory: async (dto: CategoryDto) => {
-    const { data } = await apiClient.post("/Category/Create-Category", dto);
+  createCategory: async (dto: CategoryDto): Promise<CategoryResponseDto> => {
+    const { data } = await apiClient.post<CategoryResponseDto>(
+      "/Category/Create-Category",
+      dto,
+    );
     return data;
   },
 
   /** PUT /api/Category/Update-Category/{id} */
-  updateCategory: async (id: string, dto: CategoryDto) => {
-    const { data } = await apiClient.put(
+  updateCategory: async (
+    id: string,
+    dto: CategoryDto,
+  ): Promise<CategoryResponseDto> => {
+    const { data } = await apiClient.put<CategoryResponseDto>(
       `/Category/Update-Category/${id}`,
       dto,
     );
@@ -523,39 +581,78 @@ export const categoryApi = {
 
 export const addressApi = {
   /** GET /api/Address/Get-All-Addresses */
-  getAllAddresses: async () => {
-    const { data } = await apiClient.get("/Address/Get-All-Addresses");
+  getAllAddresses: async (): Promise<AddressResponseDto[]> => {
+    const { data } = await apiClient.get<AddressResponseDto[]>(
+      "/Address/Get-All-Addresses",
+    );
     return data;
   },
 
   /** GET /api/Address/Get-Address-By-AddressId{addressId} */
-  getAddressById: async (addressId: string) => {
-    const { data } = await apiClient.get(
+  getAddressById: async (addressId: string): Promise<AddressResponseDto> => {
+    const { data } = await apiClient.get<AddressResponseDto>(
       `/Address/Get-Address-By-AddressId${addressId}`,
     );
     return data;
   },
 
   /** GET /api/Address/Get-Address-By-UserId{userId} */
-  getAddressByUserId: async (userId: string) => {
-    const { data } = await apiClient.get(
+  getAddressByUserId: async (userId: string): Promise<AddressResponseDto[]> => {
+    const { data } = await apiClient.get<AddressResponseDto[]>(
       `/Address/Get-Address-By-UserId${userId}`,
     );
     return data;
   },
 
   /** POST /api/Address/Create-Address */
-  createAddress: async (dto: AddressDto) => {
-    const { data } = await apiClient.post("/Address/Create-Address", dto);
+  createAddress: async (dto: AddressDto): Promise<AddressResponseDto> => {
+    const { data } = await apiClient.post<AddressResponseDto>(
+      "/Address/Create-Address",
+      dto,
+    );
     return data;
   },
 
   /** PUT /api/Address/Update-Address{addressId} */
-  updateAddress: async (addressId: string, dto: UpdateAddressDto) => {
-    const { data } = await apiClient.put(
+  updateAddress: async (
+    addressId: string,
+    dto: UpdateAddressDto,
+  ): Promise<AddressResponseDto> => {
+    const { data } = await apiClient.put<AddressResponseDto>(
       `/Address/Update-Address${addressId}`,
       dto,
     );
+    return data;
+  },
+};
+
+// ======================================================================
+// API Services — Cart
+// ======================================================================
+
+export const cartApi = {
+  /** POST /api/CartItem/Create-cart-items */
+  createCartItem: async (dto: CreateCartDto): Promise<CartDto> => {
+    const { data } = await apiClient.post<CartDto>(
+      "/CartItem/Create-cart-items",
+      dto,
+    );
+    return data;
+  },
+
+  /** POST /api/CartItem/Checkout-from-cart-{userId} */
+  checkoutFromCart: async (userId: string): Promise<OrderResponseDto> => {
+    const { data } = await apiClient.post<OrderResponseDto>(
+      `/CartItem/Checkout-from-cart-${userId}`,
+    );
+    return data;
+  },
+
+  /** GET /api/CartItem/Get-cart-by-id */
+  getCartById: async (filter: CartSearchFilter): Promise<CartDto> => {
+    const { data } = await apiClient.get<CartDto>("/CartItem/Get-cart-by-id", {
+      params: filter,
+    });
     return data;
   },
 };
