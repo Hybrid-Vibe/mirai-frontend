@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesignStore } from "@/lib/store";
-import { aiApi } from "@/lib/api-client";
+import { aiApi, aiImageApi } from "@/lib/api-client";
 import {
   Sparkles,
   Check,
@@ -159,6 +159,28 @@ export function GenerationDisplay({
       // Store designs in local state + zustand
       setDesigns(response.designs);
       setGeneratedImages(response.designs.map((d) => d.imageUrl));
+
+      // Sync with backend if user is logged in
+      const user = useDesignStore.getState().user;
+      if (user) {
+        try {
+          await aiImageApi.createAIImage({
+            prompt,
+            style: "default",
+            width: 512,
+            height: 512,
+          });
+          console.log(
+            "[GenerationDisplay] Successfully saved AI Image to backend.",
+          );
+        } catch (backendErr) {
+          console.error(
+            "[GenerationDisplay] Failed to save AI Image to backend:",
+            backendErr,
+          );
+          // Don't throw, we still want to show the generated images to the user
+        }
+      }
 
       // Complete the progress bar
       setProgress(100);

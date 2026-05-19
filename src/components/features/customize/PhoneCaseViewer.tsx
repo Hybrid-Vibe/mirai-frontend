@@ -30,14 +30,35 @@ export default function PhoneCaseViewer({
       const texture = await viewer.createTexture(url);
       const model = viewer.model;
 
-      // Auto-detect strategy: apply texture to ALL materials' baseColorTexture.
-      // This works for free GLB models where we don't know material names.
-      // The texture will be mapped onto every visible surface of the case.
+      // Smart-detect strategy for Phone models:
+      // Apply texture ONLY to materials that are likely the back/body of the phone.
+      // We skip screens, camera lenses, glass, and buttons.
       const materials = model.materials;
       if (materials && materials.length > 0) {
+        console.log(
+          "[3D Viewer] Loaded materials:",
+          materials.map((m: { name: string }) => m.name),
+        );
         for (let i = 0; i < materials.length; i++) {
           const mat = materials[i];
-          if (mat?.pbrMetallicRoughness) {
+          const name = (mat.name || "").toLowerCase();
+
+          // Skip screens, lenses, cameras, logos, and glass parts
+          const isFrontOrCamera =
+            name.includes("screen") ||
+            name.includes("display") ||
+            name.includes("glass") ||
+            name.includes("lens") ||
+            name.includes("camera") ||
+            name.includes("front") ||
+            name.includes("logo") ||
+            name.includes("flash") ||
+            name.includes("speaker") ||
+            name.includes("button") ||
+            name.includes("frame") ||
+            name.includes("wallpaper");
+
+          if (!isFrontOrCamera && mat?.pbrMetallicRoughness) {
             mat.pbrMetallicRoughness.baseColorTexture.setTexture(texture);
           }
         }
@@ -61,7 +82,22 @@ export default function PhoneCaseViewer({
     try {
       const materials = viewer.model.materials;
       for (const mat of materials) {
-        if (mat.pbrMetallicRoughness) {
+        const name = (mat.name || "").toLowerCase();
+        const isFrontOrCamera =
+          name.includes("screen") ||
+          name.includes("display") ||
+          name.includes("glass") ||
+          name.includes("lens") ||
+          name.includes("camera") ||
+          name.includes("front") ||
+          name.includes("logo") ||
+          name.includes("flash") ||
+          name.includes("speaker") ||
+          name.includes("button") ||
+          name.includes("frame") ||
+          name.includes("wallpaper");
+
+        if (!isFrontOrCamera && mat.pbrMetallicRoughness) {
           mat.pbrMetallicRoughness.baseColorTexture.setTexture(null);
         }
       }
@@ -113,7 +149,7 @@ export default function PhoneCaseViewer({
         shadow-intensity="1"
         shadow-softness="0.5"
         exposure="1"
-        camera-orbit="0deg 75deg 105%"
+        camera-orbit="180deg 75deg 105%"
         interaction-prompt="auto"
         ar
         ar-modes="webxr scene-viewer quick-look"
