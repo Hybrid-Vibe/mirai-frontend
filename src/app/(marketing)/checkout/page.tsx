@@ -9,6 +9,14 @@ import { useDesignStore } from "@/lib/store";
 import { orderApi, paymentApi } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
@@ -115,10 +123,25 @@ export default function CheckoutPage() {
   return (
     <main className="bg-background py-16">
       <div className="page-shell">
-        <p className="text-sm text-muted-foreground">
-          Tài khoản / Tài Khoản Của Tôi / Sản phẩm / Giỏ Hàng /{" "}
-          <span className="font-semibold text-foreground">Thanh Toán</span>
-        </p>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/account">Tài khoản</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/shop">Sản phẩm</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/cart">Giỏ Hàng</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Thanh Toán</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_520px]">
           <section>

@@ -1,10 +1,35 @@
 "use client";
 
-import { ArrowUpRight, Package, TrendingUp, Users } from "lucide-react";
+import { ArrowUpRight, Package, TrendingUp, Users, Info } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Admin</BreadcrumbPage>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Tổng quan</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div>
         <h1 className="text-3xl font-heading font-bold text-foreground">
           Tổng quan
@@ -72,8 +97,16 @@ export default function AdminDashboardPage() {
 
         <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
           <div className="flex items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">
+            <h3 className="tracking-tight text-sm font-medium flex items-center gap-1">
               Tỷ lệ chuyển đổi
+              <Tooltip>
+                <TooltipTrigger className="text-muted-foreground hover:text-foreground cursor-help">
+                  <Info className="h-4 w-4" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Tỷ lệ giữa số lượng đơn hàng trên lượt truy cập</p>
+                </TooltipContent>
+              </Tooltip>
             </h3>
             <span className="p-2 bg-green-500/10 rounded-full">
               <TrendingUp className="h-4 w-4 text-green-500" />
