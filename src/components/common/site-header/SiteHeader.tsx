@@ -48,6 +48,7 @@ export function SiteHeader() {
   const [mounted, setMounted] = useState(false);
 
   const cartItems = useCartStore((state) => state.items);
+  const fetchCart = useCartStore((state) => state.fetchCart);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
@@ -56,6 +57,12 @@ export function SiteHeader() {
   }, []);
 
   const isAuthenticated = !!user;
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchCart(user.id);
+    }
+  }, [user?.id, fetchCart]);
 
   const closePanels = () => {
     setIsMobileOpen(false);
