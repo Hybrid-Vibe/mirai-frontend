@@ -192,7 +192,6 @@ export interface ProductDto {
   productId: string;
   name?: string;
   description?: string;
-  price?: number;
   categoryId?: string;
   categoryName?: string;
   brandId?: string;
@@ -208,9 +207,32 @@ export interface ProductDto {
 export interface CreateProductDto {
   name: string;
   description?: string;
-  price?: number;
   categoryId?: string;
   brandId?: string;
+}
+
+/** Product image request */
+export interface ProductImageRequestDto {
+  imageUrl?: string;
+  isPrimary: boolean;
+}
+
+/** Product variant request */
+export interface ProductVariantRequestDto {
+  color?: string;
+  phoneModel?: string;
+  price: number;
+  imageUrl?: string;
+}
+
+/** POST /api/Product/Create-Product-ProductImages-ProductVariants */
+export interface CreateProductRequestDto {
+  name?: string;
+  description?: string;
+  categoryId?: string;
+  brandId?: string;
+  images: ProductImageRequestDto[];
+  variants: ProductVariantRequestDto[];
 }
 
 /** Product image response */
@@ -336,8 +358,8 @@ export interface OrderResponseDto {
   orderId?: string;
   orderNumber?: string;
   totalAmount: number;
-  status?: string;
-  paymentStatus?: string;
+  status?: number;
+  paymentStatus?: number;
   createdAt?: string;
   items: OrderItemResponseDto[];
 }
@@ -419,4 +441,52 @@ export interface CreateCartDto {
   userId: string;
   variantId: string;
   quantity: number;
+}
+
+// ----------------------------------------------------------------------
+// AI Image DTOs
+// ----------------------------------------------------------------------
+
+/** AI Image Status enum */
+export type AIImageStatus = "Pending" | "Processing" | "Completed" | "Failed";
+
+export const AIImageStatusValue = {
+  Pending: 1,
+  Processing: 2,
+  Completed: 3,
+  Failed: 4,
+} as const;
+
+/** POST /api/ai-images — Request body */
+export interface CreateAIImageDto {
+  prompt: string;
+  negativePrompt?: string;
+  style?: string;
+  width?: number;
+  height?: number;
+}
+
+/** AI Image response */
+export interface AIImageDto {
+  aiImageId: string;
+  userId: string;
+  prompt?: string;
+  negativePrompt?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  style?: string;
+  width?: number;
+  height?: number;
+  status: AIImageStatus;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/** PUT /api/ai-images/{id}/status — Request body */
+export interface UpdateAIImageStatusDto {
+  status: AIImageStatus;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  errorMessage?: string;
 }

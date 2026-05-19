@@ -17,6 +17,7 @@ interface CartState {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  fetchCart: (userId: string) => Promise<void>;
   getTotalItems: () => number;
   getSubtotal: () => number;
 }
@@ -67,6 +68,24 @@ export const useCartStore = create<CartState>()(
           ),
         })),
       clearCart: () => set({ items: [] }),
+      fetchCart: async (userId: string) => {
+        try {
+          const cart = await cartApi.getCartById({ userId });
+          if (cart && cart.items) {
+            // Map backend cart items to local CartItem type
+            const newItems = cart.items.map((item) => ({
+              id: item.variantId || "",
+              name: item.productName || "Sản phẩm",
+              price: item.price || 0,
+              quantity: item.quantity || 1,
+              imageUrl: item.image,
+            }));
+            set({ items: newItems });
+          }
+        } catch (error) {
+          console.error("Failed to fetch cart from backend:", error);
+        }
+      },
       getTotalItems: () => {
         const state = get();
         return state.items.reduce((total, item) => total + item.quantity, 0);

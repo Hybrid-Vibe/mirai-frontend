@@ -44,6 +44,14 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function AccountPage() {
   const user = useDesignStore((state) => state.user);
@@ -58,8 +66,18 @@ export default function AccountPage() {
   return (
     <main className="bg-background py-16">
       <div className="page-shell">
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>My Account</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">Home / My Account</p>
           <p className="text-sm text-foreground">
             Welcome!{" "}
             <span className="font-semibold text-(--mirai-sem-danger)">
@@ -888,59 +906,8 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
   const [filter, setFilter] = useState(initialFilter);
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
-  // Mock data matching the specific statuses
-  const [orders, setOrders] = useState([
-    {
-      id: "ORD-2024-001",
-      date: "2024-05-01",
-      status: "Đã đặt",
-      tracking: "-",
-      total: "1,250,000đ",
-      items: [{ name: "Sản phẩm A", qty: 1, price: "1,250,000đ" }],
-    },
-    {
-      id: "ORD-2024-002",
-      date: "2024-04-15",
-      status: "Đang sản xuất",
-      tracking: "-",
-      total: "450,000đ",
-      items: [{ name: "Sản phẩm B", qty: 2, price: "225,000đ" }],
-    },
-    {
-      id: "ORD-2024-003",
-      date: "2024-03-20",
-      status: "Đang giao",
-      tracking: "VN987654321",
-      total: "890,000đ",
-      items: [{ name: "Sản phẩm C", qty: 1, price: "890,000đ" }],
-    },
-    {
-      id: "ORD-2024-004",
-      date: "2024-02-10",
-      status: "Đã giao",
-      tracking: "VN123456789",
-      total: "2,000,000đ",
-      items: [{ name: "Sản phẩm D", qty: 1, price: "2,000,000đ" }],
-    },
-    {
-      id: "ORD-2024-005",
-      date: "2024-01-05",
-      status: "Đã huỷ",
-      tracking: "-",
-      total: "100,000đ",
-      items: [{ name: "Sản phẩm E", qty: 1, price: "100,000đ" }],
-    },
-  ]);
-
-  // Removed useEffect that was setting state from props, using key={orderFilter} on parent instead.
-
-  const filteredOrders = orders
-    .filter((order) => filter === "all" || order.status === filter)
-    .sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
-    });
+  // Feature is waiting for backend API (GetOrdersByUserId)
+  const filteredOrders: unknown[] = [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -957,17 +924,6 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
       default:
         return "default";
     }
-  };
-
-  const [selectedOrder, setSelectedOrder] = useState<(typeof orders)[0] | null>(
-    null,
-  );
-
-  const handleCancelOrder = (id: string) => {
-    setOrders(
-      orders.map((o) => (o.id === id ? { ...o, status: "Đã huỷ" } : o)),
-    );
-    setSelectedOrder(null);
   };
 
   return (
@@ -1008,135 +964,13 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
         </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-          <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <h3 className="text-lg font-medium text-foreground mb-1">
-            Chưa có đơn hàng
-          </h3>
-          <p>Không tìm thấy đơn hàng nào với trạng thái này.</p>
-        </div>
-      ) : (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã Đơn</TableHead>
-                <TableHead>Ngày Đặt</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead>Mã Vận Đơn</TableHead>
-                <TableHead className="text-right">Tổng Tiền</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`border-0 ${getStatusColor(order.status)}`}
-                    >
-                      {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {order.tracking}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {order.total}
-                  </TableCell>
-                  <TableCell>
-                    <Dialog
-                      open={selectedOrder?.id === order.id}
-                      onOpenChange={(open) => !open && setSelectedOrder(null)}
-                    >
-                      <DialogTrigger
-                        render={
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            Xem chi tiết
-                          </Button>
-                        }
-                      />
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Chi tiết đơn hàng {order.id}
-                          </DialogTitle>
-                          <DialogDescription>
-                            Ngày đặt: {order.date}
-                          </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="py-4">
-                          <div className="flex justify-between items-center mb-6">
-                            <span className="font-medium">
-                              Trạng thái:
-                              <Badge
-                                variant="outline"
-                                className={`ml-2 border-0 ${getStatusColor(order.status)}`}
-                              >
-                                {order.status}
-                              </Badge>
-                            </span>
-                            <span className="text-muted-foreground">
-                              Mã vận đơn: {order.tracking}
-                            </span>
-                          </div>
-
-                          <div className="border rounded-md p-4 mb-6">
-                            <h4 className="font-medium mb-3">Sản phẩm</h4>
-                            {order.items.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between items-center py-2 border-b last:border-0"
-                              >
-                                <div>
-                                  <p>{item.name}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    SL: {item.qty}
-                                  </p>
-                                </div>
-                                <p className="font-medium">{item.price}</p>
-                              </div>
-                            ))}
-                            <div className="flex justify-between items-center pt-3 mt-3 border-t">
-                              <span className="font-semibold">Tổng cộng</span>
-                              <span className="font-semibold text-lg text-(--mirai-sem-danger)">
-                                {order.total}
-                              </span>
-                            </div>
-                          </div>
-
-                          {order.status === "Đã đặt" && (
-                            <div className="flex gap-3 justify-end mt-6 bg-muted/30 p-4 rounded-md">
-                              <Button variant="outline">
-                                Sửa địa chỉ giao hàng
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleCancelOrder(order.id)}
-                              >
-                                Huỷ đơn hàng
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+        <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
+        <h3 className="text-lg font-medium text-foreground mb-1">
+          Chưa có đơn hàng
+        </h3>
+        <p>Tính năng xem lịch sử đơn hàng đang được cập nhật từ Backend.</p>
+      </div>
     </div>
   );
 }

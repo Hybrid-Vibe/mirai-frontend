@@ -51,6 +51,13 @@ import type {
   CartSearchFilter,
   // Product Variant
   ProductVariantDto,
+  // New Product Features
+  CreateProductRequestDto,
+  // AI Image
+  CreateAIImageDto,
+  AIImageDto,
+  UpdateAIImageStatusDto,
+  AIImageStatus,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 
@@ -137,12 +144,12 @@ apiClient.interceptors.response.use(
         console.groupEnd();
       }
     } else if (error.request) {
-      console.error(
+      console.warn(
         "[API] Network error — no response received:",
         error.message,
       );
     } else {
-      console.error("[API] Request configuration error:", error.message);
+      console.warn("[API] Request configuration error:", error.message);
     }
 
     return Promise.reject(error);
@@ -175,6 +182,18 @@ export function getAuthToken(): string | null {
   return null;
 }
 
+/** Safely normalizes list arrays from backend that might be PagedResult or reference-looped ($values) */
+export function normalizeArray<T>(data: unknown): T[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data as T[];
+  if (typeof data === "object" && data !== null) {
+    const obj = data as Record<string, unknown>;
+    const items = obj.items || obj.Items || obj.values || obj.$values;
+    if (Array.isArray(items)) return items as T[];
+  }
+  return [];
+}
+
 // ======================================================================
 // API Services — User / Auth
 // ======================================================================
@@ -199,7 +218,7 @@ export const userApi = {
   /** GET /api/User/Get-All-Users */
   getAllUsers: async (): Promise<GetUserDto[]> => {
     const { data } = await apiClient.get<GetUserDto[]>("/User/Get-All-Users");
-    return data;
+    return normalizeArray<GetUserDto>(data);
   },
 
   /** GET /api/User/Get-User-By-UserId{userId} */
@@ -207,6 +226,13 @@ export const userApi = {
     const { data } = await apiClient.get<GetUserDto>(
       `/User/Get-User-By-UserId${userId}`,
     );
+    return data;
+  },
+
+  /** POST /api/User/logout */
+  logout: async (): Promise<{ message: string }> => {
+    const { data } = await apiClient.post<{ message: string }>("/User/logout");
+    clearAuthToken();
     return data;
   },
 };
@@ -221,7 +247,7 @@ export const productApi = {
     const { data } = await apiClient.get<ProductDto[]>(
       "/Product/Get-All-Products",
     );
-    return data;
+    return normalizeArray<ProductDto>(data);
   },
 
   /** GET /api/Product/Get-Product-By-Id/{productId} */
@@ -236,6 +262,15 @@ export const productApi = {
   createProduct: async (dto: CreateProductDto): Promise<ProductDto> => {
     const { data } = await apiClient.post<ProductDto>(
       "/Product/Create-Product",
+      dto,
+    );
+    return data;
+  },
+
+  /** POST /api/Product/Create-Product-ProductImages-ProductVariants */
+  createAllProducts: async (dto: CreateProductRequestDto): Promise<string> => {
+    const { data } = await apiClient.post<string>(
+      "/Product/Create-Product-ProductImages-ProductVariants",
       dto,
     );
     return data;
@@ -261,7 +296,7 @@ export const productApi = {
       "/Product/Get-Products-By-Filter",
       { params: filter },
     );
-    return data;
+    return normalizeArray<GetAllProductsByFilterDto>(data);
   },
 };
 
@@ -518,7 +553,7 @@ export const categoryApi = {
     const { data } = await apiClient.get<CategoryResponseDto[]>(
       "/Category/Get-All-Categories",
     );
-    return data;
+    return normalizeArray<CategoryResponseDto>(data);
   },
 
   /** GET /api/Category/Get-All-Categories-Active */
@@ -526,7 +561,7 @@ export const categoryApi = {
     const { data } = await apiClient.get<CategoryResponseDto[]>(
       "/Category/Get-All-Categories-Active",
     );
-    return data;
+    return normalizeArray<CategoryResponseDto>(data);
   },
 
   /** GET /api/Category/Get-Category-By-Id/{id} */
@@ -658,7 +693,48 @@ export const cartApi = {
 };
 
 // ======================================================================
-// API Services — AI Image Generation
+// API Services — AI Image (Backend)
+// ======================================================================
+
+export const aiImageApi = {
+  /** POST /api/ai-images */
+  createAIImage: async (dto: CreateAIImageDto): Promise<AIImageDto> => {
+    const { data } = await apiClient.post<AIImageDto>("/ai-images", dto);
+    return data;
+  },
+
+  /** GET /api/ai-images/{id} */
+  getAIImageById: async (id: string): Promise<AIImageDto> => {
+    const { data } = await apiClient.get<AIImageDto>(`/ai-images/${id}`);
+    return data;
+  },
+
+  /** GET /api/ai-images/user */
+  getUserAIImages: async (): Promise<AIImageDto[]> => {
+    const { data } = await apiClient.get<AIImageDto[]>("/ai-images/user");
+    return data;
+  },
+
+  /** PUT /api/ai-images/{id}/status */
+  updateAIImageStatus: async (
+    id: string,
+    dto: UpdateAIImageStatusDto,
+  ): Promise<AIImageDto> => {
+    const { data } = await apiClient.put<AIImageDto>(
+      `/ai-images/${id}/status`,
+      dto,
+    );
+    return data;
+  },
+
+  /** DELETE /api/ai-images/{id} */
+  deleteAIImage: async (id: string): Promise<void> => {
+    await apiClient.delete(`/ai-images/${id}`);
+  },
+};
+
+// ======================================================================
+// API Services — AI Image Generation (Next.js Internal)
 // Calls Next.js internal API route (NOT the .NET backend directly)
 // because Gemini API key is a server-side secret
 // ======================================================================

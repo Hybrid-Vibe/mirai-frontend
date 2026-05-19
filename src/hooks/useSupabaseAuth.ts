@@ -5,6 +5,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useDesignStore } from "@/lib/store";
 import { toast } from "sonner";
+import { setAuthToken, clearAuthToken } from "@/lib/api-client";
 
 export function useSupabaseAuth() {
   const setUser = useDesignStore((state) => state.setUser);
@@ -113,7 +114,8 @@ export function useSupabaseAuth() {
   useEffect(() => {
     // Sync current session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+      if (session?.user && session.access_token) {
+        setAuthToken(session.access_token);
         handleUserLogin(session.user);
       }
     });
@@ -122,10 +124,17 @@ export function useSupabaseAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
+      if (
+        (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") &&
+        session?.user
+      ) {
+        setAuthToken(session.access_token);
         await handleUserLogin(session.user);
-        toast.success("Đăng nhập thành công!");
+        if (event === "SIGNED_IN") {
+          toast.success("Đăng nhập thành công!");
+        }
       } else if (event === "SIGNED_OUT") {
+        clearAuthToken();
         setUser(null);
       }
     });
