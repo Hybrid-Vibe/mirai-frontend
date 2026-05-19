@@ -112,7 +112,6 @@ export default function CustomizePage() {
     setShowGuides,
     showCameraCutout,
     setShowCameraCutout,
-    backgroundImage,
     setBackgroundImage,
   } = useDesignStore();
 

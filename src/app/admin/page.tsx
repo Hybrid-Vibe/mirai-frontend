@@ -4,7 +4,6 @@ import { ArrowUpRight, Package, TrendingUp, Users, Info } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,

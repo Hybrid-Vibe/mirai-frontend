@@ -57,7 +57,6 @@ import type {
   CreateAIImageDto,
   AIImageDto,
   UpdateAIImageStatusDto,
-  AIImageStatus,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 

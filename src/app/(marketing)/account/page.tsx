@@ -13,20 +13,12 @@ import {
   Trash2,
   Edit2,
   Plus,
-  ArrowUpDown,
   Loader2,
 } from "lucide-react";
 import { userApi, addressApi } from "@/lib/api-client";
 import { GetUserDto } from "@/types/api";
 import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -38,7 +30,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -904,27 +895,7 @@ function PaymentSection() {
 
 function OrdersSection({ initialFilter }: { initialFilter: string }) {
   const [filter, setFilter] = useState(initialFilter);
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-
   // Feature is waiting for backend API (GetOrdersByUserId)
-  const filteredOrders: unknown[] = [];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Đã đặt":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-      case "Đang sản xuất":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-      case "Đang giao":
-        return "bg-orange-100 text-orange-800 hover:bg-orange-200";
-      case "Đã giao":
-        return "bg-green-100 text-green-800 hover:bg-green-200";
-      case "Đã huỷ":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
-      default:
-        return "default";
-    }
-  };
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -950,17 +921,6 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
               <SelectItem value="Đã huỷ">Đã huỷ</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
-              setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-            }
-            title="Sắp xếp theo ngày"
-          >
-            <ArrowUpDown className="w-4 h-4" />
-          </Button>
         </div>
       </div>
 
