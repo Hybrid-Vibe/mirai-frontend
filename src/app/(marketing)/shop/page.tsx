@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { productApi, categoryApi } from "@/lib/api-client";
 import { GetAllProductsByFilterDto, CategoryResponseDto } from "@/types/api";
-import { useCartStore } from "@/stores";
+import { useCartStore, useWishlistStore } from "@/stores";
 import { useDesignStore } from "@/lib/store";
 import { toast } from "sonner";
 import {
@@ -41,11 +41,12 @@ export default function ShopPage() {
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
   const [activeColor, setActiveColor] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [wishlisted, setWishlisted] = useState<string[]>([]);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
+  const wishlisted = useWishlistStore((state) => state.wishlistProductIds);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
   const userId = useDesignStore((state) => state.user?.id);
 
   useEffect(() => {
@@ -111,11 +112,6 @@ export default function ShopPage() {
     return filtered;
   }, [products, activeCategoryId, priceFilter, sortBy, activeColor]);
 
-  const toggleWishlist = (id: string) => {
-    setWishlisted((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
 
   const handleAdd = async (product: GetAllProductsByFilterDto) => {
     const variant = product.variants?.[0];
