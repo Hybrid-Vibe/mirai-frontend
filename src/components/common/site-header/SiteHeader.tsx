@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
   Heart,
@@ -24,6 +24,7 @@ import { useCartStore } from "@/stores";
 import { useDesignStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 const ACCOUNT_MENU_ITEMS = [
   { href: "/account", label: "Quản lý tài khoản", icon: User },
@@ -42,6 +43,7 @@ const isPathActive = (pathname: string, href: string) => {
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const user = useDesignStore((state) => state.user);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -71,7 +73,28 @@ export function SiteHeader() {
 
   const handleSignOut = async () => {
     closePanels();
-    await supabase.auth.signOut();
+
+    const logoutPromise = new Promise(async (resolve, reject) => {
+      try {
+        await supabase.auth.signOut();
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    toast.promise(logoutPromise, {
+      loading: "Đang đăng xuất khỏi hệ thống...",
+      success: "Đăng xuất thành công! Hẹn gặp lại bạn nhé. 👋",
+      error: "Có lỗi xảy ra khi đăng xuất.",
+    });
+
+    try {
+      await logoutPromise;
+      router.push("/");
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

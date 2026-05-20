@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { userApi } from "@/lib/api-client";
 import { useDesignStore } from "@/lib/store";
+import { getFriendlyErrorMessage } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,10 +33,28 @@ export default function LoginPage() {
       });
 
       // Update global user state in Zustand
+      let nameToUse = response.fullName || response.email.split("@")[0];
+      if (typeof window !== "undefined") {
+        const savedLocal = localStorage.getItem(
+          `mirai_profile_${response.userId}`,
+        );
+        if (savedLocal) {
+          try {
+            const localData = JSON.parse(savedLocal);
+            if (localData.fullName) {
+              nameToUse = localData.fullName;
+            }
+          } catch (e) {
+            console.error("Failed to parse local profile:", e);
+          }
+        }
+      }
+
       setUser({
         id: response.userId,
+        name: nameToUse,
         email: response.email,
-        name: response.fullName || response.email,
+        avatar_url: undefined,
       });
 
       toast.success(
@@ -49,16 +68,12 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: unknown) {
-      let errorMsg =
-        "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.";
-      if (error && typeof error === "object") {
-        const err = error as {
-          response?: { data?: { message?: string } };
-          message?: string;
-        };
-        errorMsg = err.response?.data?.message || err.message || errorMsg;
-      }
-      toast.error(errorMsg);
+      toast.error(
+        getFriendlyErrorMessage(
+          error,
+          "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.",
+        ),
+      );
     } finally {
       setIsLoading(false);
     }

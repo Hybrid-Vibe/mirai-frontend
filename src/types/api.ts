@@ -79,6 +79,18 @@ export interface AuthResponseDto {
   role: string;
 }
 
+/** POST /api/User/change-password — Request body */
+export interface ChangePasswordRequestDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/** PUT /api/User/update-profile — Request body */
+export interface UpdateProfileRequestDto {
+  fullName: string;
+  phone?: string;
+}
+
 // ----------------------------------------------------------------------
 // User DTOs
 // ----------------------------------------------------------------------

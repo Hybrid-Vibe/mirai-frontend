@@ -52,7 +52,9 @@ export default function WishlistPage() {
 
   const suggestedItems = useMemo(() => {
     // Curate suggestions from products that are not currently in the wishlist
-    const notWishlisted = products.filter((p) => !wishlistProductIds.includes(p.productId));
+    const notWishlisted = products.filter(
+      (p) => !wishlistProductIds.includes(p.productId),
+    );
     if (notWishlisted.length > 0) {
       return notWishlisted.slice(0, 4);
     }
@@ -78,7 +80,7 @@ export default function WishlistPage() {
           imageUrl: product.productImages?.[0]?.imageUrl,
           phoneModel: variant.phoneModel,
         },
-        userId || "guest"
+        userId || "guest",
       );
       setMovedToCartIds((prev) => [...prev, product.productId]);
       toast.success("Đã thêm sản phẩm vào giỏ hàng!");
@@ -109,7 +111,7 @@ export default function WishlistPage() {
               imageUrl: item.productImages?.[0]?.imageUrl,
               phoneModel: variant.phoneModel,
             },
-            userId || "guest"
+            userId || "guest",
           );
           setMovedToCartIds((prev) => [...prev, item.productId]);
           addedCount++;
@@ -158,8 +160,13 @@ export default function WishlistPage() {
             <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Heart className="h-8 w-8 text-muted-foreground/50" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">Danh sách yêu thích trống</h2>
-            <p className="text-sm max-w-sm mb-6">Hãy thêm những mẫu thiết kế bạn ưng ý từ Shop vào wishlist để theo dõi nhé!</p>
+            <h2 className="text-lg font-semibold text-foreground mb-2">
+              Danh sách yêu thích trống
+            </h2>
+            <p className="text-sm max-w-sm mb-6">
+              Hãy thêm những mẫu thiết kế bạn ưng ý từ Shop vào wishlist để theo
+              dõi nhé!
+            </p>
             <Link
               href="/shop"
               className="inline-flex h-10 items-center justify-center rounded-[4px] bg-primary px-6 text-sm font-semibold text-primary-foreground hover:opacity-90 active:scale-95 transition-all shadow-md shadow-primary/10"
@@ -201,7 +208,9 @@ export default function WishlistPage() {
                     type="button"
                     size="sm"
                     variant={
-                      movedToCartIds.includes(item.productId) ? "secondary" : "default"
+                      movedToCartIds.includes(item.productId)
+                        ? "secondary"
+                        : "default"
                     }
                     className="mt-5 w-full rounded-[4px] bg-(--mirai-sem-text) text-(--mirai-sem-background) hover:opacity-90 active:scale-95 transition-all"
                     onClick={() => handleAddToCart(item)}
@@ -210,8 +219,8 @@ export default function WishlistPage() {
                     {addingIds.includes(item.productId)
                       ? "Đang thêm..."
                       : movedToCartIds.includes(item.productId)
-                      ? "Đã chuyển vào giỏ"
-                      : "Thêm vào giỏ"}
+                        ? "Đã chuyển vào giỏ"
+                        : "Thêm vào giỏ"}
                   </Button>
                 </div>
 
@@ -231,7 +240,9 @@ export default function WishlistPage() {
                       className="h-3.5 w-3.5 fill-current"
                     />
                   ))}
-                  <span className="ml-1 text-xs text-muted-foreground">(5.0)</span>
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    (5.0)
+                  </span>
                 </div>
               </article>
             ))}
@@ -266,9 +277,7 @@ export default function WishlistPage() {
                         className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card hover:bg-muted text-foreground transition-all duration-200 transform hover:scale-105 active:scale-95 border border-border/50 z-10 cursor-pointer shadow-sm"
                         aria-label="Add to wishlist"
                       >
-                        <Heart
-                          className="h-4 w-4 fill-current text-muted-foreground/30 hover:text-destructive"
-                        />
+                        <Heart className="h-4 w-4 fill-current text-muted-foreground/30 hover:text-destructive" />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Thêm vào wishlist</p>
@@ -298,8 +307,8 @@ export default function WishlistPage() {
                       {addingIds.includes(item.productId)
                         ? "Đang thêm..."
                         : movedToCartIds.includes(item.productId)
-                        ? "Đã chuyển vào giỏ"
-                        : "Thêm vào giỏ"}
+                          ? "Đã chuyển vào giỏ"
+                          : "Thêm vào giỏ"}
                     </Button>
                   </div>
 
@@ -319,7 +328,9 @@ export default function WishlistPage() {
                         className="h-3.5 w-3.5 fill-current"
                       />
                     ))}
-                    <span className="ml-1 text-xs text-muted-foreground">(5.0)</span>
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (5.0)
+                    </span>
                   </div>
                 </article>
               ))}

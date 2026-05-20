@@ -1,13 +1,44 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/common";
 import { AdminNav } from "@/components/features/admin";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const logoutPromise = new Promise(async (resolve, reject) => {
+      try {
+        await supabase.auth.signOut();
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    toast.promise(logoutPromise, {
+      loading: "Đang đăng xuất khỏi hệ thống...",
+      success: "Đăng xuất thành công! Hẹn gặp lại bạn nhé. 👋",
+      error: "Có lỗi xảy ra khi đăng xuất.",
+    });
+
+    try {
+      await logoutPromise;
+      router.push("/");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/40 flex flex-col md:flex-row">
       {/* Sidebar */}
@@ -27,7 +58,10 @@ export default function AdminLayout({
         <AdminNav />
 
         <div className="p-4 border-t border-border mt-auto">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 font-medium text-sm transition-colors">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 font-medium text-sm transition-colors"
+          >
             <LogOut className="h-4 w-4" />
             Đăng xuất
           </button>

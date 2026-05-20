@@ -15,6 +15,8 @@ import type {
   RegisterUserDto,
   AuthResponseDto,
   GetUserDto,
+  ChangePasswordRequestDto,
+  UpdateProfileRequestDto,
   // Address
   AddressDto,
   UpdateAddressDto,
@@ -209,8 +211,18 @@ export const userApi = {
   },
 
   /** POST /api/User/register */
-  register: async (dto: RegisterUserDto): Promise<string> => {
-    const { data } = await apiClient.post<string>("/User/register", dto);
+  register: async (
+    dto: RegisterUserDto,
+    turnstileToken?: string,
+  ): Promise<string> => {
+    const config = turnstileToken
+      ? { headers: { "X-Turnstile-Token": turnstileToken } }
+      : undefined;
+    const { data } = await apiClient.post<string>(
+      "/User/register",
+      dto,
+      config,
+    );
     return data;
   },
 
@@ -232,6 +244,36 @@ export const userApi = {
   logout: async (): Promise<{ message: string }> => {
     const { data } = await apiClient.post<{ message: string }>("/User/logout");
     clearAuthToken();
+    return data;
+  },
+
+  /** POST /api/User/login-user-by-supabase */
+  syncUser: async (): Promise<{ message: string }> => {
+    const { data } = await apiClient.post<{ message: string }>(
+      "/User/login-user-by-supabase",
+    );
+    return data;
+  },
+
+  /** POST /api/User/change-password */
+  changePassword: async (
+    dto: ChangePasswordRequestDto,
+  ): Promise<{ message: string }> => {
+    const { data } = await apiClient.post<{ message: string }>(
+      "/User/change-password",
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/User/update-profile */
+  updateProfile: async (
+    dto: UpdateProfileRequestDto,
+  ): Promise<{ message: string }> => {
+    const { data } = await apiClient.put<{ message: string }>(
+      "/User/update-profile",
+      dto,
+    );
     return data;
   },
 };
@@ -697,8 +739,18 @@ export const cartApi = {
 
 export const aiImageApi = {
   /** POST /api/ai-images */
-  createAIImage: async (dto: CreateAIImageDto): Promise<AIImageDto> => {
-    const { data } = await apiClient.post<AIImageDto>("/ai-images", dto);
+  createAIImage: async (
+    dto: CreateAIImageDto,
+    turnstileToken?: string,
+  ): Promise<AIImageDto> => {
+    const config = turnstileToken
+      ? { headers: { "X-Turnstile-Token": turnstileToken } }
+      : undefined;
+    const { data } = await apiClient.post<AIImageDto>(
+      "/ai-images",
+      dto,
+      config,
+    );
     return data;
   },
 
@@ -752,16 +804,22 @@ export const aiApi = {
    */
   generateImage: async (
     request: GenerateRequest,
+    turnstileToken?: string,
   ): Promise<GenerateResponse> => {
     // Use a separate axios instance for Next.js internal routes (no /api prefix from backend)
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (turnstileToken) {
+      headers["X-Turnstile-Token"] = turnstileToken;
+    }
+
     const { data } = await axios.post<GenerateResponse>(
       "/api/generate",
       request,
       {
         timeout: 60_000, // AI generation can take up to 60s
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       },
     );
     return data;

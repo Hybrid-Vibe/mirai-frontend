@@ -17,7 +17,9 @@ export const useWishlistStore = create<WishlistState>()(
           const exists = state.wishlistProductIds.includes(productId);
           if (exists) {
             return {
-              wishlistProductIds: state.wishlistProductIds.filter((id) => id !== productId),
+              wishlistProductIds: state.wishlistProductIds.filter(
+                (id) => id !== productId,
+              ),
             };
           }
           return {
@@ -32,6 +34,6 @@ export const useWishlistStore = create<WishlistState>()(
     }),
     {
       name: "mirai-wishlist-storage",
-    }
-  )
+    },
+  ),
 );

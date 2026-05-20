@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { prompt, phoneModel, style } = body;
+  const { prompt, phoneModel, style, refImage } = body;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     return NextResponse.json<GenerateErrorResponse>(
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   try {
     // --- 2. Enhance prompt (Vietnamese → English professional prompt) ---
     const rawPrompt = style ? `${prompt}, phong cách ${style}` : prompt;
-    const enhancedPrompt = await enhancePrompt(rawPrompt, phoneModel);
+    const enhancedPrompt = await enhancePrompt(rawPrompt, phoneModel, refImage);
 
     // --- 3. Generate 1 design variant to prevent rate limit (429) on free tier ---
     const designs: GeneratedDesign[] = [];

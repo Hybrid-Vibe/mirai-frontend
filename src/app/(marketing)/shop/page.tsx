@@ -112,7 +112,6 @@ export default function ShopPage() {
     return filtered;
   }, [products, activeCategoryId, priceFilter, sortBy, activeColor]);
 
-
   const handleAdd = async (product: GetAllProductsByFilterDto) => {
     const variant = product.variants?.[0];
     if (!variant) {

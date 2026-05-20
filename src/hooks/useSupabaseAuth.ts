@@ -18,10 +18,25 @@ export function useSupabaseAuth() {
         authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
       // Save to Zustand store
+      let nameToUse = name || "";
+      if (typeof window !== "undefined") {
+        const savedLocal = localStorage.getItem(`mirai_profile_${authUser.id}`);
+        if (savedLocal) {
+          try {
+            const localData = JSON.parse(savedLocal);
+            if (localData.fullName) {
+              nameToUse = localData.fullName;
+            }
+          } catch (e) {
+            console.error("Failed to parse local profile:", e);
+          }
+        }
+      }
+
       setUser({
         id: authUser.id,
         email: email || "",
-        name: name || "",
+        name: nameToUse,
         avatar_url: googleAvatar,
       });
 
@@ -75,10 +90,27 @@ export function useSupabaseAuth() {
 
         // 2. Update local state with the most accurate data from DB if available
         if (existingUser) {
+          let nameToUse = existingUser.full_name || name || "";
+          if (typeof window !== "undefined") {
+            const savedLocal = localStorage.getItem(
+              `mirai_profile_${existingUser.user_id}`,
+            );
+            if (savedLocal) {
+              try {
+                const localData = JSON.parse(savedLocal);
+                if (localData.fullName) {
+                  nameToUse = localData.fullName;
+                }
+              } catch (e) {
+                console.error("Failed to parse local profile:", e);
+              }
+            }
+          }
+
           setUser({
             id: existingUser.user_id,
             email: existingUser.email || email || "",
-            name: existingUser.full_name || name || "",
+            name: nameToUse,
             avatar_url: existingUser.avatar_url || googleAvatar,
           });
         }
