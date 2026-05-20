@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthShowcase } from "@/components/features/marketing/auth-showcase";
 import { GoogleSignInButton } from "@/components/common";
 
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getFriendlyErrorMessage } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { userApi } from "@/lib/api-client";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function SignupPage() {
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   // Password validation state
   const [passwordChecks, setPasswordChecks] = useState({
@@ -61,25 +64,31 @@ export default function SignupPage() {
     e.preventDefault();
     if (!isFormValid) return;
 
+    if (!captchaToken) {
+      toast.error("Vui lòng hoàn thành xác thực Captcha!");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await userApi.register({
-        fullName: name,
-        email: email,
-        passwordHash: password,
-      });
+      await userApi.register(
+        {
+          fullName: name,
+          email: email,
+          passwordHash: password,
+        },
+        captchaToken,
+      );
       toast.success("Đăng ký tài khoản thành công!");
       router.push("/login");
     } catch (error: unknown) {
-      let errorMsg = "Đăng ký thất bại. Vui lòng thử lại.";
-      if (error && typeof error === "object") {
-        const err = error as {
-          response?: { data?: { message?: string } };
-          message?: string;
-        };
-        errorMsg = err.response?.data?.message || err.message || errorMsg;
-      }
-      toast.error(errorMsg);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
+      const friendlyMsg = getFriendlyErrorMessage(
+        error,
+        "Đăng ký tài khoản thất bại. Vui lòng thử lại! ⚙️",
+      );
+      toast.error(friendlyMsg);
     } finally {
       setIsLoading(false);
     }
@@ -205,7 +214,15 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* CAPTCHA temporarily disabled */}
+            <div className="flex justify-center mt-4">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                onSuccess={(token: string) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
+              />
+            </div>
 
             <Button
               type="submit"

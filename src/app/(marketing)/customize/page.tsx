@@ -14,6 +14,7 @@ import {
   Camera,
   ShoppingCart,
   Palette,
+  X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
@@ -26,10 +27,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import type Konva from "konva";
 
 import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
+import { getFriendlyErrorMessage } from "@/lib/utils";
 import {
   PHONE_CASE_TEMPLATES,
   getTemplateById,
@@ -124,6 +127,42 @@ export default function CustomizePage() {
   const [fontFamily, setFontFamily] = useState("Bricolage Grotesque");
   const [selectedCategory, setSelectedCategory] = useState(0);
 
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const [shouldLoadTurnstile, setShouldLoadTurnstile] = useState(false);
+  const pendingGenerateRef = useRef(false);
+  const [refImage, setRefImage] = useState<string | null>(null);
+
+  const handleRefImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Vui lòng tải lên định dạng hình ảnh! 🖼️");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Kích thước ảnh không vượt quá 5MB! ⚠️");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setRefImage(reader.result as string);
+      toast.success("Đã tải hình tham khảo thành công! ✨");
+    };
+    reader.onerror = () => {
+      toast.error("Lỗi khi đọc file ảnh! ❌");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveRefImage = () => {
+    setRefImage(null);
+    toast.success("Đã xóa hình tham khảo! 🗑️");
+  };
+
   // Derive selected element
   const selectedElement = elements.find((el) => el.id === selectedElementId);
 
@@ -169,15 +208,26 @@ export default function CustomizePage() {
 
   // Auto-load template when phone model changes
   useEffect(() => {
-    if (phoneModel) {
-      const template = getTemplateById(phoneModel);
-      if (template) {
-        setSelectedTemplate(template);
+    if (!phoneModel) {
+      setSelectedTemplate(null);
+      return;
+    }
+
+    const templateById = getTemplateById(phoneModel);
+    const templateByLabel = PHONE_CASE_TEMPLATES.find(
+      (template) => template.label === phoneModel,
+    );
+    const resolvedTemplate = templateById ?? templateByLabel ?? null;
+
+    if (resolvedTemplate) {
+      setSelectedTemplate(resolvedTemplate);
+      if (resolvedTemplate.id !== phoneModel) {
+        setPhoneModel(resolvedTemplate.id);
       }
     } else {
       setSelectedTemplate(null);
     }
-  }, [phoneModel, setSelectedTemplate]);
+  }, [phoneModel, setPhoneModel, setSelectedTemplate]);
 
   // When AI image is selected, set it as background
   useEffect(() => {
@@ -186,7 +236,7 @@ export default function CustomizePage() {
     }
   }, [mode, selectedImage, setBackgroundImage]);
 
-  const handleGenerate = async () => {
+  const runGenerate = async (token: string) => {
     if (!prompt.trim()) {
       toast.error("Vui lòng nhập mô tả thiết kế");
       return;
@@ -198,7 +248,10 @@ export default function CustomizePage() {
 
     setIsGenerating(true);
     try {
-      const data = await aiApi.generateImage({ prompt, phoneModel });
+      const data = await aiApi.generateImage(
+        { prompt, phoneModel, refImage: refImage || undefined },
+        token,
+      );
       if (data.designs && data.designs.length > 0) {
         const imageUrls = data.designs.map(
           (d: { imageUrl: string }) => d.imageUrl,
@@ -211,26 +264,41 @@ export default function CustomizePage() {
         );
       }
     } catch (error: unknown) {
-      let message = "Có lỗi xảy ra. Vui lòng thử lại.";
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosErr = error as {
-          response?: { data?: { error?: string; code?: string } };
-        };
-        const code = axiosErr.response?.data?.code;
-        if (code === "RATE_LIMITED") {
-          message = "Hệ thống AI đang quá tải. Vui lòng thử lại sau ít phút 🙏";
-        } else if (code === "INVALID_PROMPT") {
-          message = "Prompt không hợp lệ — hãy thử mô tả chi tiết hơn.";
-        } else if (axiosErr.response?.data?.error) {
-          message = axiosErr.response.data.error;
-        }
-      } else if (error instanceof Error) {
-        message = error.message;
-      }
+      const message = getFriendlyErrorMessage(
+        error,
+        "Không thể tạo thiết kế AI. Vui lòng thử lại sau! ⚙️",
+      );
       toast.error(message);
     } finally {
       setIsGenerating(false);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     }
+  };
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      toast.error("Vui lòng nhập mô tả thiết kế");
+      return;
+    }
+    if (!phoneModel) {
+      toast.error("Vui lòng chọn dòng máy");
+      return;
+    }
+
+    if (!captchaToken) {
+      pendingGenerateRef.current = true;
+      if (!shouldLoadTurnstile) {
+        setShouldLoadTurnstile(true);
+      }
+      toast.error(
+        "Vui lòng hoàn thành xác minh thực thể (Captcha) trước khi tạo ảnh!",
+      );
+      return;
+    }
+
+    pendingGenerateRef.current = false;
+    await runGenerate(captchaToken);
   };
 
   const handleAddToCart = async () => {
@@ -352,12 +420,51 @@ export default function CustomizePage() {
                   AI Generate
                 </h3>
 
-                {/* Upload */}
-                <label className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-secondary/50 text-foreground hover:bg-muted transition-colors">
-                  <ImagePlus className="h-4 w-4" />
-                  <span className="text-xs">Upload hình tham khảo</span>
-                  <input type="file" className="hidden" />
-                </label>
+                {/* Upload / Reference Image Style Selection */}
+                {refImage ? (
+                  <div className="relative flex items-center gap-3 rounded-lg border border-border p-3 bg-secondary/30">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={refImage}
+                        alt="Reference style"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">
+                        Ảnh tham khảo phong cách
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        AI sẽ mô phỏng tone màu và mood của ảnh này.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveRefImage}
+                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
+                      title="Xóa hình tham khảo"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-secondary/50 text-foreground hover:bg-muted transition-colors">
+                    <ImagePlus className="h-4 w-4 text-muted-foreground animate-pulse" />
+                    <span className="text-xs font-medium">
+                      Tải hình tham khảo phong cách
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Phân tích mood, màu sắc, art style
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleRefImageChange}
+                    />
+                  </label>
+                )}
 
                 {/* Prompt */}
                 <div className="flex gap-2">
@@ -379,6 +486,32 @@ export default function CustomizePage() {
                     {isGenerating ? "..." : "Tạo"}
                   </button>
                 </div>
+
+                {/* Hidden Turnstile Widget for AI Generation */}
+                {shouldLoadTurnstile && (
+                  <div className="hidden">
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={
+                        process.env.NODE_ENV === "development"
+                          ? "1x00000000000000000000AA"
+                          : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""
+                      }
+                      onSuccess={(token: string) => {
+                        setCaptchaToken(token);
+                        if (pendingGenerateRef.current) {
+                          pendingGenerateRef.current = false;
+                          void runGenerate(token);
+                        }
+                      }}
+                      onExpire={() => setCaptchaToken(null)}
+                      onError={() => setCaptchaToken(null)}
+                      options={{
+                        size: "invisible",
+                      }}
+                    />
+                  </div>
+                )}
 
                 {/* Options */}
                 {generatedImages.length > 0 && (
@@ -775,8 +908,8 @@ export default function CustomizePage() {
                     Xoay · Zoom · AR
                   </span>
                 </div>
-                <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col h-full">
-                  <div className="relative aspect-[3/4] w-full bg-gradient-to-b from-muted/20 to-muted/5 flex-1 flex items-center justify-center">
+                <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
+                  <div className="relative aspect-[3/4] w-full bg-gradient-to-b from-muted/20 to-muted/5 flex items-center justify-center">
                     {modelUrl ? (
                       <DynamicPhoneCaseViewer
                         modelUrl={modelUrl}

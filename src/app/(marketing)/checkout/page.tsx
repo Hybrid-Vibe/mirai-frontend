@@ -50,6 +50,20 @@ export default function CheckoutPage() {
       setFirstName(fName);
       setLastName(lName);
       setEmail(user.email);
+
+      if (typeof window !== "undefined") {
+        const savedLocal = localStorage.getItem(`mirai_profile_${user.id}`);
+        if (savedLocal) {
+          try {
+            const localData = JSON.parse(savedLocal) as { phone?: string };
+            if (localData.phone) {
+              Promise.resolve().then(() => setPhone(localData.phone!));
+            }
+          } catch (e) {
+            console.error("Failed to parse local profile:", e);
+          }
+        }
+      }
       prefilledRef.current = true;
     }
   }, [user]);
