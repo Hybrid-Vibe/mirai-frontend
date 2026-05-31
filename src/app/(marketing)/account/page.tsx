@@ -363,7 +363,7 @@ function ProfileForm({
 
         // 3. Sync with .NET Backend (Update profile fields directly)
         try {
-          await userApi.updateProfile({
+          await userApi.updateProfile(user.id, {
             fullName,
             phone: phone.trim() || undefined,
           });
@@ -427,7 +427,7 @@ function ProfileForm({
           }
 
           // Call the backend endpoint to change the password
-          await userApi.changePassword({
+          await userApi.changePassword(user?.id || "", {
             currentPassword,
             newPassword,
           });
