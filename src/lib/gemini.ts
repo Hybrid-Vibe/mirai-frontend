@@ -46,6 +46,21 @@ Rules:
 - Include the phone model context if provided.
 - Always end with: "clean background, product photography style"`;
 
+function parseBase64DataUrl(
+  dataUrl: string,
+): { data: string; mimeType: string } | null {
+  const matches = dataUrl.match(
+    /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/,
+  );
+  if (!matches || matches.length !== 3) {
+    return null;
+  }
+  return {
+    mimeType: matches[1],
+    data: matches[2],
+  };
+}
+
 /**
  * Enhance a raw Vietnamese prompt into a professional English prompt
  * suitable for image generation.
@@ -53,14 +68,39 @@ Rules:
 export async function enhancePrompt(
   rawPrompt: string,
   phoneModel: string,
+  refImage?: string,
 ): Promise<string> {
-  const result = await getTextModel().generateContent([
-    { text: ENHANCE_SYSTEM_PROMPT },
-    {
-      text: `Phone model: ${phoneModel}\nCustomer prompt: ${rawPrompt}`,
-    },
-  ]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parts: any[] = [{ text: ENHANCE_SYSTEM_PROMPT }];
 
+  if (refImage) {
+    const parsed = parseBase64DataUrl(refImage);
+    if (parsed) {
+      parts.push({
+        inlineData: {
+          data: parsed.data,
+          mimeType: parsed.mimeType,
+        },
+      });
+      parts.push({
+        text: `The user has provided a reference image above. 
+Your goal is to carefully analyze the artistic style, color palette, lighting, textures, layout, and composition of this reference image.
+Then, generate a highly detailed English image generation prompt that perfectly blends the customer's request ("${rawPrompt}") with the exact stylistic elements (but NOT the exact subject, unless it fits) of this reference image.
+Make sure the resulting prompt will guide the image generator to reproduce this exact style!
+Phone model context: ${phoneModel}`,
+      });
+    } else {
+      parts.push({
+        text: `Phone model: ${phoneModel}\nCustomer prompt: ${rawPrompt}`,
+      });
+    }
+  } else {
+    parts.push({
+      text: `Phone model: ${phoneModel}\nCustomer prompt: ${rawPrompt}`,
+    });
+  }
+
+  const result = await getTextModel().generateContent(parts);
   const enhanced = result.response.text().trim();
 
   // Fallback: if model returns empty, use a sensible default

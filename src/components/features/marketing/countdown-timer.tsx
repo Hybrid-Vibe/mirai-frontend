@@ -9,6 +9,7 @@ interface CountdownTimerProps {
   initialSeconds?: number;
   labels?: string[];
   format?: "block" | "inline";
+  targetDate?: string | Date;
 }
 
 export function CountdownTimer({
@@ -18,6 +19,7 @@ export function CountdownTimer({
   initialSeconds = 56,
   labels = ["Ngày", "Giờ", "Phút", "Giây"],
   format = "block",
+  targetDate,
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState({
     days: initialDays,
@@ -29,36 +31,70 @@ export function CountdownTimer({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timerId = setTimeout(() => setMounted(true), 0);
-
-    // Calculate total seconds
     let totalSeconds =
       initialDays * 86400 +
       initialHours * 3600 +
       initialMinutes * 60 +
       initialSeconds;
 
-    const timer = setInterval(() => {
-      if (totalSeconds <= 0) {
-        clearInterval(timer);
-        return;
-      }
+    const isValidDate = targetDate && !isNaN(new Date(targetDate).getTime());
 
-      totalSeconds -= 1;
+    if (isValidDate && targetDate) {
+      const target = new Date(targetDate).getTime();
+      const now = new Date().getTime();
+      const diff = Math.max(0, target - now);
+      totalSeconds = Math.floor(diff / 1000);
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTimeLeft({
         days: Math.floor(totalSeconds / 86400),
         hours: Math.floor((totalSeconds % 86400) / 3600),
         minutes: Math.floor((totalSeconds % 3600) / 60),
         seconds: totalSeconds % 60,
       });
+    }
+
+    const timerId = setTimeout(() => setMounted(true), 0);
+
+    const timer = setInterval(() => {
+      if (isValidDate && targetDate) {
+        const target = new Date(targetDate).getTime();
+        const now = new Date().getTime();
+        const diff = Math.max(0, target - now);
+        const secs = Math.floor(diff / 1000);
+
+        if (secs <= 0) {
+          clearInterval(timer);
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+          return;
+        }
+
+        setTimeLeft({
+          days: Math.floor(secs / 86400),
+          hours: Math.floor((secs % 86400) / 3600),
+          minutes: Math.floor((secs % 3600) / 60),
+          seconds: secs % 60,
+        });
+      } else {
+        if (totalSeconds <= 0) {
+          clearInterval(timer);
+          return;
+        }
+        totalSeconds -= 1;
+        setTimeLeft({
+          days: Math.floor(totalSeconds / 86400),
+          hours: Math.floor((totalSeconds % 86400) / 3600),
+          minutes: Math.floor((totalSeconds % 3600) / 60),
+          seconds: totalSeconds % 60,
+        });
+      }
     }, 1000);
 
     return () => {
       clearTimeout(timerId);
       clearInterval(timer);
     };
-  }, [initialDays, initialHours, initialMinutes, initialSeconds]);
+  }, [initialDays, initialHours, initialMinutes, initialSeconds, targetDate]);
 
   // Prevent hydration mismatch
   if (!mounted) {

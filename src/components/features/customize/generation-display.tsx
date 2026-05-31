@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDesignStore } from "@/lib/store";
-import { aiApi } from "@/lib/api-client";
+import { aiApi, aiImageApi } from "@/lib/api-client";
 import {
   Sparkles,
   Check,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { GeneratedDesign } from "@/types/ai";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 // ---------------------------------------------------------------------------
 // Dynamic loading messages — Don Norman feedback principle
@@ -127,6 +128,9 @@ export function GenerationDisplay({
     code: string;
   } | null>(null);
   const [designs, setDesigns] = useState<GeneratedDesign[]>([]);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [shouldLoadTurnstile, setShouldLoadTurnstile] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
 
   const {
     prompt,
@@ -150,15 +154,52 @@ export function GenerationDisplay({
     setDesigns([]);
     setSelectedImage(null);
 
-    try {
-      const response = await aiApi.generateImage({
-        prompt,
-        phoneModel: phoneModel || "iPhone 15",
+    if (!captchaToken) {
+      setError({
+        message: "Vui lòng hoàn thành Captcha trước khi tạo ảnh.",
+        code: "CAPTCHA_REQUIRED",
       });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await aiApi.generateImage(
+        {
+          prompt,
+          phoneModel: phoneModel || "iPhone 15",
+        },
+        captchaToken,
+      );
 
       // Store designs in local state + zustand
       setDesigns(response.designs);
       setGeneratedImages(response.designs.map((d) => d.imageUrl));
+
+      // Sync with backend if user is logged in
+      const user = useDesignStore.getState().user;
+      if (user) {
+        try {
+          await aiImageApi.createAIImage(
+            {
+              prompt,
+              style: "default",
+              width: 512,
+              height: 512,
+            },
+            captchaToken,
+          );
+          console.log(
+            "[GenerationDisplay] Successfully saved AI Image to backend.",
+          );
+        } catch (backendErr) {
+          console.error(
+            "[GenerationDisplay] Failed to save AI Image to backend:",
+            backendErr,
+          );
+          // Don't throw, we still want to show the generated images to the user
+        }
+      }
 
       // Complete the progress bar
       setProgress(100);
@@ -198,8 +239,11 @@ export function GenerationDisplay({
 
       setError({ message: errorMessage, code: errorCode });
       setLoading(false);
+    } finally {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     }
-  }, [prompt, phoneModel, setSelectedImage, setGeneratedImages]);
+  }, [prompt, phoneModel, setSelectedImage, setGeneratedImages, captchaToken]);
 
   // -----------------------------------------------------------------------
   // Initial fetch on mount
@@ -210,6 +254,12 @@ export function GenerationDisplay({
       generateDesigns();
     }
   }, [generateDesigns]);
+
+  useEffect(() => {
+    if (loading && !shouldLoadTurnstile) {
+      Promise.resolve().then(() => setShouldLoadTurnstile(true));
+    }
+  }, [loading, shouldLoadTurnstile]);
 
   // -----------------------------------------------------------------------
   // Simulated progress bar + rotating messages (runs during API call)
@@ -256,6 +306,20 @@ export function GenerationDisplay({
   // -----------------------------------------------------------------------
   return (
     <div className="mx-auto max-w-5xl">
+      {shouldLoadTurnstile && (
+        <div className="hidden">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+            onSuccess={(token: string) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
+            options={{
+              size: "invisible",
+            }}
+          />
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {/* === ERROR STATE === */}
         {error && !loading ? (

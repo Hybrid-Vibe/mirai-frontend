@@ -4,8 +4,21 @@ import { motion } from "framer-motion";
 import { X, Box, Smartphone, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface LitWindow extends Window {
+  litDisableWarning?: boolean;
+  litDevMode?: boolean;
+}
+
+function setLitProdFlags() {
+  if (typeof window === "undefined") return;
+  if (process.env.NODE_ENV !== "production") return;
+  (window as LitWindow).litDisableWarning = true;
+  (window as LitWindow).litDevMode = false;
+}
+
 // Model-viewer needs to be imported only on the client
 if (typeof window !== "undefined") {
+  setLitProdFlags();
   import("@google/model-viewer");
 }
 

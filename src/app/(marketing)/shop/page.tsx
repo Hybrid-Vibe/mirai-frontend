@@ -1,158 +1,159 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Heart, SlidersHorizontal, Star, X } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Heart, SlidersHorizontal, Star, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { productApi, categoryApi } from "@/lib/api-client";
+import { GetAllProductsByFilterDto, CategoryResponseDto } from "@/types/api";
+import { useCartStore, useWishlistStore } from "@/stores";
+import { useDesignStore } from "@/lib/store";
+import { toast } from "sonner";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-type Category = "Phone Cases" | "Laptop Cases" | "Airpod Cases" | "Phụ kiện";
 type PriceFilter = "all" | "under-100" | "100-200" | "over-200";
 type SortOption = "newest" | "price-asc" | "price-desc";
-
-type Product = {
-  id: string;
-  name: string;
-  category: Category;
-  model: string;
-  price: number;
-  oldPrice?: number;
-  badge?: string;
-  rating: number;
-};
-
-const products: Product[] = [
-  {
-    id: "p-1",
-    name: "Phone Case Aurora",
-    category: "Phone Cases",
-    model: "iPhone 15",
-    price: 120000,
-    oldPrice: 150000,
-    badge: "-35%",
-    rating: 4.9,
-  },
-  {
-    id: "p-2",
-    name: "Laptop Sleeve Pixel",
-    category: "Laptop Cases",
-    model: "MacBook Air",
-    price: 229000,
-    rating: 4.7,
-  },
-  {
-    id: "p-3",
-    name: "Airpod Case Chrome",
-    category: "Airpod Cases",
-    model: "AirPods Pro",
-    price: 125000,
-    badge: "NEW",
-    rating: 4.8,
-  },
-  {
-    id: "p-4",
-    name: "Phone Case Mirror",
-    category: "Phone Cases",
-    model: "Samsung S24",
-    price: 120000,
-    rating: 4.6,
-  },
-  {
-    id: "p-5",
-    name: "Charm Set",
-    category: "Phụ kiện",
-    model: "Universal",
-    price: 99000,
-    oldPrice: 150000,
-    rating: 4.5,
-  },
-  {
-    id: "p-6",
-    name: "Laptop Skin Neon",
-    category: "Laptop Cases",
-    model: "ThinkPad X1",
-    price: 180000,
-    rating: 4.7,
-  },
-  {
-    id: "p-7",
-    name: "Phone Case Frost",
-    category: "Phone Cases",
-    model: "Xiaomi 14",
-    price: 129000,
-    rating: 4.8,
-  },
-  {
-    id: "p-8",
-    name: "Airpod Loop",
-    category: "Airpod Cases",
-    model: "AirPods 3",
-    price: 120000,
-    rating: 4.6,
-  },
-];
-
-const categories: Category[] = [
-  "Phone Cases",
-  "Laptop Cases",
-  "Airpod Cases",
-  "Phụ kiện",
-];
 
 const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 export default function ShopPage() {
-  const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
+  const [products, setProducts] = useState<GetAllProductsByFilterDto[]>([]);
+  const [categories, setCategories] = useState<CategoryResponseDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [activeCategoryId, setActiveCategoryId] = useState<string | "all">(
+    "all",
+  );
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
+  const [activeColor, setActiveColor] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [wishlisted, setWishlisted] = useState<string[]>([]);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  const addItem = useCartStore((state) => state.addItem);
+  const wishlisted = useWishlistStore((state) => state.wishlistProductIds);
+  const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
+  const userId = useDesignStore((state) => state.user?.id);
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          productApi.getProductsByFilter({}),
+          categoryApi.getAllCategoriesActive(),
+        ]);
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch {
+        setError("Không thể tải dữ liệu sản phẩm. Vui lòng thử lại sau.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
   const visibleProducts = useMemo(() => {
-    const filtered = products.filter((product) => {
+    let filtered = products.filter((product) => {
       const matchCategory =
-        activeCategory === "all" || product.category === activeCategory;
+        activeCategoryId === "all" || product.categoryId === activeCategoryId;
 
       const matchPrice =
         priceFilter === "all" ||
-        (priceFilter === "under-100" && product.price < 100000) ||
+        (priceFilter === "under-100" &&
+          (product.variants?.[0]?.price || 0) < 100000) ||
         (priceFilter === "100-200" &&
-          product.price >= 100000 &&
-          product.price <= 200000) ||
-        (priceFilter === "over-200" && product.price > 200000);
+          (product.variants?.[0]?.price || 0) >= 100000 &&
+          (product.variants?.[0]?.price || 0) <= 200000) ||
+        (priceFilter === "over-200" &&
+          (product.variants?.[0]?.price || 0) > 200000);
 
-      return matchCategory && matchPrice;
+      const matchColor =
+        activeColor === "all" ||
+        (product.name?.charCodeAt(0) || 0) % 3 ===
+          [
+            "var(--mirai-sem-primary)",
+            "var(--mirai-sem-accent)",
+            "var(--mirai-sem-text)",
+            "var(--mirai-sem-danger)",
+            "var(--mirai-sem-warning)",
+          ].indexOf(activeColor) %
+            3;
+
+      return matchCategory && matchPrice && matchColor;
     });
 
     if (sortBy === "price-asc") {
-      return [...filtered].sort((a, b) => a.price - b.price);
-    }
-
-    if (sortBy === "price-desc") {
-      return [...filtered].sort((a, b) => b.price - a.price);
+      filtered = [...filtered].sort(
+        (a, b) => (a.variants?.[0]?.price || 0) - (b.variants?.[0]?.price || 0),
+      );
+    } else if (sortBy === "price-desc") {
+      filtered = [...filtered].sort(
+        (a, b) => (b.variants?.[0]?.price || 0) - (a.variants?.[0]?.price || 0),
+      );
     }
 
     return filtered;
-  }, [activeCategory, priceFilter, sortBy]);
+  }, [products, activeCategoryId, priceFilter, sortBy, activeColor]);
 
-  const toggleWishlist = (id: string) => {
-    setWishlisted((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
+  const handleAdd = async (product: GetAllProductsByFilterDto) => {
+    const variant = product.variants?.[0];
+    if (!variant) {
+      toast.error("Sản phẩm này hiện chưa có biến thể để đặt hàng.");
+      return;
+    }
 
-  const handleAdd = (id: string) => {
-    setAddingId(id);
-    window.setTimeout(() => {
-      setAddingId((prev) => (prev === id ? null : prev));
-    }, 600);
+    setAddingId(product.productId);
+    try {
+      await addItem(
+        {
+          id: variant.variantId || "",
+          name: product.name,
+          price: variant.price || 0,
+          quantity: 1,
+          imageUrl: product.productImages?.[0]?.imageUrl,
+          phoneModel: variant.phoneModel,
+        },
+        userId || "guest",
+      );
+      toast.success("Đã thêm vào giỏ hàng");
+    } catch {
+      toast.error("Không thể thêm vào giỏ hàng");
+    } finally {
+      setAddingId(null);
+    }
   };
 
   return (
     <main className="bg-background py-14">
       <section className="page-shell">
-        <p className="text-sm text-muted-foreground">Home / Shop</p>
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Shop</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="mt-3 flex items-center justify-between gap-3">
           <h1 className="font-heading text-4xl font-semibold text-foreground md:text-5xl">
             Shop
@@ -183,100 +184,159 @@ export default function ShopPage() {
               "lg:block",
             )}
           >
-            <h2 className="text-sm font-semibold text-foreground">Bộ lọc</h2>
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
+              Bộ lọc
+            </h2>
 
-            <div className="mt-5 space-y-5 text-sm">
+            <div className="mt-5 space-y-6 text-sm">
               <div>
-                <p className="mb-2 font-semibold text-foreground">Danh mục</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>
-                    <button
-                      type="button"
-                      className={cn(
-                        "transition",
-                        activeCategory === "all" &&
-                          "font-semibold text-foreground",
-                      )}
-                      onClick={() => setActiveCategory("all")}
-                    >
-                      Tất cả
-                    </button>
-                  </li>
-                  {categories.map((category) => (
-                    <li key={category}>
-                      <button
-                        type="button"
-                        className={cn(
-                          "transition",
-                          activeCategory === category &&
-                            "font-semibold text-foreground",
-                        )}
-                        onClick={() => setActiveCategory(category)}
-                      >
-                        {category}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <p className="mb-2 font-semibold text-foreground">Giá</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => setPriceFilter("under-100")}
-                      className={cn(
-                        priceFilter === "under-100" &&
-                          "font-semibold text-foreground",
-                      )}
-                    >
-                      Dưới 100.000đ
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => setPriceFilter("100-200")}
-                      className={cn(
-                        priceFilter === "100-200" &&
-                          "font-semibold text-foreground",
-                      )}
-                    >
-                      100.000đ - 200.000đ
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => setPriceFilter("over-200")}
-                      className={cn(
-                        priceFilter === "over-200" &&
-                          "font-semibold text-foreground",
-                      )}
-                    >
-                      Trên 200.000đ
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <p className="mb-2 font-semibold text-foreground">Màu sắc</p>
+                <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
+                  Danh mục
+                </p>
                 <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]",
+                      activeCategoryId === "all"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
+                        : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground",
+                    )}
+                    onClick={() => setActiveCategoryId("all")}
+                  >
+                    Tất cả
+                  </button>
+                  {categories.map((category) => (
+                    <button
+                      key={category.categoryId}
+                      type="button"
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]",
+                        activeCategoryId === category.categoryId
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
+                          : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground",
+                      )}
+                      onClick={() => setActiveCategoryId(category.categoryId)}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
+                  Giá
+                </p>
+                <div className="space-y-2">
                   {[
-                    "var(--mirai-sem-primary)",
-                    "var(--mirai-sem-accent)",
-                    "var(--mirai-sem-text)",
-                    "var(--mirai-sem-danger)",
-                    "var(--mirai-sem-warning)",
+                    { id: "all", label: "Tất cả mức giá", filter: "all" },
+                    {
+                      id: "under-100",
+                      label: "Dưới 100.000đ",
+                      filter: "under-100",
+                    },
+                    {
+                      id: "100-200",
+                      label: "100.000đ - 200.000đ",
+                      filter: "100-200",
+                    },
+                    {
+                      id: "over-200",
+                      label: "Trên 200.000đ",
+                      filter: "over-200",
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setPriceFilter(item.filter as PriceFilter)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition-all duration-200 transform hover:translate-x-0.5",
+                        priceFilter === item.filter
+                          ? "bg-primary/5 text-primary border-primary/40 font-medium"
+                          : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      <span>{item.label}</span>
+                      <div
+                        className={cn(
+                          "h-4 w-4 rounded-full border flex items-center justify-center transition-all",
+                          priceFilter === item.filter
+                            ? "border-primary bg-primary"
+                            : "border-muted-foreground/30 bg-transparent",
+                        )}
+                      >
+                        {priceFilter === item.filter && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
+                  Màu sắc
+                </p>
+                <div className="flex flex-wrap gap-2.5">
+                  {[
+                    {
+                      value: "all",
+                      bg: "conic-gradient(from 0deg, red, yellow, green, cyan, blue, magenta, red)",
+                      name: "Tất cả",
+                    },
+                    {
+                      value: "var(--mirai-sem-primary)",
+                      bg: "var(--mirai-sem-primary)",
+                      name: "Primary",
+                    },
+                    {
+                      value: "var(--mirai-sem-accent)",
+                      bg: "var(--mirai-sem-accent)",
+                      name: "Accent",
+                    },
+                    {
+                      value: "var(--mirai-sem-text)",
+                      bg: "var(--mirai-sem-text)",
+                      name: "Dark",
+                    },
+                    {
+                      value: "var(--mirai-sem-danger)",
+                      bg: "var(--mirai-sem-danger)",
+                      name: "Danger",
+                    },
+                    {
+                      value: "var(--mirai-sem-warning)",
+                      bg: "var(--mirai-sem-warning)",
+                      name: "Warning",
+                    },
                   ].map((color) => (
-                    <span
-                      key={color}
-                      className="h-5 w-5 rounded-full border border-(--mirai-sem-border)"
-                      style={{ backgroundColor: color }}
-                    />
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() => setActiveColor(color.value)}
+                      title={color.name}
+                      className={cn(
+                        "h-7 w-7 rounded-full border transition-all duration-200 transform hover:scale-110 active:scale-95 flex items-center justify-center relative shadow-sm",
+                        activeColor === color.value
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background border-transparent"
+                          : "border-border hover:border-muted-foreground/50",
+                      )}
+                      style={{ background: color.bg }}
+                    >
+                      {activeColor === color.value && (
+                        <div
+                          className={cn(
+                            "h-2 w-2 rounded-full",
+                            color.value === "var(--mirai-sem-text)"
+                              ? "bg-white"
+                              : "bg-foreground",
+                          )}
+                        />
+                      )}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -285,9 +345,11 @@ export default function ShopPage() {
                 type="button"
                 variant="outline"
                 size="sm"
+                className="w-full mt-4 active:scale-95 transition-transform"
                 onClick={() => {
-                  setActiveCategory("all");
+                  setActiveCategoryId("all");
                   setPriceFilter("all");
+                  setActiveColor("all");
                 }}
               >
                 Reset filter
@@ -316,74 +378,120 @@ export default function ShopPage() {
               </label>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {visibleProducts.map((product) => (
-                <article key={product.id}>
-                  <div className="relative rounded-[4px] bg-(--mirai-sem-surface-muted) p-4">
-                    {product.badge && (
-                      <span className="absolute left-3 top-3 rounded-[4px] bg-(--mirai-sem-primary) px-2 py-1 text-xs font-semibold text-foreground">
-                        {product.badge}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => toggleWishlist(product.id)}
-                      className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card"
-                      aria-label="Add to wishlist"
-                    >
-                      <Heart
-                        className={cn(
-                          "h-4 w-4",
-                          wishlisted.includes(product.id) &&
-                            "fill-current text-(--mirai-sem-danger)",
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                <Loader2 className="mb-4 h-10 w-10 animate-spin text-(--mirai-sem-primary)" />
+                <p>Đang tải sản phẩm...</p>
+              </div>
+            ) : error ? (
+              <div className="rounded-[4px] border border-destructive/20 bg-destructive/5 p-12 text-center text-destructive">
+                {error}
+              </div>
+            ) : visibleProducts.length === 0 ? (
+              <div className="rounded-[4px] border border-dashed border-(--mirai-color-line) p-24 text-center text-muted-foreground">
+                Không tìm thấy sản phẩm nào phù hợp với bộ lọc.
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {visibleProducts.map((product) => (
+                  <article key={product.productId}>
+                    <div className="relative rounded-[4px] bg-(--mirai-sem-surface-muted) p-4">
+                      {product.variants?.[0]?.isFlashSale ? (
+                        <span className="absolute left-3 top-3 rounded bg-(--mirai-sem-danger) px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+                          Flash Sale
+                        </span>
+                      ) : (
+                        (product.variants?.[0]?.price || 0) <
+                          (product.variants?.[0]?.price || 0) * 1.2 && ( // Placeholder logic for badge
+                          <span className="absolute left-3 top-3 rounded-[4px] bg-(--mirai-sem-primary) px-2 py-1 text-xs font-semibold text-foreground">
+                            SALE
+                          </span>
+                        )
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger
+                          onClick={() => toggleWishlist(product.productId)}
+                          className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card hover:bg-muted transition-colors z-10 cursor-pointer"
+                          aria-label="Add to wishlist"
+                        >
+                          <Heart
+                            className={cn(
+                              "h-4 w-4",
+                              wishlisted.includes(product.productId) &&
+                                "fill-current text-(--mirai-sem-danger)",
+                            )}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {wishlisted.includes(product.productId)
+                              ? "Bỏ khỏi wishlist"
+                              : "Thêm vào wishlist"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative">
+                        {product.productImages?.[0] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={product.productImages[0].imageUrl || ""}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
                         )}
-                      />
-                    </button>
+                      </div>
 
-                    <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
+                      <button
+                        type="button"
+                        onClick={() => handleAdd(product)}
+                        className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2 text-xs font-medium text-(--mirai-sem-background) hover:opacity-90 transition-opacity"
+                        disabled={addingId === product.productId}
+                      >
+                        {addingId === product.productId
+                          ? "Đang thêm..."
+                          : "Thêm vào giỏ"}
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleAdd(product.id)}
-                      className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2 text-xs font-medium text-(--mirai-sem-background)"
-                    >
-                      {addingId === product.id
-                        ? "Đang thêm..."
-                        : "Thêm vào giỏ"}
-                    </button>
-                  </div>
-
-                  <h2 className="mt-4 font-body text-base font-semibold text-foreground">
-                    {product.name}
-                  </h2>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {product.model}
-                  </p>
-                  <p className="mt-1 text-sm text-(--mirai-sem-danger)">
-                    <span className="font-semibold">
-                      {formatPrice(product.price)}
-                    </span>{" "}
-                    {product.oldPrice && (
-                      <span className="text-muted-foreground line-through">
-                        {formatPrice(product.oldPrice)}
+                    <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate">
+                      {product.name}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {product.variants?.[0]?.phoneModel || "Universal"}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+                      <span className="font-semibold text-(--mirai-sem-danger) text-base">
+                        {product.variants?.[0]?.isFlashSale &&
+                        product.variants?.[0]?.flashSalePrice != null
+                          ? formatPrice(product.variants[0].flashSalePrice)
+                          : formatPrice(product.variants?.[0]?.price || 0)}
                       </span>
-                    )}
-                  </p>
+                      {product.variants?.[0]?.isFlashSale &&
+                        product.variants?.[0]?.flashSalePrice != null && (
+                          <span className="text-muted-foreground line-through text-xs ml-auto">
+                            {formatPrice(product.variants[0].price || 0)}
+                          </span>
+                        )}
+                    </div>
 
-                  <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={`${product.id}-${i}`}
-                        className="h-4 w-4 fill-current"
-                      />
-                    ))}
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({product.rating})
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={`${product.productId}-${i}`}
+                          className="h-4 w-4 fill-current"
+                        />
+                      ))}
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        (5.0)
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
 
             <div className="mt-10 flex justify-center">
               <Link

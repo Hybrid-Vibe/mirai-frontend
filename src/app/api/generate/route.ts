@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { prompt, phoneModel, style } = body;
+  const { prompt, phoneModel, style, refImage } = body;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     return NextResponse.json<GenerateErrorResponse>(
@@ -47,29 +47,18 @@ export async function POST(request: Request) {
   try {
     // --- 2. Enhance prompt (Vietnamese → English professional prompt) ---
     const rawPrompt = style ? `${prompt}, phong cách ${style}` : prompt;
-    const enhancedPrompt = await enhancePrompt(rawPrompt, phoneModel);
+    const enhancedPrompt = await enhancePrompt(rawPrompt, phoneModel, refImage);
 
-    // --- 3. Generate 3 design variants in parallel ---
-    const designPromises = Array.from({ length: 3 }, async (_, index) => {
-      // Add slight variation to each prompt for diversity
-      const variations = [
-        enhancedPrompt,
-        `${enhancedPrompt}, alternative color palette, variant design`,
-        `${enhancedPrompt}, minimalist variation, subtle details`,
-      ];
+    // --- 3. Generate 1 design variant to prevent rate limit (429) on free tier ---
+    const designs: GeneratedDesign[] = [];
+    console.log(`[AI Generate] Generating 1 design variant...`);
+    const imageUrl = await generateDesignImage(enhancedPrompt);
 
-      const imageUrl = await generateDesignImage(variations[index]);
-
-      const design: GeneratedDesign = {
-        id: `design-${Date.now()}-${index}`,
-        imageUrl,
-        enhancedPrompt: variations[index],
-      };
-
-      return design;
+    designs.push({
+      id: `design-${Date.now()}-0`,
+      imageUrl,
+      enhancedPrompt,
     });
-
-    const designs = await Promise.all(designPromises);
 
     // --- 4. Return successful response ---
     const durationMs = Date.now() - startTime;

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { PhoneCaseTemplate } from "@/constants/phone-templates";
 
 export interface CanvasElement {
   id: string;
@@ -35,6 +36,12 @@ interface DesignState {
   canvasDataUrl: string | null;
   user: User | null;
 
+  // --- Template & Canvas 2D state ---
+  selectedTemplate: PhoneCaseTemplate | null;
+  showGuides: boolean;
+  showCameraCutout: boolean;
+  backgroundImage: string | null;
+
   setPhoneModel: (model: string) => void;
   setPrompt: (prompt: string) => void;
   setGeneratedImages: (images: string[]) => void;
@@ -46,6 +53,13 @@ interface DesignState {
   setSelectedElementId: (id: string | null) => void;
   setCanvasDataUrl: (url: string | null) => void;
   setUser: (user: User | null) => void;
+
+  // --- Template & Canvas 2D actions ---
+  setSelectedTemplate: (template: PhoneCaseTemplate | null) => void;
+  setShowGuides: (show: boolean) => void;
+  setShowCameraCutout: (show: boolean) => void;
+  setBackgroundImage: (url: string | null) => void;
+
   reset: () => void;
 }
 
@@ -58,6 +72,12 @@ export const useDesignStore = create<DesignState>((set) => ({
   selectedElementId: null,
   canvasDataUrl: null,
   user: null,
+
+  // --- Template & Canvas 2D defaults ---
+  selectedTemplate: null,
+  showGuides: true,
+  showCameraCutout: true,
+  backgroundImage: null,
 
   setPhoneModel: (phoneModel) => set({ phoneModel }),
   setPrompt: (prompt) => set({ prompt }),
@@ -81,6 +101,13 @@ export const useDesignStore = create<DesignState>((set) => ({
   setSelectedElementId: (selectedElementId) => set({ selectedElementId }),
   setCanvasDataUrl: (canvasDataUrl) => set({ canvasDataUrl }),
   setUser: (user) => set({ user }),
+
+  // --- Template & Canvas 2D actions ---
+  setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
+  setShowGuides: (showGuides) => set({ showGuides }),
+  setShowCameraCutout: (showCameraCutout) => set({ showCameraCutout }),
+  setBackgroundImage: (backgroundImage) => set({ backgroundImage }),
+
   reset: () =>
     set({
       phoneModel: "",
@@ -90,5 +117,9 @@ export const useDesignStore = create<DesignState>((set) => ({
       elements: [],
       selectedElementId: null,
       canvasDataUrl: null,
+      selectedTemplate: null,
+      showGuides: true,
+      showCameraCutout: true,
+      backgroundImage: null,
     }),
 }));

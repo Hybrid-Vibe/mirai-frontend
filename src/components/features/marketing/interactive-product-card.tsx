@@ -2,6 +2,9 @@
 
 import { Heart, Star } from "lucide-react";
 import { useState } from "react";
+import { useCartStore } from "@/stores";
+import { useDesignStore } from "@/lib/store";
+import { toast } from "sonner";
 
 export type Product = {
   id: string;
@@ -9,11 +12,41 @@ export type Product = {
   price: string;
   oldPrice?: string;
   badge?: string;
+  ratingAvg?: number;
+  ratingCount?: number;
 };
 
 export function InteractiveProductCard({ product }: { product: Product }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [addingId, setAddingId] = useState<string | null>(null);
+
+  const addItem = useCartStore((state) => state.addItem);
+  const userId = useDesignStore((state) => state.user?.id);
+
+  const handleAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setAddingId(product.id);
+    try {
+      const numericPrice =
+        parseInt(product.price.replace(/[^\d]/g, ""), 10) || 0;
+      await addItem(
+        {
+          id: product.id,
+          name: product.name,
+          price: numericPrice,
+          quantity: 1,
+          phoneModel: "Universal",
+        },
+        userId || "guest",
+      );
+      toast.success("Đã thêm vào giỏ hàng");
+    } catch {
+      toast.error("Không thể thêm vào giỏ hàng");
+    } finally {
+      setAddingId(null);
+    }
+  };
 
   return (
     <article
@@ -22,7 +55,7 @@ export function InteractiveProductCard({ product }: { product: Product }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative rounded-[4px] bg-(--mirai-sem-surface-muted) p-4 overflow-hidden">
-        {product.badge && (
+        {product.badge && product.badge !== "FLASH SALE" && (
           <span className="absolute left-3 top-3 z-10 rounded-[4px] bg-(--mirai-sem-primary) px-2 py-1 text-xs font-semibold text-foreground">
             {product.badge}
           </span>
@@ -49,13 +82,11 @@ export function InteractiveProductCard({ product }: { product: Product }) {
         >
           <button
             type="button"
-            className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2.5 text-xs font-semibold text-(--mirai-sem-background) shadow-lg transition-all hover:bg-[#48E1ED] hover:text-[#0F0F0F] active:scale-[0.98]"
-            onClick={(e) => {
-              e.preventDefault();
-              // Add to cart logic
-            }}
+            className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2.5 text-xs font-semibold text-(--mirai-sem-background) shadow-lg transition-all hover:bg-[#48E1ED] hover:text-[#0F0F0F] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+            onClick={handleAdd}
+            disabled={addingId === product.id}
           >
-            Thêm vào giỏ hàng
+            {addingId === product.id ? "Đang thêm..." : "Thêm vào giỏ hàng"}
           </button>
         </div>
       </div>
@@ -63,21 +94,31 @@ export function InteractiveProductCard({ product }: { product: Product }) {
       <h3 className="mt-4 font-body text-base font-semibold text-foreground cursor-pointer hover:text-(--mirai-sem-primary) transition-colors">
         {product.name}
       </h3>
-      <div className="mt-1 flex items-center gap-3 text-sm">
-        <span className="font-semibold text-(--mirai-sem-danger)">
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-semibold text-(--mirai-sem-danger) text-base">
           {product.price}
         </span>
+        {product.badge === "FLASH SALE" && (
+          <span className="rounded bg-(--mirai-sem-danger) px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+            Flash Sale
+          </span>
+        )}
         {product.oldPrice && (
-          <span className="text-muted-foreground line-through">
+          <span className="text-muted-foreground line-through text-xs ml-auto">
             {product.oldPrice}
           </span>
         )}
       </div>
       <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={`${product.id}-${i}`} className="h-4 w-4 fill-current" />
+          <Star
+            key={`${product.id}-${i}`}
+            className={`h-4 w-4 ${i < (product.ratingAvg ?? 5) ? "fill-current" : "fill-transparent text-muted-foreground"}`}
+          />
         ))}
-        <span className="ml-1 text-xs text-muted-foreground">(65)</span>
+        <span className="ml-1 text-xs text-muted-foreground">
+          ({product.ratingCount ?? 0})
+        </span>
       </div>
     </article>
   );
