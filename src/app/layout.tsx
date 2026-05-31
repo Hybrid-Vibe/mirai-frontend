@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "@/components/common";
 import { SupabaseAuthProvider } from "@/components/providers/supabase-auth-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastConfigurator } from "@/components/providers/toast-configurator";
 import "./globals.css";
 
 const fontDisplay = Bricolage_Grotesque({
@@ -86,6 +87,7 @@ export default function RootLayout({
       <body
         className={`${fontDisplay.variable} ${fontBody.variable} ${fontUi.variable} min-h-screen bg-background text-foreground antialiased`}
       >
+        <ToastConfigurator />
         <SessionProvider>
           <SupabaseAuthProvider>
             <TooltipProvider>{children}</TooltipProvider>
@@ -100,6 +102,10 @@ export default function RootLayout({
               border: "1px solid var(--mirai-sem-border)",
               color: "var(--mirai-sem-text)",
             },
+          }}
+          icons={{
+            info: null,
+            warning: null,
           }}
         />
       </body>

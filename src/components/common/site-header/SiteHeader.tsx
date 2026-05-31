@@ -20,7 +20,7 @@ import { useState, useEffect } from "react";
 import { MAIN_NAV_ITEMS } from "@/constants/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { TopAnnouncementBar } from "./TopAnnouncementBar";
-import { useCartStore } from "@/stores";
+import { useCartStore, useWishlistStore } from "@/stores";
 import { useDesignStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -52,6 +52,10 @@ export function SiteHeader() {
   const cartItems = useCartStore((state) => state.items);
   const fetchCart = useCartStore((state) => state.fetchCart);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const wishlistProductIds = useWishlistStore(
+    (state) => state.wishlistProductIds,
+  );
+  const wishlistCount = wishlistProductIds.length;
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
@@ -152,6 +156,11 @@ export function SiteHeader() {
             >
               <span className="relative">
                 <Heart className="h-5 w-5" />
+                {mounted && wishlistCount > 0 && (
+                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-(--mirai-color-brand-strong) px-1 text-[10px] font-semibold text-white">
+                    {wishlistCount}
+                  </span>
+                )}
               </span>
             </Link>
 
@@ -248,10 +257,15 @@ export function SiteHeader() {
           <div className="flex items-center gap-2 lg:hidden">
             <Link
               href="/wishlist"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-(--mirai-color-line) text-(--mirai-color-ink) transition-all hover:text-(--mirai-sem-primary) hover:bg-(--mirai-color-surface-muted) active:scale-[0.95]"
+              className="inline-flex relative h-8 w-8 items-center justify-center rounded-[4px] border border-(--mirai-color-line) text-(--mirai-color-ink) transition-all hover:text-(--mirai-sem-primary) hover:bg-(--mirai-color-surface-muted) active:scale-[0.95]"
               aria-label="Wishlist"
             >
               <Heart className="h-4 w-4" />
+              {mounted && wishlistCount > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-(--mirai-color-brand-strong) px-1 text-[9px] font-semibold text-white">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
             <Link
               href="/cart"
