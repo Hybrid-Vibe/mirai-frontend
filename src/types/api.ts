@@ -520,3 +520,169 @@ export interface UpdateAIImageStatusDto {
   thumbnailUrl?: string;
   errorMessage?: string;
 }
+
+// ----------------------------------------------------------------------
+// Admin DTOs & Query Filters
+// ----------------------------------------------------------------------
+
+export interface AdminDashboardDto {
+  totalUsers: number;
+  activeUsers: number;
+  totalOrders: number;
+  pendingOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  activeProducts: number;
+  pendingReviews: number;
+  totalPayments: number;
+}
+
+export interface AdminRevenueChartPointDto {
+  label: string;
+  date: string;
+  revenue: number;
+}
+
+export interface AdminRevenueChartDto {
+  period: string;
+  data: AdminRevenueChartPointDto[];
+}
+
+export interface AdminUserFilter {
+  search?: string;
+  roleId?: string;
+  isActive?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface AdminUpdateUserDto {
+  fullName?: string;
+  phone?: string;
+  roleId?: string;
+  isActive?: boolean;
+}
+
+export interface AdminUpdateUserRoleDto {
+  roleId: string;
+}
+
+export interface AdminUpdateUserStatusDto {
+  isActive: boolean;
+}
+
+export interface AdminOrderFilter {
+  status?: number;
+  paymentStatus?: number;
+  userId?: string;
+  search?: string;
+  fromDate?: string;
+  toDate?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface AdminOrderListDto {
+  orderId: string;
+  orderNumber: string;
+  userId: string;
+  userFullName?: string;
+  totalAmount: number;
+  status: number;
+  paymentStatus: number;
+  createdAt: string;
+}
+
+export interface AdminOrderDetailDto {
+  orderId: string;
+  orderNumber: string;
+  userId: string;
+  userFullName?: string;
+  userEmail?: string;
+  userPhone?: string;
+  totalAmount: number;
+  status: number;
+  paymentStatus: number;
+  note?: string;
+  createdAt: string;
+  items: OrderItemResponseDto[];
+}
+
+export interface AdminPaymentFilter {
+  status?: string;
+  search?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface AdminPaymentDto {
+  paymentId: string;
+  orderId: string;
+  orderNumber?: string;
+  amount: number;
+  paymentMethod: string;
+  transactionId?: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminReviewFilter {
+  isApproved?: boolean;
+  productId?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface AdminReviewDto {
+  reviewId: string;
+  productId: string;
+  productName?: string;
+  userId: string;
+  userName?: string;
+  rating: number;
+  title?: string;
+  comment?: string;
+  isApproved: boolean;
+  createdAt: string;
+}
+
+export interface AdminShippingFilter {
+  orderId?: string;
+  status?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
+export interface AdminShippingDto {
+  shippingId: string;
+  orderId: string;
+  carrier?: string;
+  trackingNumber?: string;
+  shippingFee: number;
+  status: string;
+  estimatedDelivery?: string;
+  actualDelivery?: string;
+  createdAt: string;
+}
+
+export interface AdminCreateShippingDto {
+  orderId: string;
+  carrier?: string;
+  trackingNumber?: string;
+  shippingFee: number;
+  estimatedDelivery?: string;
+}
+
+export interface AdminUpdateShippingDto {
+  carrier?: string;
+  trackingNumber?: string;
+  status?: string;
+  actualDelivery?: string;
+}
+
+export interface AdminAIImageFilter {
+  status?: string;
+  userId?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}

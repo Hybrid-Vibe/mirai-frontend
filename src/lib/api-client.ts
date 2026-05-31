@@ -60,6 +60,25 @@ import type {
   CreateAIImageDto,
   AIImageDto,
   UpdateAIImageStatusDto,
+  // Admin
+  AdminDashboardDto,
+  AdminRevenueChartDto,
+  AdminUserFilter,
+  AdminUpdateUserDto,
+  AdminUpdateUserRoleDto,
+  AdminUpdateUserStatusDto,
+  AdminOrderFilter,
+  AdminOrderListDto,
+  AdminOrderDetailDto,
+  AdminPaymentFilter,
+  AdminPaymentDto,
+  AdminReviewFilter,
+  AdminReviewDto,
+  AdminShippingFilter,
+  AdminShippingDto,
+  AdminCreateShippingDto,
+  AdminUpdateShippingDto,
+  AdminAIImageFilter,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 
@@ -256,23 +275,25 @@ export const userApi = {
     return data;
   },
 
-  /** POST /api/User/change-password */
+  /** PUT /api/User/Change-Password{userId} */
   changePassword: async (
+    userId: string,
     dto: ChangePasswordRequestDto,
   ): Promise<{ message: string }> => {
-    const { data } = await apiClient.post<{ message: string }>(
-      "/User/change-password",
+    const { data } = await apiClient.put<{ message: string }>(
+      `/User/Change-Password${userId}`,
       dto,
     );
     return data;
   },
 
-  /** PUT /api/User/update-profile */
+  /** PUT /api/User/Update-Profile/{userId} */
   updateProfile: async (
+    userId: string,
     dto: UpdateProfileRequestDto,
   ): Promise<{ message: string }> => {
     const { data } = await apiClient.put<{ message: string }>(
-      "/User/update-profile",
+      `/User/Update-Profile/${userId}`,
       dto,
     );
     return data;
@@ -749,9 +770,9 @@ export const cartApi = {
     return data;
   },
 
-  /** DELETE /api/CartItem/Delete-cart-item/{userId}/{variantId} */
-  deleteCartItem: async (userId: string, variantId: string): Promise<void> => {
-    await apiClient.delete(`/CartItem/Delete-cart-item/${userId}/${variantId}`);
+  /** DELETE /api/CartItem/Delete-cart-item-{cartItemId} */
+  deleteCartItem: async (cartItemId: string): Promise<void> => {
+    await apiClient.delete(`/CartItem/Delete-cart-item-${cartItemId}`);
   },
 };
 
@@ -843,6 +864,268 @@ export const aiApi = {
         timeout: 60_000, // AI generation can take up to 60s
         headers,
       },
+    );
+    return data;
+  },
+};
+
+// ======================================================================
+// API Services — Admin Management
+// ======================================================================
+
+export const adminApi = {
+  /** GET /api/admin/dashboard/summary */
+  getDashboardSummary: async (): Promise<AdminDashboardDto> => {
+    const { data } = await apiClient.get<AdminDashboardDto>(
+      "/admin/dashboard/summary",
+    );
+    return data;
+  },
+
+  /** GET /api/admin/dashboard/revenue-chart */
+  getRevenueChart: async (
+    period: string = "week",
+  ): Promise<AdminRevenueChartDto> => {
+    const { data } = await apiClient.get<AdminRevenueChartDto>(
+      "/admin/dashboard/revenue-chart",
+      {
+        params: { period },
+      },
+    );
+    return data;
+  },
+
+  /** GET /api/admin/users */
+  getUsers: async (filter: AdminUserFilter): Promise<GetUserDto[]> => {
+    const { data } = await apiClient.get<GetUserDto[]>("/admin/users", {
+      params: filter,
+    });
+    return normalizeArray<GetUserDto>(data);
+  },
+
+  /** GET /api/admin/users/{userId} */
+  getUserById: async (userId: string): Promise<GetUserDto> => {
+    const { data } = await apiClient.get<GetUserDto>(`/admin/users/${userId}`);
+    return data;
+  },
+
+  /** PUT /api/admin/users/{userId} */
+  updateUser: async (
+    userId: string,
+    dto: AdminUpdateUserDto,
+  ): Promise<GetUserDto> => {
+    const { data } = await apiClient.put<GetUserDto>(
+      `/admin/users/${userId}`,
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/users/{userId}/role */
+  updateUserRole: async (
+    userId: string,
+    dto: AdminUpdateUserRoleDto,
+  ): Promise<GetUserDto> => {
+    const { data } = await apiClient.put<GetUserDto>(
+      `/admin/users/${userId}/role`,
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/users/{userId}/status */
+  updateUserStatus: async (
+    userId: string,
+    dto: AdminUpdateUserStatusDto,
+  ): Promise<GetUserDto> => {
+    const { data } = await apiClient.put<GetUserDto>(
+      `/admin/users/${userId}/status`,
+      dto,
+    );
+    return data;
+  },
+
+  /** GET /api/admin/orders */
+  getOrders: async (filter: AdminOrderFilter): Promise<AdminOrderListDto[]> => {
+    const { data } = await apiClient.get<AdminOrderListDto[]>("/admin/orders", {
+      params: filter,
+    });
+    return normalizeArray<AdminOrderListDto>(data);
+  },
+
+  /** GET /api/admin/orders/{orderId} */
+  getOrderDetail: async (orderId: string): Promise<AdminOrderDetailDto> => {
+    const { data } = await apiClient.get<AdminOrderDetailDto>(
+      `/admin/orders/${orderId}`,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/orders/{orderId}/status */
+  updateOrderStatus: async (
+    orderId: string,
+    newStatus: number,
+  ): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/orders/${orderId}/status`,
+      newStatus,
+      { headers: { "Content-Type": "application/json" } },
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/orders/{orderId}/payment-status */
+  updateOrderPaymentStatus: async (
+    orderId: string,
+    newStatus: number,
+  ): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/orders/${orderId}/payment-status`,
+      newStatus,
+      { headers: { "Content-Type": "application/json" } },
+    );
+    return data;
+  },
+
+  /** GET /api/admin/payments */
+  getPayments: async (
+    filter: AdminPaymentFilter,
+  ): Promise<AdminPaymentDto[]> => {
+    const { data } = await apiClient.get<AdminPaymentDto[]>("/admin/payments", {
+      params: filter,
+    });
+    return normalizeArray<AdminPaymentDto>(data);
+  },
+
+  /** PUT /api/admin/payments/{paymentId}/status */
+  updatePaymentStatus: async (
+    paymentId: string,
+    newStatus: number,
+  ): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/payments/${paymentId}/status`,
+      newStatus,
+      { headers: { "Content-Type": "application/json" } },
+    );
+    return data;
+  },
+
+  /** GET /api/admin/reviews */
+  getReviews: async (filter: AdminReviewFilter): Promise<AdminReviewDto[]> => {
+    const { data } = await apiClient.get<AdminReviewDto[]>("/admin/reviews", {
+      params: filter,
+    });
+    return normalizeArray<AdminReviewDto>(data);
+  },
+
+  /** PUT /api/admin/reviews/{reviewId}/approve */
+  approveReview: async (reviewId: string): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/reviews/${reviewId}/approve`,
+    );
+    return data;
+  },
+
+  /** DELETE /api/admin/reviews/{reviewId} */
+  deleteReview: async (reviewId: string): Promise<string> => {
+    const { data } = await apiClient.delete<string>(
+      `/admin/reviews/${reviewId}`,
+    );
+    return data;
+  },
+
+  /** GET /api/admin/shippings */
+  getShippings: async (
+    filter: AdminShippingFilter,
+  ): Promise<AdminShippingDto[]> => {
+    const { data } = await apiClient.get<AdminShippingDto[]>(
+      "/admin/shippings",
+      {
+        params: filter,
+      },
+    );
+    return normalizeArray<AdminShippingDto>(data);
+  },
+
+  /** GET /api/admin/shippings/{shippingId} */
+  getShippingById: async (shippingId: string): Promise<AdminShippingDto> => {
+    const { data } = await apiClient.get<AdminShippingDto>(
+      `/admin/shippings/${shippingId}`,
+    );
+    return data;
+  },
+
+  /** POST /api/admin/shippings */
+  createShipping: async (
+    dto: AdminCreateShippingDto,
+  ): Promise<AdminShippingDto> => {
+    const { data } = await apiClient.post<AdminShippingDto>(
+      "/admin/shippings",
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/shippings/{shippingId} */
+  updateShipping: async (
+    shippingId: string,
+    dto: AdminUpdateShippingDto,
+  ): Promise<AdminShippingDto> => {
+    const { data } = await apiClient.put<AdminShippingDto>(
+      `/admin/shippings/${shippingId}`,
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/products/{productId}/deactivate */
+  deactivateProduct: async (productId: string): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/products/${productId}/deactivate`,
+    );
+    return data;
+  },
+
+  /** PUT /api/admin/products/{productId}/activate */
+  activateProduct: async (productId: string): Promise<string> => {
+    const { data } = await apiClient.put<string>(
+      `/admin/products/${productId}/activate`,
+    );
+    return data;
+  },
+
+  /** DELETE /api/admin/products/{productId} */
+  deleteProduct: async (productId: string): Promise<string> => {
+    const { data } = await apiClient.delete<string>(
+      `/admin/products/${productId}`,
+    );
+    return data;
+  },
+
+  /** GET /api/admin/ai-images */
+  getAIImages: async (filter: AdminAIImageFilter): Promise<AIImageDto[]> => {
+    const { data } = await apiClient.get<AIImageDto[]>("/admin/ai-images", {
+      params: filter,
+    });
+    return normalizeArray<AIImageDto>(data);
+  },
+
+  /** PUT /api/admin/ai-images/{aiImageId}/status */
+  updateAIImageStatus: async (
+    aiImageId: string,
+    dto: UpdateAIImageStatusDto,
+  ): Promise<AIImageDto> => {
+    const { data } = await apiClient.put<AIImageDto>(
+      `/admin/ai-images/${aiImageId}/status`,
+      dto,
+    );
+    return data;
+  },
+
+  /** DELETE /api/admin/ai-images/{aiImageId} */
+  deleteAIImage: async (aiImageId: string): Promise<string> => {
+    const { data } = await apiClient.delete<string>(
+      `/admin/ai-images/${aiImageId}`,
     );
     return data;
   },
