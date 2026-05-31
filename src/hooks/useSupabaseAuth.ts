@@ -4,6 +4,8 @@ import { useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useDesignStore } from "@/lib/store";
+import { useCartStore } from "@/stores/cart-store";
+import { useWishlistStore } from "@/stores/wishlist-store";
 import { toast } from "sonner";
 import { setAuthToken, clearAuthToken } from "@/lib/api-client";
 
@@ -39,6 +41,12 @@ export function useSupabaseAuth() {
         name: nameToUse,
         avatar_url: googleAvatar,
       });
+
+      // Load user cart and wishlist immediately
+      useCartStore.getState().loadUserCart(authUser.id);
+      useWishlistStore.getState().loadUserWishlist(authUser.id);
+      // Synchronize latest cart from backend asynchronously
+      useCartStore.getState().fetchCart(authUser.id);
 
       // Check if user exists in custom 'users' table
       try {
@@ -168,6 +176,8 @@ export function useSupabaseAuth() {
       } else if (event === "SIGNED_OUT") {
         clearAuthToken();
         setUser(null);
+        useCartStore.getState().clearCart();
+        useWishlistStore.getState().clearWishlist();
       }
     });
 

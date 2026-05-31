@@ -19,9 +19,9 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { userApi, addressApi, getAuthToken } from "@/lib/api-client";
+import { userApi, addressApi, orderApi, getAuthToken } from "@/lib/api-client";
 import { supabase } from "@/lib/supabase";
-import { GetUserDto } from "@/types/api";
+import { GetUserDto, OrderResponseDto } from "@/types/api";
 import { toast } from "sonner";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 
@@ -1273,7 +1273,7 @@ function AddressSection({
                 key={address.id}
                 className="flex flex-col sm:flex-row justify-between gap-4 p-5 rounded-lg border bg-card hover:border-primary/50 transition-colors"
               >
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="font-medium">{user?.name || "User"}</span>
                     {address.phone && (
@@ -1287,7 +1287,23 @@ function AddressSection({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-muted-foreground">{address.addressLine}</p>
+                  {/* Full address breakdown */}
+                  <div className="space-y-0.5">
+                    {address.rawDetails?.addressLine && (
+                      <p className="text-sm text-foreground">
+                        {address.rawDetails.addressLine}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {[
+                        address.rawDetails?.ward,
+                        address.rawDetails?.district,
+                        address.rawDetails?.province,
+                      ]
+                        .filter(Boolean)
+                        .join(", ") || address.addressLine}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 sm:self-start">
                   <Button
@@ -1779,9 +1795,51 @@ function PaymentSection({
   );
 }
 
+// Map numeric order status to Vietnamese label
+const ORDER_STATUS_MAP: Record<number, { label: string; color: string }> = {
+  0: { label: "Đã đặt", color: "bg-blue-100 text-blue-700" },
+  1: { label: "Đang sản xuất", color: "bg-yellow-100 text-yellow-700" },
+  2: { label: "Đang giao", color: "bg-orange-100 text-orange-700" },
+  3: { label: "Đã giao", color: "bg-green-100 text-green-700" },
+  4: { label: "Đã huỷ", color: "bg-red-100 text-red-700" },
+};
+
+const FILTER_STATUS_MAP: Record<string, number | null> = {
+  all: null,
+  "Đã đặt": 0,
+  "Đang sản xuất": 1,
+  "Đang giao": 2,
+  "Đã giao": 3,
+  "Đã huỷ": 4,
+};
+
 function OrdersSection({ initialFilter }: { initialFilter: string }) {
+  const user = useDesignStore((state) => state.user);
   const [filter, setFilter] = useState(initialFilter);
-  // Feature is waiting for backend API (GetOrdersByUserId)
+  const [orders, setOrders] = useState<OrderResponseDto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    setError(null);
+    orderApi
+      .getOrdersByUserId(user.id)
+      .then((data) => setOrders(data))
+      .catch((err) => {
+        console.error("Failed to fetch orders:", err);
+        setError("Không thể tải danh sách đơn hàng. Vui lòng thử lại!");
+      })
+      .finally(() => setLoading(false));
+  }, [user?.id]);
+
+  const filteredOrders = useMemo(() => {
+    const targetStatus = FILTER_STATUS_MAP[filter];
+    if (targetStatus === null || targetStatus === undefined) return orders;
+    return orders.filter((o) => o.status === targetStatus);
+  }, [orders, filter]);
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -1810,13 +1868,105 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
         </div>
       </div>
 
-      <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-        <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
-        <h3 className="text-lg font-medium text-foreground mb-1">
-          Chưa có đơn hàng
-        </h3>
-        <p>Tính năng xem lịch sử đơn hàng đang được cập nhật từ Backend.</p>
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-(--mirai-sem-primary)" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+          <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
+          <p className="text-sm text-red-500">{error}</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+          <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
+          <h3 className="text-lg font-medium text-foreground mb-1">
+            Chưa có đơn hàng
+          </h3>
+          <p>
+            {filter === "all"
+              ? "Bạn chưa có đơn hàng nào."
+              : `Không có đơn hàng ở trạng thái "${filter}".`}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredOrders.map((order) => {
+            const statusInfo = ORDER_STATUS_MAP[order.status ?? -1] ?? {
+              label: "Không rõ",
+              color: "bg-gray-100 text-gray-600",
+            };
+            const createdDate = order.createdAt
+              ? new Date(order.createdAt).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : "—";
+            return (
+              <div
+                key={order.orderId}
+                className="rounded-lg border bg-card p-5 hover:border-primary/50 transition-colors space-y-3"
+              >
+                {/* Header row */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">
+                      Đơn hàng #
+                      {order.orderNumber ||
+                        order.orderId?.slice(0, 8).toUpperCase()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {createdDate}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}
+                  >
+                    {statusInfo.label}
+                  </span>
+                </div>
+
+                {/* Items */}
+                {order.items && order.items.length > 0 && (
+                  <div className="divide-y divide-(--mirai-color-line)">
+                    {order.items.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between py-2 text-sm"
+                      >
+                        <span className="text-foreground">
+                          {item.productName || "Sản phẩm"}
+                          {item.variantName ? ` — ${item.variantName}` : ""}
+                          <span className="text-muted-foreground ml-1">
+                            x{item.quantity}
+                          </span>
+                        </span>
+                        <span className="text-foreground font-medium whitespace-nowrap">
+                          {(
+                            item.price ?? item.unitPrice * item.quantity
+                          ).toLocaleString("vi-VN")}
+                          ₫
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Total */}
+                <div className="flex justify-end pt-1">
+                  <span className="text-sm font-semibold text-foreground">
+                    Tổng:{" "}
+                    <span className="text-(--mirai-sem-danger)">
+                      {order.totalAmount.toLocaleString("vi-VN")}₫
+                    </span>
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
