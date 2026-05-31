@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowRight,
   Camera,
   Headphones,
@@ -13,6 +12,8 @@ import {
 } from "lucide-react";
 import { InteractiveProductCard } from "@/components/features/marketing/interactive-product-card";
 import { CountdownTimer } from "@/components/features/marketing/countdown-timer";
+import { ScrollButtons } from "@/components/features/marketing/scroll-buttons";
+import { productApi } from "@/lib/api-client";
 
 type Product = {
   id: string;
@@ -20,6 +21,9 @@ type Product = {
   price: string;
   oldPrice?: string;
   badge?: string;
+  ratingAvg?: number;
+  ratingCount?: number;
+  endTime?: string;
 };
 
 const heroCategories = [
@@ -112,7 +116,15 @@ const categories = [
   { label: "Others", icon: <Camera className="h-7 w-7" /> },
 ];
 
-function SectionHeading({ label, title }: { label: string; title: string }) {
+function SectionHeading({
+  label,
+  title,
+  targetId,
+}: {
+  label: string;
+  title: string;
+  targetId?: string;
+}) {
   return (
     <div className="mb-8 flex items-end justify-between gap-3">
       <div>
@@ -126,29 +138,76 @@ function SectionHeading({ label, title }: { label: string; title: string }) {
           {title}
         </h2>
       </div>
-      <div className="hidden items-center gap-2 md:flex">
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--mirai-color-line)"
-          aria-label="Previous"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--mirai-color-line)"
-          aria-label="Next"
-        >
-          <ArrowRight className="h-4 w-4" />
-        </button>
-      </div>
+      {targetId && <ScrollButtons targetId={targetId} />}
     </div>
   );
 }
 
 // ProductCard is removed and replaced by InteractiveProductCard from features/marketing
 
-export default function HomePage() {
+export default async function HomePage() {
+  let dbProducts: Product[] = [];
+  try {
+    const res = await productApi.getProductsByFilter({ pageSize: 20 });
+    if (res && res.length > 0) {
+      dbProducts = res.map((p) => {
+        const variant = p.variants?.[0];
+        let priceStr = (variant?.price ?? 0).toLocaleString("vi-VN") + "đ";
+        let oldPriceStr = undefined;
+        let badgeStr = p.categoryId === "some-id" ? "NEW" : undefined;
+        let endTimeStr = undefined;
+
+        if (variant?.isFlashSale && variant?.flashSalePrice != null) {
+          priceStr = variant.flashSalePrice.toLocaleString("vi-VN") + "đ";
+          oldPriceStr = (variant.price ?? 0).toLocaleString("vi-VN") + "đ";
+          badgeStr = "FLASH SALE";
+          endTimeStr = variant.flashSaleEndTime;
+        }
+
+        return {
+          id: variant?.variantId || p.productId,
+          name: p.name || "Sản phẩm",
+          price: priceStr,
+          oldPrice: oldPriceStr,
+          badge: badgeStr,
+          ratingAvg: p.ratingAvg ?? 5,
+          ratingCount: p.ratingCount ?? 0,
+          endTime: endTimeStr,
+        };
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+
+  let dbFlashSales: Product[] = [];
+  try {
+    const fsRes = await productApi.getFlashSaleProducts();
+    if (fsRes && fsRes.length > 0) {
+      dbFlashSales = fsRes.map((fs) => ({
+        id: fs.variantId || fs.productId,
+        name: fs.productName || "Sản phẩm Flash Sale",
+        price: fs.flashSalePrice.toLocaleString("vi-VN") + "đ",
+        oldPrice: fs.originalPrice.toLocaleString("vi-VN") + "đ",
+        badge: "FLASH SALE",
+        endTime: fs.endTime,
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching flash sales:", error);
+  }
+
+  const flashSalesDisplay =
+    dbFlashSales.length > 0 ? dbFlashSales.slice(0, 8) : flashSales;
+  const bestSellingDisplay =
+    dbProducts.length >= 4 ? dbProducts.slice(0, 4) : bestSelling;
+  const exploreProductsDisplay =
+    dbProducts.length > 0
+      ? dbProducts.slice(0, 8)
+      : exploreProducts.slice(0, 8);
+
+  const targetFlashSaleDate = flashSalesDisplay.find((p) => p.endTime)?.endTime;
+
   return (
     <main className="bg-background pb-20">
       <section className="page-shell border-b border-(--mirai-color-line) py-8">
@@ -209,17 +268,30 @@ export default function HomePage() {
       </section>
 
       <section className="page-shell py-16">
-        <SectionHeading label="Hôm nay" title="Flash Sales" />
+        <SectionHeading
+          label="Hôm nay"
+          title="Flash Sales"
+          targetId="flash-sales-list"
+        />
         <CountdownTimer
+          targetDate={targetFlashSaleDate}
           initialDays={3}
           initialHours={23}
           initialMinutes={19}
           initialSeconds={56}
           format="block"
         />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-          {flashSales.map((product) => (
-            <InteractiveProductCard key={product.id} product={product} />
+        <div
+          id="flash-sales-list"
+          className="flex gap-6 overflow-x-auto pb-6 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
+        >
+          {flashSalesDisplay.map((product, index) => (
+            <div
+              key={`${product.id}-${index}`}
+              className="min-w-[260px] snap-start"
+            >
+              <InteractiveProductCard product={product} />
+            </div>
           ))}
         </div>
         <div className="mt-10 text-center">
@@ -233,13 +305,20 @@ export default function HomePage() {
       </section>
 
       <section className="page-shell border-t border-(--mirai-color-line) py-16">
-        <SectionHeading label="Danh mục" title="Tìm kiếm theo Danh mục" />
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <SectionHeading
+          label="Danh mục"
+          title="Tìm kiếm theo Danh mục"
+          targetId="categories-list"
+        />
+        <div
+          id="categories-list"
+          className="flex gap-4 overflow-x-auto pb-6 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
+        >
           {categories.map((category, index) => (
             <button
               key={category.label}
               type="button"
-              className={`flex h-36 flex-col items-center justify-center gap-3 rounded-[4px] border border-(--mirai-color-line) text-center transition-all duration-200 hover:border-(--mirai-sem-primary) hover:-translate-y-1 hover:shadow-md active:scale-[0.98] ${
+              className={`min-w-[160px] sm:min-w-[180px] snap-start flex-1 h-36 flex flex-col items-center justify-center gap-3 rounded-[4px] border border-(--mirai-color-line) text-center transition-all duration-200 hover:border-(--mirai-sem-primary) hover:-translate-y-1 hover:shadow-md active:scale-[0.98] ${
                 index === 0
                   ? "bg-(--mirai-sem-primary) text-foreground hover:bg-(--mirai-state-primary-hover)"
                   : "bg-card text-foreground hover:text-(--mirai-sem-primary)"
@@ -255,30 +334,26 @@ export default function HomePage() {
       </section>
 
       <section className="page-shell border-t border-(--mirai-color-line) py-16">
-        <div className="mb-8 flex items-end justify-between gap-3">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <span className="inline-block h-8 w-2 rounded-sm bg-(--mirai-sem-accent)" />
-              <span className="text-sm font-semibold text-(--mirai-sem-accent)">
-                Tháng này
-              </span>
-            </div>
-            <h2 className="font-heading text-3xl font-semibold text-foreground md:text-4xl">
-              Sản phẩm bán chạy nhất tháng
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="inline-flex h-10 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
-          >
-            Xem tất cả
-          </Link>
-        </div>
+        <SectionHeading
+          label="Tháng này"
+          title="Sản phẩm bán chạy nhất tháng"
+        />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {bestSelling.map((product) => (
-            <InteractiveProductCard key={product.id} product={product} />
+          {bestSellingDisplay.map((product, index) => (
+            <InteractiveProductCard
+              key={`${product.id}-${index}`}
+              product={product}
+            />
           ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Link
+            href="/shop"
+            className="inline-flex min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
+          >
+            Xem tất cả sản phẩm
+          </Link>
         </div>
       </section>
 
@@ -312,8 +387,11 @@ export default function HomePage() {
       <section className="page-shell py-16">
         <SectionHeading label="Sản phẩm" title="Khám phá sản phẩm" />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {exploreProducts.map((product) => (
-            <InteractiveProductCard key={product.id} product={product} />
+          {exploreProductsDisplay.map((product, index) => (
+            <InteractiveProductCard
+              key={`${product.id}-${index}`}
+              product={product}
+            />
           ))}
         </div>
         <div className="mt-10 text-center">

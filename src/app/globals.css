@@ -390,3 +390,18 @@
     animation: mirai-pulse-glow 2s ease-out infinite;
   }
 }
+
+/* Hide all icons in Sonner toasts, but keep success (tick), error (x), and loading icons */
+[data-sonner-toast] [data-icon],
+[data-sonner-toast] svg {
+  display: none !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon],
+[data-sonner-toast][data-type="success"] svg,
+[data-sonner-toast][data-type="error"] [data-icon],
+[data-sonner-toast][data-type="error"] svg,
+[data-sonner-toast][data-type="loading"] [data-icon],
+[data-sonner-toast][data-type="loading"] svg {
+  display: inline-block !important;
+}

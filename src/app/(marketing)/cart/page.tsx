@@ -2,11 +2,24 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { useCartStore } from "@/stores";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const formatCurrency = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
@@ -45,7 +58,17 @@ export default function CartPage() {
   return (
     <main className="bg-background py-16">
       <div className="page-shell">
-        <p className="text-sm text-muted-foreground">Home / Cart</p>
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Cart</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <section className="mt-8 overflow-x-auto rounded-[4px] border border-(--mirai-color-line) bg-card">
           <table className="w-full min-w-[760px]">
@@ -77,33 +100,52 @@ export default function CartPage() {
                       <span className="text-sm font-medium text-foreground">
                         {row.name}
                       </span>
-                      <button
-                        type="button"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-(--mirai-sem-danger)"
-                        onClick={() => removeItem(row.id)}
-                        aria-label={`Xóa ${row.name}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-sm text-foreground">
                     {formatCurrency(row.price)}
                   </td>
                   <td className="px-8 py-6">
-                    <select
-                      className="h-10 w-20 rounded-[4px] border border-(--mirai-color-line) bg-card px-2 text-sm"
-                      value={row.quantity}
-                      onChange={(event) =>
-                        updateQuantity(row.id, Number(event.target.value))
-                      }
-                    >
-                      {Array.from({ length: 10 }).map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {(i + 1).toString().padStart(2, "0")}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center rounded-md border border-(--mirai-color-line) bg-card overflow-hidden h-9">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(row.id, row.quantity - 1)
+                          }
+                          disabled={row.quantity <= 1}
+                          className="inline-flex h-full w-9 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-semibold"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-10 text-center text-sm font-medium text-foreground select-none">
+                          {row.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(row.id, row.quantity + 1)
+                          }
+                          disabled={row.quantity >= 10}
+                          className="inline-flex h-full w-9 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-semibold"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <Tooltip>
+                        <TooltipTrigger
+                          type="button"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-(--mirai-sem-danger) border border-(--mirai-color-line)/60"
+                          onClick={() => removeItem(row.id)}
+                          aria-label={`Xóa ${row.name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Xóa khỏi giỏ hàng</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </td>
                   <td className="px-8 py-6 text-right text-sm font-semibold text-foreground">
                     {formatCurrency(row.price * row.quantity)}

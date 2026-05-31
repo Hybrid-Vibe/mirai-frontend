@@ -11,6 +11,8 @@ export interface GenerateRequest {
   phoneModel: string;
   /** Design style hint (optional) */
   style?: string;
+  /** Reference image as base64 data URL (optional) */
+  refImage?: string;
 }
 
 /** A single generated design variant */

@@ -7,14 +7,15 @@ import crypto from "crypto";
 import type { VNPayReturnParams, PaymentResult } from "@/types";
 
 const VNPAY_CONFIG = {
-  tmnCode: process.env.VNPAY_TMN_CODE ?? "",
-  hashSecret: process.env.VNPAY_HASH_SECRET ?? "",
+  tmnCode: process.env.VNPAY_TMN_CODE || "8BRVS31I",
+  hashSecret:
+    process.env.VNPAY_HASH_SECRET || "1H7NSLWCCNWOYV06387QKJ68XAA7IJ2V",
   url:
-    process.env.VNPAY_URL ??
+    process.env.VNPAY_URL ||
     "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
   returnUrl:
-    process.env.VNPAY_RETURN_URL ??
-    "http://localhost:3000/payment/vnpay/callback",
+    process.env.VNPAY_RETURN_URL ||
+    "http://localhost:3000/api/payment/vnpay/callback",
 };
 
 /**
@@ -107,8 +108,22 @@ export function verifyVNPayReturn(query: VNPayReturnParams): {
   isSuccess: boolean;
 } {
   const secureHash = query.vnp_SecureHash;
-  const queryParams: Record<string, string> = { ...query };
-  delete queryParams["vnp_SecureHash"];
+  const queryParams: Record<string, string> = {};
+
+  // VNPay signature spec requires that we ONLY include parameters starting with "vnp_"
+  // and exclude "vnp_SecureHash" and "vnp_SecureHashType".
+  for (const key in query) {
+    if (
+      key.startsWith("vnp_") &&
+      key !== "vnp_SecureHash" &&
+      key !== "vnp_SecureHashType"
+    ) {
+      const val = query[key as keyof VNPayReturnParams];
+      if (val !== undefined && val !== null && val !== "") {
+        queryParams[key] = String(val);
+      }
+    }
+  }
 
   const sortedParams = sortObject(queryParams);
   const signData = new URLSearchParams(sortedParams).toString();

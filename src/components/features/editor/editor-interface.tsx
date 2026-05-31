@@ -20,8 +20,11 @@ import { Separator } from "@/components/ui/separator";
 import { ARPreview } from "@/components/features/ar/ARPreview";
 import { AnimatePresence } from "framer-motion";
 
-// Import Konva editor dynamically to avoid SSR issues
-const KonvaEditor = dynamic(() => import("./konva-editor"), { ssr: false });
+// Import Design editor dynamically to avoid SSR issues
+const DesignEditorCanvas = dynamic(
+  () => import("@/components/features/customize/DesignEditor"),
+  { ssr: false },
+);
 
 export function EditorInterface() {
   const { elements, addElement, setElements } = useDesignStore();
@@ -193,7 +196,7 @@ export function EditorInterface() {
         </div>
 
         <div className="flex flex-1 justify-center overflow-hidden rounded-[3rem] border border-border bg-dots py-4">
-          <KonvaEditor />
+          <DesignEditorCanvas />
         </div>
 
         <div className="flex flex-col items-center justify-between gap-6 pt-6 sm:flex-row">

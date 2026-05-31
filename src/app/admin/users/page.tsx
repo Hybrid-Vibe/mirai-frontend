@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { userApi } from "@/lib/api-client";
+import { GetUserDto } from "@/types/api";
 import {
   Table,
   TableBody,
@@ -22,62 +24,65 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, Filter, Download } from "lucide-react";
-
-// Mock data
-const mockUsers = [
-  {
-    id: "USR-001",
-    name: "Nguyễn Văn A",
-    email: "nva@email.com",
-    phone: "0901234567",
-    joinDate: "2026-01-15",
-    orders: 12,
-    status: "Active",
-  },
-  {
-    id: "USR-002",
-    name: "Trần Thị B",
-    email: "ttb@email.com",
-    phone: "0912345678",
-    joinDate: "2026-02-20",
-    orders: 5,
-    status: "Active",
-  },
-  {
-    id: "USR-003",
-    name: "Lê Văn C",
-    email: "lvc@email.com",
-    phone: "0923456789",
-    joinDate: "2026-03-05",
-    orders: 0,
-    status: "Inactive",
-  },
-  {
-    id: "USR-004",
-    name: "Phạm D",
-    email: "pd@email.com",
-    phone: "0934567890",
-    joinDate: "2026-04-10",
-    orders: 2,
-    status: "Active",
-  },
-  {
-    id: "USR-005",
-    name: "Hoàng E",
-    email: "he@email.com",
-    phone: "0945678901",
-    joinDate: "2026-05-01",
-    orders: 1,
-    status: "Banned",
-  },
-];
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Search,
+  MoreHorizontal,
+  Filter,
+  Download,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [users, setUsers] = useState<GetUserDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const data = await userApi.getAllUsers();
+        setUsers(data || []);
+      } catch (error) {
+        toast.error("Không thể tải danh sách khách hàng");
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter(
+    (u) =>
+      u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.phone?.includes(searchTerm),
+  );
 
   return (
     <div className="space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Khách hàng</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-heading font-bold text-foreground">
@@ -116,6 +121,7 @@ export default function UsersPage() {
             <TableRow>
               <TableHead>Khách Hàng</TableHead>
               <TableHead>Số Điện Thoại</TableHead>
+              <TableHead>Vai Trò</TableHead>
               <TableHead>Ngày Tham Gia</TableHead>
               <TableHead>Số Đơn Hàng</TableHead>
               <TableHead>Trạng Thái</TableHead>
@@ -123,72 +129,83 @@ export default function UsersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
-                        alt={user.name}
-                      />
-                      <AvatarFallback>
-                        {user.name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{user.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>{user.joinDate}</TableCell>
-                <TableCell>{user.orders}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      user.status === "Active"
-                        ? "default"
-                        : user.status === "Inactive"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                    className={
-                      user.status === "Active"
-                        ? "bg-green-500 hover:bg-green-600"
-                        : ""
-                    }
-                  >
-                    {user.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 outline-none">
-                      <span className="sr-only">Mở menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          Xem lịch sử đơn hàng
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Gửi email</DropdownMenuItem>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">
-                        Khóa tài khoản
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  Không tìm thấy khách hàng nào.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user) => (
+                <TableRow key={user.userId}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.fullName || "U"}`}
+                          alt={user.fullName || "User"}
+                        />
+                        <AvatarFallback>
+                          {user.fullName?.slice(0, 2).toUpperCase() || "US"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {user.fullName || "Chưa cập nhật"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {user.email || "Không có email"}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{user.phone || "-"}</TableCell>
+                  <TableCell>{user.roleName || "-"}</TableCell>
+                  <TableCell>
+                    {new Date(user.createdAt).toLocaleDateString("vi-VN")}
+                  </TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={user.isActive ? "default" : "secondary"}
+                      className={
+                        user.isActive ? "bg-green-500 hover:bg-green-600" : ""
+                      }
+                    >
+                      {user.isActive ? "Hoạt động" : "Bị khóa"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 outline-none">
+                        <span className="sr-only">Mở menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                          <DropdownMenuItem>Phân quyền</DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          {user.isActive
+                            ? "Khóa tài khoản"
+                            : "Mở khóa tài khoản"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

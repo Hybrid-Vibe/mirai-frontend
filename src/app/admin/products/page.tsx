@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { productApi } from "@/lib/api-client";
+import { ProductDto } from "@/types/api";
 import {
   Table,
   TableBody,
@@ -21,57 +23,63 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, MoreHorizontal, Plus, Filter } from "lucide-react";
-
-// Mock data
-const mockProducts = [
-  {
-    id: "PROD-001",
-    name: "iPhone 15 Pro Max Case",
-    category: "Apple",
-    price: "120.000đ",
-    stock: 150,
-    status: "Đang bán",
-  },
-  {
-    id: "PROD-002",
-    name: "iPhone 15 Pro Case",
-    category: "Apple",
-    price: "120.000đ",
-    stock: 85,
-    status: "Đang bán",
-  },
-  {
-    id: "PROD-003",
-    name: "Samsung S24 Ultra Case",
-    category: "Samsung",
-    price: "120.000đ",
-    stock: 0,
-    status: "Hết hàng",
-  },
-  {
-    id: "PROD-004",
-    name: "iPhone 14 Pro Max Case",
-    category: "Apple",
-    price: "100.000đ",
-    stock: 45,
-    status: "Đang bán",
-  },
-  {
-    id: "PROD-005",
-    name: "Oppo Reno 10 Case",
-    category: "Oppo",
-    price: "90.000đ",
-    stock: 12,
-    status: "Sắp hết",
-  },
-];
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Search, MoreHorizontal, Plus, Filter, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState<ProductDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await productApi.getAllProducts();
+        setProducts(data || []);
+      } catch (error) {
+        toast.error("Không thể tải danh sách sản phẩm");
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.productId.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <div className="space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Sản phẩm</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-heading font-bold text-foreground">
@@ -110,65 +118,83 @@ export default function ProductsPage() {
             <TableRow>
               <TableHead className="w-[100px]">Mã SP</TableHead>
               <TableHead>Tên Sản Phẩm</TableHead>
-              <TableHead>Dòng Máy</TableHead>
-              <TableHead>Giá</TableHead>
-              <TableHead>Tồn Kho</TableHead>
+              <TableHead>Danh mục</TableHead>
+              <TableHead>Thương hiệu</TableHead>
+              <TableHead>Đánh giá</TableHead>
               <TableHead>Trạng Thái</TableHead>
               <TableHead className="text-right">Thao Tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockProducts.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium text-muted-foreground">
-                  {product.id}
-                </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>{product.price}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      product.status === "Đang bán"
-                        ? "default"
-                        : product.status === "Sắp hết"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                    className={
-                      product.status === "Đang bán"
-                        ? "bg-green-500 hover:bg-green-600"
-                        : product.status === "Sắp hết"
-                          ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-                          : ""
-                    }
-                  >
-                    {product.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 outline-none">
-                      <span className="sr-only">Mở menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuGroup>
-                        <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
-                        <DropdownMenuItem>Ẩn sản phẩm</DropdownMenuItem>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">
-                        Xóa
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : filteredProducts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  Không tìm thấy sản phẩm nào.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProducts.map((product) => (
+                <TableRow key={product.productId}>
+                  <TableCell className="font-medium text-muted-foreground">
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-help border-b border-dotted border-muted-foreground">
+                        {product.productId.slice(0, 8)}...
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{product.productId}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.categoryName || "-"}</TableCell>
+                  <TableCell>{product.brandName || "-"}</TableCell>
+                  <TableCell>
+                    {product.ratingAvg ? `${product.ratingAvg} ⭐️` : "Chưa có"}{" "}
+                    ({product.ratingCount})
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={product.isActive ? "default" : "secondary"}
+                      className={
+                        product.isActive
+                          ? "bg-green-500 hover:bg-green-600"
+                          : ""
+                      }
+                    >
+                      {product.isActive ? "Đang bán" : "Ngừng bán"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0 outline-none">
+                        <span className="sr-only">Mở menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+                          <DropdownMenuItem>
+                            {product.isActive ? "Ẩn sản phẩm" : "Hiện sản phẩm"}
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          Xóa
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

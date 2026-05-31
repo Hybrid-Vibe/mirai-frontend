@@ -11,10 +11,13 @@ import {
 } from "react-konva";
 import useImage from "use-image";
 import { useDesignStore, type CanvasElement } from "@/lib/store";
+import { TemplateOverlay } from "@/components/features/editor/template-overlay";
+import { getDisplayScale } from "@/constants/phone-templates";
 import type Konva from "konva";
 
-const CANVAS_W = 400;
-const CANVAS_H = 560;
+// Max viewport size for the editor display area
+const VIEWPORT_MAX_W = 420;
+const VIEWPORT_MAX_H = 620;
 
 // ─── Draggable + Resizable Image ────────────────────────────────
 function URLImage({
@@ -41,6 +44,12 @@ function URLImage({
     }
   }, [isSelected]);
 
+  // Compute initial size when image loads
+  const canvasW = useDesignStore((s) => s.selectedTemplate?.canvasWidth ?? 960);
+  const canvasH = useDesignStore(
+    (s) => s.selectedTemplate?.canvasHeight ?? 1200,
+  );
+
   return (
     <>
       <KonvaImage
@@ -50,11 +59,13 @@ function URLImage({
         y={element.y}
         width={
           element.width ||
-          (image?.width ? Math.min(image.width, CANVAS_W * 0.8) : 200)
+          (image?.width ? Math.min(image.width, canvasW * 0.8) : canvasW * 0.5)
         }
         height={
           element.height ||
-          (image?.height ? Math.min(image.height, CANVAS_H * 0.6) : 200)
+          (image?.height
+            ? Math.min(image.height, canvasH * 0.6)
+            : canvasH * 0.4)
         }
         rotation={element.rotation || 0}
         scaleX={element.scaleX || 1}
@@ -186,19 +197,92 @@ function DraggableText({
   );
 }
 
+// ─── Background Image Layer ─────────────────────────────────────
+function BackgroundImageLayer({
+  imageUrl,
+  canvasWidth,
+  canvasHeight,
+}: {
+  imageUrl: string;
+  canvasWidth: number;
+  canvasHeight: number;
+}) {
+  const [image] = useImage(imageUrl, "anonymous");
+
+  if (!image) return null;
+
+  // Cover-fit the image to canvas (like CSS background-size: cover)
+  const imgRatio = image.width / image.height;
+  const canvasRatio = canvasWidth / canvasHeight;
+
+  let drawWidth: number;
+  let drawHeight: number;
+  let drawX: number;
+  let drawY: number;
+
+  if (imgRatio > canvasRatio) {
+    // Image is wider — fit by height
+    drawHeight = canvasHeight;
+    drawWidth = canvasHeight * imgRatio;
+    drawX = (canvasWidth - drawWidth) / 2;
+    drawY = 0;
+  } else {
+    // Image is taller — fit by width
+    drawWidth = canvasWidth;
+    drawHeight = canvasWidth / imgRatio;
+    drawX = 0;
+    drawY = (canvasHeight - drawHeight) / 2;
+  }
+
+  return (
+    <KonvaImage
+      image={image}
+      x={drawX}
+      y={drawY}
+      width={drawWidth}
+      height={drawHeight}
+      listening={false}
+    />
+  );
+}
+
 // ─── Main Design Editor ─────────────────────────────────────────
 export default function DesignEditor({
   onCanvasExport,
   backgroundColor,
+  stageRef: externalStageRef,
 }: {
   onCanvasExport?: (dataUrl: string) => void;
   backgroundColor?: string;
+  stageRef?: React.RefObject<Konva.Stage | null>;
 }) {
-  const { elements, selectedElementId, setSelectedElementId, updateElement } =
-    useDesignStore();
+  const {
+    elements,
+    selectedElementId,
+    setSelectedElementId,
+    updateElement,
+    selectedTemplate,
+    showGuides,
+    showCameraCutout,
+    backgroundImage,
+  } = useDesignStore();
+
   const [mounted, setMounted] = useState(false);
-  const stageRef = useRef<Konva.Stage>(null);
+  const internalStageRef = useRef<Konva.Stage>(null);
+  const stageRef = externalStageRef || internalStageRef;
   const exportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Canvas dimensions from template, or fallback
+  const canvasW = selectedTemplate?.canvasWidth ?? 960;
+  const canvasH = selectedTemplate?.canvasHeight ?? 1200;
+
+  // Display scale: fit canvas into viewport
+  const displayScale = selectedTemplate
+    ? getDisplayScale(selectedTemplate, VIEWPORT_MAX_W, VIEWPORT_MAX_H)
+    : Math.min(VIEWPORT_MAX_W / canvasW, VIEWPORT_MAX_H / canvasH);
+
+  const displayW = Math.round(canvasW * displayScale);
+  const displayH = Math.round(canvasH * displayScale);
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
@@ -208,19 +292,24 @@ export default function DesignEditor({
   // Debounced canvas export for 3D preview
   const exportCanvas = useCallback(() => {
     if (!stageRef.current || !onCanvasExport) return;
-    // Deselect elements before export to hide transformer handles
-    const prevSelected = selectedElementId;
-    setSelectedElementId(null);
 
-    // Wait for next frame to render without transformer
-    requestAnimationFrame(() => {
-      if (!stageRef.current) return;
-      const dataUrl = stageRef.current.toDataURL({ pixelRatio: 2 });
-      onCanvasExport(dataUrl);
-      // Restore selection
-      if (prevSelected) setSelectedElementId(prevSelected);
-    });
-  }, [onCanvasExport, selectedElementId, setSelectedElementId]);
+    const stage = stageRef.current;
+
+    // Hide elements we don't want in the export
+    const overlayLayer = stage.findOne("#overlay-layer");
+    if (overlayLayer) overlayLayer.hide();
+
+    const transformers = stage.find("Transformer");
+    transformers.forEach((tr) => tr.hide());
+
+    // Export synchronous
+    const dataUrl = stage.toDataURL({ pixelRatio: 1.5 });
+    onCanvasExport(dataUrl);
+
+    // Restore visibility
+    if (overlayLayer) overlayLayer.show();
+    transformers.forEach((tr) => tr.show());
+  }, [onCanvasExport, stageRef]);
 
   // Auto-export when elements change
   useEffect(() => {
@@ -230,7 +319,13 @@ export default function DesignEditor({
     return () => {
       if (exportTimerRef.current) clearTimeout(exportTimerRef.current);
     };
-  }, [elements, exportCanvas, onCanvasExport]);
+  }, [
+    elements,
+    backgroundImage,
+    backgroundColor,
+    exportCanvas,
+    onCanvasExport,
+  ]);
 
   // Click on empty area → deselect
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -242,56 +337,120 @@ export default function DesignEditor({
   if (!mounted) return null;
 
   return (
-    <Stage
-      ref={stageRef}
-      width={CANVAS_W}
-      height={CANVAS_H}
-      className="w-full h-full"
-      onClick={handleStageClick}
-      onTap={(e) => {
-        if (e.target === e.target.getStage()) setSelectedElementId(null);
-      }}
-    >
-      <Layer>
-        {/* Canvas background */}
-        <Rect
-          x={0}
-          y={0}
-          width={CANVAS_W}
-          height={CANVAS_H}
-          fill={backgroundColor || "#1a1a2e"}
-          listening={false}
-        />
+    <div className="relative">
+      {/* Template info badge */}
+      {selectedTemplate && (
+        <div className="absolute -top-7 left-0 z-10 flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span className="rounded bg-secondary px-2 py-0.5 font-mono">
+            {selectedTemplate.printWidth}×{selectedTemplate.printHeight}mm
+          </span>
+          <span className="rounded bg-secondary px-2 py-0.5 font-mono">
+            {canvasW}×{canvasH}px @300 DPI
+          </span>
+        </div>
+      )}
 
-        {/* Render all elements */}
-        {elements.map((el) => {
-          if (el.type === "text") {
-            return (
-              <DraggableText
-                key={el.id}
-                element={el}
-                isSelected={selectedElementId === el.id}
-                onSelect={() => setSelectedElementId(el.id)}
-                onTransformEnd={(attrs) => updateElement(el.id, attrs)}
-                onDragEnd={(x, y) => updateElement(el.id, { x, y })}
-              />
-            );
-          }
-          if (el.type === "image") {
-            return (
-              <URLImage
-                key={el.id}
-                element={el}
-                isSelected={selectedElementId === el.id}
-                onSelect={() => setSelectedElementId(el.id)}
-                onTransformEnd={(attrs) => updateElement(el.id, attrs)}
-                onDragEnd={(x, y) => updateElement(el.id, { x, y })}
-              />
-            );
-          }
-          return null;
-        })}
-      </Layer>
-    </Stage>
+      <Stage
+        ref={stageRef}
+        width={canvasW}
+        height={canvasH}
+        scaleX={displayScale}
+        scaleY={displayScale}
+        style={{
+          width: displayW,
+          height: displayH,
+        }}
+        onClick={handleStageClick}
+        onTap={(e) => {
+          if (e.target === e.target.getStage()) setSelectedElementId(null);
+        }}
+      >
+        {/* Layer 1: Background */}
+        <Layer>
+          {/* Solid background color */}
+          <Rect
+            x={0}
+            y={0}
+            width={canvasW}
+            height={canvasH}
+            fill={backgroundColor || "#1a1a2e"}
+            listening={false}
+          />
+
+          {/* Background image (AI-generated or uploaded) */}
+          {backgroundImage && (
+            <BackgroundImageLayer
+              imageUrl={backgroundImage}
+              canvasWidth={canvasW}
+              canvasHeight={canvasH}
+            />
+          )}
+        </Layer>
+
+        {/* Layer 2: User elements (text, images, stickers) */}
+        <Layer>
+          {elements.map((el) => {
+            if (el.type === "text") {
+              return (
+                <DraggableText
+                  key={el.id}
+                  element={el}
+                  isSelected={selectedElementId === el.id}
+                  onSelect={() => setSelectedElementId(el.id)}
+                  onTransformEnd={(attrs) => updateElement(el.id, attrs)}
+                  onDragEnd={(x, y) => updateElement(el.id, { x, y })}
+                />
+              );
+            }
+            if (el.type === "image") {
+              return (
+                <URLImage
+                  key={el.id}
+                  element={el}
+                  isSelected={selectedElementId === el.id}
+                  onSelect={() => setSelectedElementId(el.id)}
+                  onTransformEnd={(attrs) => updateElement(el.id, attrs)}
+                  onDragEnd={(x, y) => updateElement(el.id, { x, y })}
+                />
+              );
+            }
+            return null;
+          })}
+        </Layer>
+
+        {/* Layer 3: Template overlay (camera cutouts, guides) — NOT exported */}
+        {selectedTemplate && (
+          <Layer listening={false} id="overlay-layer">
+            <TemplateOverlay
+              template={selectedTemplate}
+              showGuides={showGuides}
+              showCameraCutout={showCameraCutout}
+            />
+          </Layer>
+        )}
+      </Stage>
+
+      {/* Legend (below canvas) */}
+      {selectedTemplate && showGuides && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-4 border border-dashed border-red-500" />
+            Bleed ({selectedTemplate.bleed}mm)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-4 border border-green-500" />
+            Print area
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-4 border border-dashed border-blue-400" />
+            Safe zone ({selectedTemplate.safeZone}mm)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-4 bg-black/30" />
+            Camera cutout
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
