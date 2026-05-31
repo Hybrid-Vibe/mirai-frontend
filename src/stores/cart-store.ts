@@ -6,6 +6,7 @@ import { useDesignStore } from "@/lib/store";
 
 export interface CartItem {
   id: string; // This is the variantId from backend
+  cartItemId?: string; // Unique ID for backend deletion
   name: string;
   price: number;
   quantity: number;
@@ -62,12 +63,17 @@ export const useCartStore = create<CartState>()(
               variantId: item.id,
               quantity: item.quantity,
             });
+            // Re-fetch cart to retrieve backend-generated cartItemId
+            await get().fetchCart(activeUserId);
           } catch (error) {
             console.error("Failed to sync cart item with backend:", error);
           }
         }
       },
       removeItem: async (id) => {
+        const itemToRemove = get().items.find((i) => i.id === id);
+        const cartItemId = itemToRemove?.cartItemId;
+
         set((state) => {
           const newItems = state.items.filter((i) => i.id !== id);
           const userId = useDesignStore.getState().user?.id;
@@ -82,9 +88,9 @@ export const useCartStore = create<CartState>()(
 
         // Backend sync if user is logged in
         const activeUserId = useDesignStore.getState().user?.id;
-        if (activeUserId) {
+        if (activeUserId && cartItemId) {
           try {
-            await cartApi.deleteCartItem(activeUserId, id);
+            await cartApi.deleteCartItem(cartItemId);
           } catch (error) {
             console.error("Failed to delete cart item from backend:", error);
           }
@@ -127,6 +133,7 @@ export const useCartStore = create<CartState>()(
               const newItems = (cartDto.items as CartItemDto[]).map(
                 (item: CartItemDto) => ({
                   id: item.variantId || "",
+                  cartItemId: item.cartItemId,
                   name: item.productName || "Sản phẩm",
                   price: item.price || 0,
                   quantity: item.quantity || 1,
