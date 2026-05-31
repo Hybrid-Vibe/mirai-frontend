@@ -35,6 +35,7 @@ import type {
   CreateProductVariantDto,
   ProductSearchFilter,
   GetAllProductsByFilterDto,
+  GetFlashSaleProductsDto,
   // Order
   OrderRequestDto,
   OrderResponseDto,
@@ -339,6 +340,14 @@ export const productApi = {
     );
     return normalizeArray<GetAllProductsByFilterDto>(data);
   },
+
+  /** GET /api/Product/Flash-Sale-Products */
+  getFlashSaleProducts: async (): Promise<GetFlashSaleProductsDto[]> => {
+    const { data } = await apiClient.get<GetFlashSaleProductsDto[]>(
+      "/Product/Flash-Sale-Products",
+    );
+    return normalizeArray<GetFlashSaleProductsDto>(data);
+  },
 };
 
 // ======================================================================
@@ -437,6 +446,14 @@ export const orderApi = {
       `/Order/Get-Order-By/${id}`,
     );
     return data;
+  },
+
+  /** GET /api/Order/Get-Orders-By-UserId{userId} */
+  getOrdersByUserId: async (userId: string): Promise<OrderResponseDto[]> => {
+    const { data } = await apiClient.get<OrderResponseDto[]>(
+      `/Order/Get-Orders-By-UserId${userId}`,
+    );
+    return normalizeArray<OrderResponseDto>(data);
   },
 
   /** PUT /api/Order/Update-Order-Status/{id} */
@@ -730,6 +747,11 @@ export const cartApi = {
       params: filter,
     });
     return data;
+  },
+
+  /** DELETE /api/CartItem/Delete-cart-item/{userId}/{variantId} */
+  deleteCartItem: async (userId: string, variantId: string): Promise<void> => {
+    await apiClient.delete(`/CartItem/Delete-cart-item/${userId}/${variantId}`);
   },
 };
 

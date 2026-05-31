@@ -396,11 +396,17 @@ export default function ShopPage() {
                 {visibleProducts.map((product) => (
                   <article key={product.productId}>
                     <div className="relative rounded-[4px] bg-(--mirai-sem-surface-muted) p-4">
-                      {(product.variants?.[0]?.price || 0) <
-                        (product.variants?.[0]?.price || 0) * 1.2 && ( // Placeholder logic for badge
-                        <span className="absolute left-3 top-3 rounded-[4px] bg-(--mirai-sem-primary) px-2 py-1 text-xs font-semibold text-foreground">
-                          SALE
+                      {product.variants?.[0]?.isFlashSale ? (
+                        <span className="absolute left-3 top-3 rounded bg-(--mirai-sem-danger) px-1.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">
+                          Flash Sale
                         </span>
+                      ) : (
+                        (product.variants?.[0]?.price || 0) <
+                          (product.variants?.[0]?.price || 0) * 1.2 && ( // Placeholder logic for badge
+                          <span className="absolute left-3 top-3 rounded-[4px] bg-(--mirai-sem-primary) px-2 py-1 text-xs font-semibold text-foreground">
+                            SALE
+                          </span>
+                        )
                       )}
                       <Tooltip>
                         <TooltipTrigger
@@ -456,11 +462,20 @@ export default function ShopPage() {
                     <p className="mt-1 text-xs text-muted-foreground">
                       {product.variants?.[0]?.phoneModel || "Universal"}
                     </p>
-                    <p className="mt-1 text-sm text-(--mirai-sem-danger)">
-                      <span className="font-semibold">
-                        {formatPrice(product.variants?.[0]?.price || 0)}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+                      <span className="font-semibold text-(--mirai-sem-danger) text-base">
+                        {product.variants?.[0]?.isFlashSale &&
+                        product.variants?.[0]?.flashSalePrice != null
+                          ? formatPrice(product.variants[0].flashSalePrice)
+                          : formatPrice(product.variants?.[0]?.price || 0)}
                       </span>
-                    </p>
+                      {product.variants?.[0]?.isFlashSale &&
+                        product.variants?.[0]?.flashSalePrice != null && (
+                          <span className="text-muted-foreground line-through text-xs ml-auto">
+                            {formatPrice(product.variants[0].price || 0)}
+                          </span>
+                        )}
+                    </div>
 
                     <div className="mt-1 flex items-center gap-1 text-(--mirai-sem-warning)">
                       {Array.from({ length: 5 }).map((_, i) => (

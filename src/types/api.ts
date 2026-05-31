@@ -300,6 +300,24 @@ export interface GetAllProductVariantsByFilterDto {
   phoneModel?: string;
   price?: number;
   stock?: number;
+  flashSalePrice?: number;
+  isFlashSale?: boolean;
+  flashSaleStartTime?: string;
+  flashSaleEndTime?: string;
+}
+
+export interface GetFlashSaleProductsDto {
+  productId: string;
+  productName?: string;
+  variantId?: string;
+  color?: string;
+  phoneModel?: string;
+  originalPrice: number;
+  flashSalePrice: number;
+  stock: number;
+  imageUrl?: string;
+  startTime: string;
+  endTime: string;
 }
 
 // ----------------------------------------------------------------------
