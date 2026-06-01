@@ -1,62 +1,93 @@
-# MIRAI Frontend (Phase 1: UI Mockup)
+# MIRAI Frontend (Next.js Application)
 
-Đây là repo frontend chính thức cho website MIRAI.
-Hiện tại dự án đang ở giai đoạn đầu tiên: UI Mockup theo thiết kế Figma.
+Repository Frontend chính thức của hệ sinh thái **MIRAI** — Nền tảng thương mại điện tử mua sắm và tùy biến ốp lưng điện thoại thế hệ mới ứng dụng công nghệ AI.
 
-## Lưu ý quan trọng
+Hiện tại, dự án đã hoàn thành giai đoạn Mockup và đã **tích hợp đầy đủ logic nghiệp vụ (Business Logic)** kết nối trực tiếp với hệ thống **Backend ASP.NET Core** thông qua API Client chuẩn hóa RESTful.
 
-- Đây là frontend thật của website MIRAI, nhưng chưa đến giai đoạn production-ready.
-- Hiện tại dự án tập trung vào UI/UX, bố cục, màu sắc, typography và component layout.
-- Chưa hoàn tất business logic, backend, auth thật, thanh toán thật, xử lý đơn hàng thật.
+---
 
-## Mục tiêu hiện tại
+## Tính năng & Phân hệ Hiện tại
 
-- Tái hiện giao diện theo Figma (pixel-oriented).
-- Hoàn thiện luồng màn hình chính ở mức giao diện:
-  - Home
-  - Customize
-  - Shop
-  - Cart
-  - Checkout
-  - Wishlist
-  - Login / Signup
-  - Account
+### 1. Trình thiết kế Ốp lưng tùy biến (Customize Engine)
 
-## Tech stack
+- Tùy chỉnh trực quan ốp lưng cho nhiều dòng điện thoại thông dụng.
+- Công nghệ vẽ trên canvas/3D, hỗ trợ chèn text, upload hình ảnh cá nhân.
+- **Tích hợp Generative AI:** Kết nối với mô hình AI vẽ ảnh để tạo các thiết kế độc bản theo mô tả của người dùng và lưu trữ tức thì.
 
-- Next.js (App Router)
-- React + TypeScript
-- Tailwind CSS
-- Zustand
+### 2. Luồng Mua sắm & Giỏ hàng Dynamic (Shop Flow)
 
-## Chạy dự án local
+- **Shop & Tìm kiếm thông minh:** Bộ lọc động (filter) đa dạng theo thương hiệu, danh mục, khoảng giá, và sắp xếp sản phẩm.
+- **Giỏ hàng real-time:** Lưu trữ và quản lý đồng bộ trạng thái giữa Local State (Zustand) và cơ sở dữ liệu Backend qua `CartItemController` (đồng bộ UUID giỏ hàng, cập nhật số lượng, xóa sản phẩm).
+- **Quy trình Thanh toán:** Checkout đồng bộ thông tin giao hàng, tự động tính tổng tiền và chuyển tiếp qua cổng thanh toán VNPay / COD.
 
-Yêu cầu:
+### 3. Quản lý Tài khoản & Hồ sơ khách hàng (Customer Account)
 
-- Node.js 20+ (khuyến nghị)
-- npm
+- **Supabase Auth Sync:** Quản lý đăng nhập, đăng ký đồng bộ liền mạch tài khoản Supabase với tài khoản người dùng của cơ sở dữ liệu .NET.
+- **Hồ sơ cá nhân:** Cập nhật thông tin tài khoản, thay đổi mật khẩu an toàn và quản lý danh sách sổ địa chỉ nhận hàng (`AddressController`).
+- **Lịch sử đơn hàng:** Tra cứu trực tiếp danh sách đơn hàng đã đặt kèm trạng thái thanh toán và vận chuyển thông qua endpoint tối ưu dành riêng cho khách hàng `/Order/Orders-History-By-User/{userId}`.
 
-Lệnh chạy:
+### 4. Phân hệ Quản trị Admin Dashboard
 
-```bash
-npm install
-npm run dev
-```
+- **Thống kê doanh thu:** Biểu đồ doanh thu động trực quan lấy số liệu thực tế qua `/Admin/dashboard/summary` và `/Admin/dashboard/revenue-chart`.
+- **Quản lý Đơn hàng:** Danh sách đơn hàng toàn hệ thống kèm tính năng cập nhật trạng thái đơn hàng (`OrderStatus`) và trạng thái thanh toán (`PaymentStatus`) trực tiếp.
+- **Quản lý danh mục & thực thể:** Điều phối danh sách người dùng, phê duyệt đánh giá (`Reviews`), và cấu hình vận chuyển (`Shippings`).
 
-Mở trình duyệt tại:
+---
 
-```text
-http://localhost:3000
-```
+## Tech Stack & Thư viện sử dụng
 
-## Trạng thái dự án
+- **Core Framework:** Next.js 16 (App Router) & React 19.
+- **Ngôn ngữ:** TypeScript (Type-safe tuyệt đối).
+- **State Management:** Zustand (đồng bộ hóa dữ liệu giỏ hàng và thiết kế của user).
+- **Styling & UI:** Tailwind CSS v4, Lucide Icons, Framer Motion, Shadcn UI Components.
+- **API Client:** Axios (quản lý Bearer Token trong local storage, tự động đính kèm Header Auth, tự động định dạng chuẩn hóa cấu trúc dữ liệu qua `normalizeArray`).
+- **Security & Quality:** Husky, Eslint, Prettier, Gitleaks.
 
-- [x] Có bộ khung giao diện theo design
-- [x] Có route cho các màn hình chính
-- [ ] Chưa kết nối backend production
-- [ ] Chưa có quy trình thanh toán thật
-- [ ] Chưa là phiên bản sẵn sàng phát hành
+---
 
-## Ghi chú
+## Chạy dự án ở Local
 
-Mục tiêu hiện tại là hoàn thiện giao diện và luồng trang theo Figma, sau đó mới tiếp tục backend/business logic ở các phase tiếp theo.
+### Yêu cầu hệ thống:
+
+- **Node.js** phiên bản 20+
+- **Backend ASP.NET Core** đang chạy song song (mặc định tại cổng `http://localhost:5236`)
+
+### Các bước cài đặt:
+
+1. **Cài đặt thư viện:**
+
+   ```bash
+   npm install
+   ```
+
+2. **Cấu hình môi trường (`.env` hoặc `.env.local`):**
+
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5236
+   ```
+
+3. **Chạy ở chế độ phát triển (Development):**
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Kiểm tra chất lượng mã nguồn trước khi commit (Pre-push check):**
+   ```bash
+   npm run type-check   # Kiểm tra lỗi biên dịch TypeScript
+   npm run lint         # Kiểm tra lỗi chuẩn định dạng code (ESLint)
+   npm run build        # Build thử bản Production để đảm bảo không lỗi biên dịch
+   ```
+
+---
+
+## Trạng thái & Tiến độ Dự án
+
+- [x] **Xây dựng layout & cấu trúc router chính theo thiết kế Figma**
+- [x] **Tích hợp API Client kết nối Backend ASP.NET Core**
+- [x] **Đồng bộ hóa hệ thống Giỏ hàng (Cart) và Địa chỉ nhận hàng**
+- [x] **Tích hợp API lịch sử đơn hàng tối ưu cho Khách hàng (`Orders-History-By-User`)**
+- [x] **Tích hợp Phân hệ Quản trị Admin (Summary Dashboard, Live Order Management)**
+- [x] **Thiết lập quy trình kiểm tra chất lượng tự động pre-push (Typecheck, Lint, Security Scan)**
+- [ ] **Tích hợp hoàn thiện cổng thanh toán Online (Momo / VNPay IPN webhook xử lý thực tế)**
+- [ ] **Triển khai ứng dụng lên Production (Vercel / Firebase App Hosting)**
