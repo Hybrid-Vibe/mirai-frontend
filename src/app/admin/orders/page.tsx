@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Search, Filter, Loader2, RefreshCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,7 +146,7 @@ export default function OrdersPage() {
       const data = await adminApi.getOrders(filter);
       setOrders(data || []);
     } catch (error) {
-      toast.error("Không thể tải danh sách đơn hàng từ Backend ❌");
+      toast.error("Không thể tải danh sách đơn hàng từ Backend ");
       console.error("Failed to fetch orders:", error);
     } finally {
       setIsLoading(false);
@@ -180,7 +181,7 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error("Failed to fetch order or shipping details:", err);
-      toast.error("Lỗi khi tải thông tin chi tiết đơn hàng! ❌");
+      toast.error("Lỗi khi tải thông tin chi tiết đơn hàng! ");
     } finally {
       setIsLoadingDetail(false);
     }
@@ -212,7 +213,7 @@ export default function OrdersPage() {
     } catch (error) {
       console.error("Failed to update order status:", error);
       toast.error(
-        "Lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại! ❌",
+        "Lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại! ",
         { id: updateToast },
       );
     }
@@ -227,12 +228,12 @@ export default function OrdersPage() {
     const paymentLabel =
       PAYMENT_STATUS_MAP[nextPaymentStatus]?.label || "Không rõ";
     const updateToast = toast.loading(
-      `Đang cập nhật trạng thái thanh toán sang ${paymentLabel}... ⏳`,
+      `Đang cập nhật trạng thái thanh toán sang ${paymentLabel}... `,
     );
 
     try {
       await adminApi.updateOrderPaymentStatus(orderId, nextPaymentStatus);
-      toast.success("Cập nhật trạng thái thanh toán thành công! ✨", {
+      toast.success("Cập nhật trạng thái thanh toán thành công! ", {
         id: updateToast,
       });
       fetchOrders();
@@ -242,7 +243,7 @@ export default function OrdersPage() {
     } catch (error) {
       console.error("Failed to update payment status:", error);
       toast.error(
-        "Lỗi khi cập nhật trạng thái thanh toán. Vui lòng thử lại! ❌",
+        "Lỗi khi cập nhật trạng thái thanh toán. Vui lòng thử lại! ",
         { id: updateToast },
       );
     }
@@ -252,17 +253,17 @@ export default function OrdersPage() {
   const handleCreateShippingSubmit = async () => {
     if (!selectedOrderId) return;
     if (!trackingNumber.trim()) {
-      toast.error("Vui lòng nhập Mã vận đơn! ⚠️");
+      toast.error("Vui lòng nhập Mã vận đơn! ");
       return;
     }
 
     const feeNum = parseFloat(shippingFee);
     if (isNaN(feeNum) || feeNum < 0) {
-      toast.error("Phí vận chuyển phải là số hợp lệ! ⚠️");
+      toast.error("Phí vận chuyển phải là số hợp lệ! ");
       return;
     }
 
-    const updateToast = toast.loading("Đang khởi tạo vận đơn giao hàng... ⏳");
+    const updateToast = toast.loading("Đang khởi tạo vận đơn giao hàng... ");
     try {
       await adminApi.createShipping({
         orderId: selectedOrderId,
@@ -274,7 +275,7 @@ export default function OrdersPage() {
         ).toISOString(), // 3 ngày sau
       });
 
-      toast.success("Khởi tạo vận đơn giao hàng thành công! 📦✨", {
+      toast.success("Khởi tạo vận đơn giao hàng thành công! ", {
         id: updateToast,
       });
       setIsCreateShippingOpen(false);
@@ -288,7 +289,7 @@ export default function OrdersPage() {
       fetchOrders();
     } catch (err) {
       console.error("Failed to create shipping:", err);
-      toast.error("Lỗi khi tạo vận đơn. Vui lòng thử lại! ❌", {
+      toast.error("Lỗi khi tạo vận đơn. Vui lòng thử lại! ", {
         id: updateToast,
       });
     }
@@ -298,7 +299,7 @@ export default function OrdersPage() {
   const handleUpdateShippingStatus = async (status: string) => {
     if (!shippingDetail) return;
     const actionText = status === "Delivered" ? "Xác nhận đã giao" : "Cập nhật";
-    const updateToast = toast.loading(`Đang ${actionText.toLowerCase()}... ⏳`);
+    const updateToast = toast.loading(`Đang ${actionText.toLowerCase()}... `);
 
     try {
       await adminApi.updateShipping(shippingDetail.shippingId, {
@@ -307,7 +308,7 @@ export default function OrdersPage() {
           status === "Delivered" ? new Date().toISOString() : undefined,
       });
 
-      toast.success("Cập nhật trạng thái giao hàng thành công! 🎉", {
+      toast.success("Cập nhật trạng thái giao hàng thành công! ", {
         id: updateToast,
       });
 
@@ -322,7 +323,7 @@ export default function OrdersPage() {
       fetchOrders();
     } catch (err) {
       console.error("Failed to update shipping:", err);
-      toast.error("Lỗi khi cập nhật trạng thái vận đơn! ❌", {
+      toast.error("Lỗi khi cập nhật trạng thái vận đơn! ", {
         id: updateToast,
       });
     }
@@ -332,7 +333,7 @@ export default function OrdersPage() {
     setStatusFilter("all");
     setPaymentStatusFilter("all");
     setSearchTerm("");
-    toast.success("Đã xóa bộ lọc! 🧹");
+    toast.success("Đã xóa bộ lọc! ");
   };
 
   const isFiltered =

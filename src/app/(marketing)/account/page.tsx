@@ -304,7 +304,7 @@ function ProfileForm({
   const handleSave = async () => {
     if (phone.trim() === "") {
       setPhoneError("Số điện thoại không được để trống.");
-      toast.error("Vui lòng nhập số điện thoại! ⚠️");
+      toast.error("Vui lòng nhập số điện thoại!");
       return;
     }
 
@@ -732,7 +732,7 @@ function ProfileForm({
                   setPhoneError("Số điện thoại không được để trống.");
                 } else if (!/^(0|84)(3|5|7|8|9)[0-9]{8}$/.test(val)) {
                   setPhoneError(
-                    "Số điện thoại không hợp lệ. Ví dụ đúng: 0912345678",
+                    "Số điện thoại không hợp lệ.",
                   );
                 } else {
                   setPhoneError("");
@@ -1635,28 +1635,28 @@ function PaymentSection({
       expiryParts[0].length !== 2 ||
       expiryParts[1].length !== 2
     ) {
-      toast.error("Ngày hết hạn không đúng định dạng MM/YY! ❌");
+      toast.error("Ngày hết hạn không đúng định dạng MM/YY! ");
       return;
     }
     const month = parseInt(expiryParts[0], 10);
     const year = parseInt(expiryParts[1], 10) + 2000;
     if (month < 1 || month > 12) {
-      toast.error("Tháng hết hạn không hợp lệ (01 - 12)! ❌");
+      toast.error("Tháng hết hạn không hợp lệ (01 - 12)! ");
       return;
     }
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
-      toast.error("Thẻ đã hết hạn sử dụng! ❌");
+      toast.error("Thẻ đã hết hạn sử dụng! ");
       return;
     }
     if (cardCvv.length !== 3) {
-      toast.error("Mã bảo mật CVV phải có đúng 3 chữ số! ❌");
+      toast.error("Mã bảo mật CVV phải có đúng 3 chữ số! ");
       return;
     }
 
     setIsSaving(true);
-    const saveToast = toast.loading("Đang liên kết thẻ... ⏳");
+    const saveToast = toast.loading("Đang liên kết thẻ... ");
 
     setTimeout(() => {
       const type = getCardType(cleanNumber);
@@ -1673,7 +1673,7 @@ function PaymentSection({
       const updated = [...cards, newCard];
       saveToStorage(updated);
       setIsSaving(false);
-      toast.success("Liên kết thẻ thành công! ✨", { id: saveToast });
+      toast.success("Liên kết thẻ thành công! ", { id: saveToast });
       resetForm();
     }, 800);
   };
@@ -1690,7 +1690,7 @@ function PaymentSection({
       }
 
       saveToStorage(updated);
-      toast.success("Đã xóa thẻ thành công! 🗑️");
+      toast.success("Đã xóa thẻ thành công! ");
     }
   };
 
@@ -1700,7 +1700,7 @@ function PaymentSection({
       isDefault: c.id === id,
     }));
     saveToStorage(updated);
-    toast.success("Đã đặt làm phương thức thanh toán mặc định! ⭐");
+    toast.success("Đã đặt làm phương thức thanh toán mặc định!");
   };
 
   const resetForm = () => {

@@ -60,7 +60,7 @@ export default function AdminDashboardPage() {
         setPayments(paymentsData || []);
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
-        toast.error("Không thể kết nối dữ liệu từ Backend ❌");
+        toast.error("Không thể kết nối dữ liệu từ Backend ");
       } finally {
         setLoading(false);
       }

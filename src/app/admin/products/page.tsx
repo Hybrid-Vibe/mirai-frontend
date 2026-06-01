@@ -177,7 +177,7 @@ export default function ProductsPage() {
     } catch (err) {
       console.error("Failed to toggle product status:", err);
       toast.error(
-        `Lỗi khi ${actionText.toLowerCase()} sản phẩm. Vui lòng thử lại! ❌`,
+        `Lỗi khi ${actionText.toLowerCase()} sản phẩm. Vui lòng thử lại! `,
         { id: updateToast },
       );
     }
@@ -186,19 +186,19 @@ export default function ProductsPage() {
   // Xóa sản phẩm
   const handleDeleteProduct = async (product: ProductDto) => {
     const confirmDelete = window.confirm(
-      `Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"? Thao tác này không thể hoàn tác! ⚠️`,
+      `Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"? Thao tác này không thể hoàn tác! `,
     );
     if (!confirmDelete) return;
 
-    const updateToast = toast.loading("Đang xóa sản phẩm... ⏳");
+    const updateToast = toast.loading("Đang xóa sản phẩm... ");
     try {
       await adminApi.deleteProduct(product.productId);
-      toast.success("Xóa sản phẩm thành công! ✨", { id: updateToast });
+      toast.success("Xóa sản phẩm thành công! ", { id: updateToast });
       fetchProducts();
     } catch (err) {
       console.error("Failed to delete product:", err);
       toast.error(
-        "Lỗi khi xóa sản phẩm. Sản phẩm có thể đang chứa trong đơn hàng của khách! ❌",
+        "Lỗi khi xóa sản phẩm. Sản phẩm có thể đang chứa trong đơn hàng của khách! ",
         { id: updateToast },
       );
     }
@@ -222,26 +222,26 @@ export default function ProductsPage() {
   // Submit thêm sản phẩm mới
   const handleAddProductSubmit = async () => {
     if (!addName.trim()) {
-      toast.error("Vui lòng nhập tên sản phẩm! ⚠️");
+      toast.error("Vui lòng nhập tên sản phẩm! ");
       return;
     }
     if (!addCategoryId) {
-      toast.error("Vui lòng chọn danh mục! ⚠️");
+      toast.error("Vui lòng chọn danh mục! ");
       return;
     }
     if (!addBrandId) {
-      toast.error("Vui lòng chọn thương hiệu! ⚠️");
+      toast.error("Vui lòng chọn thương hiệu! ");
       return;
     }
 
     const priceNum = parseFloat(addPrice);
     if (isNaN(priceNum) || priceNum <= 0) {
-      toast.error("Giá tiền variant phải là số dương hợp lệ! ⚠️");
+      toast.error("Giá tiền variant phải là số dương hợp lệ! ");
       return;
     }
 
     const updateToast = toast.loading(
-      "Đang tạo sản phẩm kèm variant phôi ốp... ⏳",
+      "Đang tạo sản phẩm kèm variant phôi ốp... ",
     );
     try {
       // Dùng API tạo tất cả (sản phẩm + ảnh + variant) trong 1 request
@@ -266,14 +266,14 @@ export default function ProductsPage() {
         ],
       });
 
-      toast.success("Tạo sản phẩm và phôi ốp thành công! ✨", {
+      toast.success("Tạo sản phẩm và phôi ốp thành công! ", {
         id: updateToast,
       });
       setIsAddOpen(false);
       fetchProducts();
     } catch (err) {
       console.error("Failed to create product:", err);
-      toast.error("Lỗi khi thêm sản phẩm mới. Vui lòng thử lại! ❌", {
+      toast.error("Lỗi khi thêm sản phẩm mới. Vui lòng thử lại! ", {
         id: updateToast,
       });
     }
@@ -293,11 +293,11 @@ export default function ProductsPage() {
   const handleEditProductSubmit = async () => {
     if (!selectedProduct) return;
     if (!editName.trim()) {
-      toast.error("Tên sản phẩm không được để trống! ⚠️");
+      toast.error("Tên sản phẩm không được để trống! ");
       return;
     }
 
-    const updateToast = toast.loading("Đang cập nhật thông tin sản phẩm... ⏳");
+    const updateToast = toast.loading("Đang cập nhật thông tin sản phẩm... ");
     try {
       await productApi.updateProduct(selectedProduct.productId, {
         name: editName,
@@ -306,14 +306,14 @@ export default function ProductsPage() {
         brandId: editBrandId,
       });
 
-      toast.success("Cập nhật thông tin hiển thị sản phẩm thành công! ✨", {
+      toast.success("Cập nhật thông tin hiển thị sản phẩm thành công! ", {
         id: updateToast,
       });
       setIsEditOpen(false);
       fetchProducts();
     } catch (err) {
       console.error("Failed to update product:", err);
-      toast.error("Lỗi khi cập nhật sản phẩm. Vui lòng thử lại! ❌", {
+      toast.error("Lỗi khi cập nhật sản phẩm. Vui lòng thử lại! ", {
         id: updateToast,
       });
     }
@@ -526,7 +526,7 @@ export default function ProductsPage() {
                   <TableCell className="text-xs">
                     {product.ratingAvg ? (
                       <span className="flex items-center gap-1 font-semibold text-amber-500">
-                        {product.ratingAvg} ⭐️{" "}
+                        {product.ratingAvg} {" "}
                         <span className="text-muted-foreground font-normal">
                           ({product.ratingCount})
                         </span>

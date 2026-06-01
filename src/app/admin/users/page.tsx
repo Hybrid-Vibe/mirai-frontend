@@ -94,7 +94,7 @@ export default function UsersPage() {
       const data = await adminApi.getUsers(filter);
       setUsers(data || []);
     } catch (error) {
-      toast.error("Không thể tải danh sách tài khoản ❌");
+      toast.error("Không thể tải danh sách tài khoản ");
       console.error("Failed to fetch users:", error);
     } finally {
       setIsLoading(false);
@@ -130,19 +130,19 @@ export default function UsersPage() {
     const nextStatus = !user.isActive;
     const actionText = nextStatus ? "Mở khóa" : "Khóa";
     const updateToast = toast.loading(
-      `Đang ${actionText.toLowerCase()} tài khoản... ⏳`,
+      `Đang ${actionText.toLowerCase()} tài khoản... `,
     );
 
     try {
       await adminApi.updateUserStatus(user.userId, { isActive: nextStatus });
-      toast.success(`${actionText} tài khoản thành công! ✨`, {
+      toast.success(`${actionText} tài khoản thành công! `, {
         id: updateToast,
       });
       fetchUsers();
     } catch (error) {
       console.error("Failed to toggle user status:", error);
       toast.error(
-        `Lỗi khi ${actionText.toLowerCase()} tài khoản. Vui lòng thử lại! ❌`,
+        `Lỗi khi ${actionText.toLowerCase()} tài khoản. Vui lòng thử lại! `,
         {
           id: updateToast,
         },
@@ -164,19 +164,19 @@ export default function UsersPage() {
     const roleName =
       newRoleId === "1" ? "Admin" : newRoleId === "2" ? "Staff" : "Customer";
     const updateToast = toast.loading(
-      `Đang chuyển quyền sang ${roleName}... ⏳`,
+      `Đang chuyển quyền sang ${roleName}... `,
     );
 
     try {
       await adminApi.updateUserRole(selectedUser.userId, { roleId: newRoleId });
-      toast.success(`Cập nhật vai trò sang ${roleName} thành công! ✨`, {
+      toast.success(`Cập nhật vai trò sang ${roleName} thành công! `, {
         id: updateToast,
       });
       setIsRoleOpen(false);
       fetchUsers();
     } catch (error) {
       console.error("Failed to update user role:", error);
-      toast.error("Lỗi khi phân quyền người dùng. Vui lòng thử lại! ❌", {
+      toast.error("Lỗi khi phân quyền người dùng. Vui lòng thử lại! ", {
         id: updateToast,
       });
     }
