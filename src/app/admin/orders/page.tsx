@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2, RefreshCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -212,10 +211,9 @@ export default function OrdersPage() {
       }
     } catch (error) {
       console.error("Failed to update order status:", error);
-      toast.error(
-        "Lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại! ",
-        { id: updateToast },
-      );
+      toast.error("Lỗi khi cập nhật trạng thái đơn hàng. Vui lòng thử lại! ", {
+        id: updateToast,
+      });
     }
   };
 

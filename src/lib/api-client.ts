@@ -298,45 +298,6 @@ export const userApi = {
     );
     return data;
   },
-
-  /** POST /api/User/logout */
-  logout: async (): Promise<{ message: string }> => {
-    const { data } = await apiClient.post<{ message: string }>("/User/logout");
-    clearAuthToken();
-    return data;
-  },
-
-  /** POST /api/User/login-user-by-supabase */
-  syncUser: async (): Promise<{ message: string }> => {
-    const { data } = await apiClient.post<{ message: string }>(
-      "/User/login-user-by-supabase",
-    );
-    return data;
-  },
-
-  /** PUT /api/User/Change-Password{userId} */
-  changePassword: async (
-    userId: string,
-    dto: ChangePasswordRequestDto,
-  ): Promise<{ message: string }> => {
-    const { data } = await apiClient.put<{ message: string }>(
-      `/User/Change-Password${userId}`,
-      dto,
-    );
-    return data;
-  },
-
-  /** PUT /api/User/Update-Profile/{userId} */
-  updateProfile: async (
-    userId: string,
-    dto: UpdateProfileRequestDto,
-  ): Promise<{ message: string }> => {
-    const { data } = await apiClient.put<{ message: string }>(
-      `/User/Update-Profile/${userId}`,
-      dto,
-    );
-    return data;
-  },
 };
 
 // ======================================================================
