@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { userApi } from "@/lib/api-client";
 import { useDesignStore } from "@/lib/store";
 import { getFriendlyErrorMessage } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function LoginPage() {
 
       // Update global user state in Zustand
       let nameToUse = response.fullName || response.email.split("@")[0];
+      let finalAvatarUrl: string | undefined = undefined;
+
       if (typeof window !== "undefined") {
         const savedLocal = localStorage.getItem(
           `mirai_profile_${response.userId}`,
@@ -44,17 +47,37 @@ export default function LoginPage() {
             if (localData.fullName) {
               nameToUse = localData.fullName;
             }
+            if (localData.avatarUrl) {
+              finalAvatarUrl = localData.avatarUrl; // Retrieve avatarUrl from cached localStorage!
+            }
           } catch (e) {
             console.error("Failed to parse local profile:", e);
           }
         }
       }
 
+      // Query Supabase public.users table to get correct avatar_url (if available on server, overwrite)
+      try {
+        const { data: sbUser } = await supabase
+          .from("users")
+          .select("avatar_url")
+          .eq("user_id", response.userId)
+          .maybeSingle();
+        if (sbUser?.avatar_url) {
+          finalAvatarUrl = sbUser.avatar_url;
+        }
+      } catch (e) {
+        console.warn(
+          "Failed to fetch supabase user avatar during backend login:",
+          e,
+        );
+      }
+
       setUser({
         id: response.userId,
         name: nameToUse,
         email: response.email,
-        avatar_url: undefined,
+        avatar_url: finalAvatarUrl,
       });
 
       toast.success(

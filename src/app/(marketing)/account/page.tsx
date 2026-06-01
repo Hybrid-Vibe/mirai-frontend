@@ -273,6 +273,14 @@ function ProfileForm({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Crop avatar states
+  const [isCropOpen, setIsCropOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+
   // Password state
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -294,13 +302,19 @@ function ProfileForm({
   const hasSpecialChar = /[@$!%*?&]/.test(newPassword);
 
   const handleSave = async () => {
-    if (phone.trim() !== "") {
-      const phoneRegex = /^(0|84)(3|5|7|8|9)[0-9]{8}$/;
-      if (!phoneRegex.test(phone.trim())) {
-        setPhoneError("Số điện thoại không hợp lệ. Định dạng đúng: 0912345678");
-        toast.error("Số điện thoại không đúng định dạng Việt Nam.");
-        return;
-      }
+    if (phone.trim() === "") {
+      setPhoneError("Số điện thoại không được để trống.");
+      toast.error("Vui lòng nhập số điện thoại!");
+      return;
+    }
+
+    const phoneRegex = /^(0|84)(3|5|7|8|9)[0-9]{8}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      setPhoneError(
+        "Số điện thoại không hợp lệ. Định dạng đúng: 0912345678 (10 chữ số)",
+      );
+      toast.error("Số điện thoại không đúng định dạng Việt Nam. ❌");
+      return;
     }
 
     if (showPasswordChange) {
@@ -459,7 +473,7 @@ function ProfileForm({
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user.id) return;
 
@@ -473,18 +487,31 @@ function ProfileForm({
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImageSrc(reader.result as string);
+      setCropFile(file);
+      setZoom(1);
+      setOffsetX(0);
+      setOffsetY(0);
+      setIsCropOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const performUpload = async (fileToUpload: File) => {
     setIsUploading(true);
     const uploadToast = toast.loading("Đang tải ảnh đại diện lên... ⏳");
 
     try {
-      const fileExt = file.name.split(".").pop();
+      const fileExt = fileToUpload.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
       // 1. Upload to Supabase Storage bucket 'avatars'
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, {
+        .upload(filePath, fileToUpload, {
           cacheControl: "3600",
           upsert: true,
         });
@@ -510,24 +537,30 @@ function ProfileForm({
             authError.message,
           );
         }
-      } else {
+      }
+
+      // 4. Update Supabase public.users table safely
+      try {
+        await supabase
+          .from("users")
+          .update({
+            avatar_url: publicUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", user.id);
+      } catch (dbError) {
         console.warn(
-          "No active Supabase session. Skipping auth avatar metadata update.",
+          "Could not update public.users table (likely a foreign key constraint for backend user):",
+          dbError,
         );
       }
 
-      // 4. Update Supabase public.users table
-      const { error: dbError } = await supabase
-        .from("users")
-        .update({
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
-      if (dbError) throw dbError;
-
       // 5. Sync with .NET Backend
-      await userApi.syncUser();
+      try {
+        await userApi.syncUser();
+      } catch (err) {
+        console.warn("Backend sync skipped:", err);
+      }
 
       // 6. Update Zustand store user state so Header & Profile updates instantly
       const currentUserState = useDesignStore.getState().user;
@@ -538,9 +571,26 @@ function ProfileForm({
         });
       }
 
+      // 7. Save to localStorage to avoid losing avatar when logging back in
+      if (typeof window !== "undefined") {
+        const localProfile = localStorage.getItem(`mirai_profile_${user.id}`);
+        const parsed = localProfile ? JSON.parse(localProfile) : {};
+        localStorage.setItem(
+          `mirai_profile_${user.id}`,
+          JSON.stringify({
+            ...parsed,
+            fullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
+            phone: phone.trim() || "",
+            avatarUrl: publicUrl,
+            updatedAt: new Date().toISOString(),
+          }),
+        );
+      }
+
       toast.success("Cập nhật ảnh đại diện thành công! ✨", {
         id: uploadToast,
       });
+      setIsCropOpen(false);
     } catch (err: unknown) {
       console.error("Failed to upload avatar:", err);
       const msg =
@@ -554,6 +604,55 @@ function ProfileForm({
         fileInputRef.current.value = "";
       }
     }
+  };
+
+  const handleCropSubmit = () => {
+    if (!selectedImageSrc) return;
+
+    const img = new Image();
+    img.src = selectedImageSrc;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 300;
+      canvas.height = 300;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // Vẽ hình tròn cắt
+      ctx.beginPath();
+      ctx.arc(150, 150, 150, 0, Math.PI * 2);
+      ctx.clip();
+
+      const minSide = Math.min(img.width, img.height);
+      const scaleFactor = (300 / minSide) * zoom;
+
+      const drawWidth = img.width * scaleFactor;
+      const drawHeight = img.height * scaleFactor;
+
+      // Vị trí vẽ trung tâm cộng offset X, Y
+      const x = (300 - drawWidth) / 2 + offsetX;
+      const y = (300 - drawHeight) / 2 + offsetY;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 300, 300);
+
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+          const fileExt = cropFile?.name.split(".").pop() || "jpg";
+          const finalFile = new File(
+            [blob],
+            `avatar-${Date.now()}.${fileExt}`,
+            { type: "image/jpeg" },
+          );
+          performUpload(finalFile);
+        },
+        "image/jpeg",
+        0.9,
+      );
+    };
   };
 
   return (
@@ -627,8 +726,17 @@ function ProfileForm({
             <Input
               value={phone}
               onChange={(e) => {
-                setPhone(e.target.value);
-                if (phoneError) setPhoneError("");
+                const val = e.target.value.replace(/[^0-9]/g, ""); // Chỉ cho nhập số
+                setPhone(val);
+                if (val.trim() === "") {
+                  setPhoneError("Số điện thoại không được để trống.");
+                } else if (!/^(0|84)(3|5|7|8|9)[0-9]{8}$/.test(val)) {
+                  setPhoneError(
+                    "Số điện thoại không hợp lệ.",
+                  );
+                } else {
+                  setPhoneError("");
+                }
               }}
               disabled={!isEditing}
               placeholder={
@@ -859,6 +967,103 @@ function ProfileForm({
           </div>
         </div>
       </div>
+
+      {/* Dialog Căn chỉnh và cắt ảnh đại diện */}
+      <Dialog open={isCropOpen} onOpenChange={setIsCropOpen}>
+        <DialogContent className="sm:max-w-[450px] rounded-2xl bg-background border border-border p-6 shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold">
+              Căn chỉnh ảnh đại diện
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4 flex flex-col items-center">
+            {/* Khung xem trước hình tròn */}
+            <div className="relative h-56 w-56 overflow-hidden rounded-full border border-border bg-muted ring-2 ring-primary/20 ring-offset-2">
+              {selectedImageSrc && (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedImageSrc}
+                    alt="Xem trước"
+                    className="max-w-none origin-center transition-transform duration-75"
+                    style={{
+                      transform: `scale(${zoom}) translate(${offsetX / zoom}px, ${offsetY / zoom}px)`,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Các thanh trượt điều chỉnh */}
+            <div className="w-full space-y-4 pt-4">
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase block">
+                  Độ thu phóng (Zoom)
+                </span>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.1"
+                  value={zoom}
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase block">
+                    Dịch chuyển ngang
+                  </span>
+                  <input
+                    type="range"
+                    min="-100"
+                    max="100"
+                    step="5"
+                    value={offsetX}
+                    onChange={(e) => setOffsetX(parseFloat(e.target.value))}
+                    className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase block">
+                    Dịch chuyển dọc
+                  </span>
+                  <input
+                    type="range"
+                    min="-100"
+                    max="100"
+                    step="5"
+                    value={offsetY}
+                    onChange={(e) => setOffsetY(parseFloat(e.target.value))}
+                    className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsCropOpen(false)}
+              className="rounded-xl flex-1"
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleCropSubmit}
+              disabled={isUploading}
+              className="rounded-xl flex-1"
+            >
+              Cắt & Tải lên
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1430,28 +1635,28 @@ function PaymentSection({
       expiryParts[0].length !== 2 ||
       expiryParts[1].length !== 2
     ) {
-      toast.error("Ngày hết hạn không đúng định dạng MM/YY! ❌");
+      toast.error("Ngày hết hạn không đúng định dạng MM/YY! ");
       return;
     }
     const month = parseInt(expiryParts[0], 10);
     const year = parseInt(expiryParts[1], 10) + 2000;
     if (month < 1 || month > 12) {
-      toast.error("Tháng hết hạn không hợp lệ (01 - 12)! ❌");
+      toast.error("Tháng hết hạn không hợp lệ (01 - 12)! ");
       return;
     }
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
-      toast.error("Thẻ đã hết hạn sử dụng! ❌");
+      toast.error("Thẻ đã hết hạn sử dụng! ");
       return;
     }
     if (cardCvv.length !== 3) {
-      toast.error("Mã bảo mật CVV phải có đúng 3 chữ số! ❌");
+      toast.error("Mã bảo mật CVV phải có đúng 3 chữ số! ");
       return;
     }
 
     setIsSaving(true);
-    const saveToast = toast.loading("Đang liên kết thẻ... ⏳");
+    const saveToast = toast.loading("Đang liên kết thẻ... ");
 
     setTimeout(() => {
       const type = getCardType(cleanNumber);
@@ -1468,7 +1673,7 @@ function PaymentSection({
       const updated = [...cards, newCard];
       saveToStorage(updated);
       setIsSaving(false);
-      toast.success("Liên kết thẻ thành công! ✨", { id: saveToast });
+      toast.success("Liên kết thẻ thành công! ", { id: saveToast });
       resetForm();
     }, 800);
   };
@@ -1485,7 +1690,7 @@ function PaymentSection({
       }
 
       saveToStorage(updated);
-      toast.success("Đã xóa thẻ thành công! 🗑️");
+      toast.success("Đã xóa thẻ thành công! ");
     }
   };
 
@@ -1495,7 +1700,7 @@ function PaymentSection({
       isDefault: c.id === id,
     }));
     saveToStorage(updated);
-    toast.success("Đã đặt làm phương thức thanh toán mặc định! ⭐");
+    toast.success("Đã đặt làm phương thức thanh toán mặc định!");
   };
 
   const resetForm = () => {

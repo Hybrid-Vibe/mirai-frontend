@@ -40,9 +40,9 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-muted/40 flex flex-col md:flex-row">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-muted/40 flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 border-r border-border bg-background flex flex-col md:min-h-screen shadow-sm z-40 relative">
+      <aside className="w-full md:w-64 border-r border-border bg-background flex flex-col md:h-screen shadow-sm z-40 relative">
         <div className="h-16 flex items-center px-6 border-b border-border">
           <Link
             href="/admin"
