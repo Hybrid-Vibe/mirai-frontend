@@ -252,10 +252,10 @@ export const userApi = {
     return normalizeArray<GetUserDto>(data);
   },
 
-  /** GET /api/User/Get-User-By-UserId{userId} */
+  /** GET /api/User/Get-User-By-UserId/{userId} */
   getUserById: async (userId: string): Promise<GetUserDto> => {
     const { data } = await apiClient.get<GetUserDto>(
-      `/User/Get-User-By-UserId${userId}`,
+      `/User/Get-User-By-UserId/${userId}`,
     );
     return data;
   },
@@ -275,13 +275,13 @@ export const userApi = {
     return data;
   },
 
-  /** PUT /api/User/Change-Password{userId} */
+  /** PUT /api/User/Change-Password/{userId} */
   changePassword: async (
     userId: string,
     dto: ChangePasswordRequestDto,
   ): Promise<{ message: string }> => {
     const { data } = await apiClient.put<{ message: string }>(
-      `/User/Change-Password${userId}`,
+      `/User/Change-Password/${userId}`,
       dto,
     );
     return data;
@@ -469,10 +469,10 @@ export const orderApi = {
     return data;
   },
 
-  /** GET /api/Order/Get-Orders-By-UserId{userId} */
+  /** GET /api/Order/Orders-History-By-User/{userId} */
   getOrdersByUserId: async (userId: string): Promise<OrderResponseDto[]> => {
     const { data } = await apiClient.get<OrderResponseDto[]>(
-      `/Order/Get-Orders-By-UserId${userId}`,
+      `/Order/Orders-History-By-User/${userId}`,
     );
     return normalizeArray<OrderResponseDto>(data);
   },
@@ -576,18 +576,18 @@ export const brandApi = {
     return data;
   },
 
-  /** GET /api/Brand/Get-Brand-By-Id-{brandId} */
+  /** GET /api/Brand/Get-Brand-By-Id/{brandId} */
   getBrandById: async (brandId: string): Promise<BrandResponseDto> => {
     const { data } = await apiClient.get<BrandResponseDto>(
-      `/Brand/Get-Brand-By-Id-${brandId}`,
+      `/Brand/Get-Brand-By-Id/${brandId}`,
     );
     return data;
   },
 
-  /** GET /api/Brand/Get-Brand-Active-By-Id-{brandId} */
+  /** GET /api/Brand/Get-Brand-Active-By-Id/{brandId} */
   getBrandActiveById: async (brandId: string): Promise<BrandResponseDto> => {
     const { data } = await apiClient.get<BrandResponseDto>(
-      `/Brand/Get-Brand-Active-By-Id-${brandId}`,
+      `/Brand/Get-Brand-Active-By-Id/${brandId}`,
     );
     return data;
   },
@@ -601,22 +601,22 @@ export const brandApi = {
     return data;
   },
 
-  /** PUT /api/Brand/Update-Brand-{brandId} */
+  /** PUT /api/Brand/Update-Brand/{brandId} */
   updateBrand: async (
     brandId: string,
     dto: BrandDto,
   ): Promise<BrandResponseDto> => {
     const { data } = await apiClient.put<BrandResponseDto>(
-      `/Brand/Update-Brand-${brandId}`,
+      `/Brand/Update-Brand/${brandId}`,
       dto,
     );
     return data;
   },
 
-  /** PUT /api/Brand/Delete-Brand-{brandId} (soft delete) */
+  /** PUT /api/Brand/Delete-Brand/{brandId} (soft delete) */
   deleteBrand: async (brandId: string): Promise<string> => {
     const { data } = await apiClient.put<string>(
-      `/Brand/Delete-Brand-${brandId}`,
+      `/Brand/Delete-Brand/${brandId}`,
     );
     return data;
   },
@@ -702,18 +702,18 @@ export const addressApi = {
     return data;
   },
 
-  /** GET /api/Address/Get-Address-By-AddressId{addressId} */
+  /** GET /api/Address/Get-Address-By-AddressId/{addressId} */
   getAddressById: async (addressId: string): Promise<AddressResponseDto> => {
     const { data } = await apiClient.get<AddressResponseDto>(
-      `/Address/Get-Address-By-AddressId${addressId}`,
+      `/Address/Get-Address-By-AddressId/${addressId}`,
     );
     return data;
   },
 
-  /** GET /api/Address/Get-Address-By-UserId{userId} */
+  /** GET /api/Address/Get-Address-By-UserId/{userId} */
   getAddressByUserId: async (userId: string): Promise<AddressResponseDto[]> => {
     const { data } = await apiClient.get<AddressResponseDto[]>(
-      `/Address/Get-Address-By-UserId${userId}`,
+      `/Address/Get-Address-By-UserId/${userId}`,
     );
     return data;
   },
@@ -727,13 +727,13 @@ export const addressApi = {
     return data;
   },
 
-  /** PUT /api/Address/Update-Address{addressId} */
+  /** PUT /api/Address/Update-Address/{addressId} */
   updateAddress: async (
     addressId: string,
     dto: UpdateAddressDto,
   ): Promise<AddressResponseDto> => {
     const { data } = await apiClient.put<AddressResponseDto>(
-      `/Address/Update-Address${addressId}`,
+      `/Address/Update-Address/${addressId}`,
       dto,
     );
     return data;
@@ -754,10 +754,10 @@ export const cartApi = {
     return data;
   },
 
-  /** POST /api/CartItem/Checkout-from-cart-{userId} */
+  /** POST /api/CartItem/Checkout-from-cart/{userId} */
   checkoutFromCart: async (userId: string): Promise<OrderResponseDto> => {
     const { data } = await apiClient.post<OrderResponseDto>(
-      `/CartItem/Checkout-from-cart-${userId}`,
+      `/CartItem/Checkout-from-cart/${userId}`,
     );
     return data;
   },
@@ -770,9 +770,9 @@ export const cartApi = {
     return data;
   },
 
-  /** DELETE /api/CartItem/Delete-cart-item-{cartItemId} */
+  /** DELETE /api/CartItem/Delete-cart-item/{cartItemId} */
   deleteCartItem: async (cartItemId: string): Promise<void> => {
-    await apiClient.delete(`/CartItem/Delete-cart-item-${cartItemId}`);
+    await apiClient.delete(`/CartItem/Delete-cart-item/${cartItemId}`);
   },
 };
 
