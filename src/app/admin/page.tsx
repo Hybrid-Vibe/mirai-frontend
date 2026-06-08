@@ -137,9 +137,8 @@ export default function AdminDashboardPage() {
             onChange={(e) => setPeriod(e.target.value)}
             className="h-10 px-4 rounded-xl border border-border/80 bg-background/50 backdrop-blur-md text-sm outline-none cursor-pointer hover:border-primary/50 transition-all font-medium shadow-sm"
           >
-            <option value="week">Tuần này</option>
-            <option value="month">Tháng này</option>
-            <option value="year">Năm nay</option>
+            <option value="week">7 ngày gần nhất</option>
+            <option value="month">12 tháng gần nhất</option>
           </select>
         </div>
       </div>
@@ -294,11 +293,7 @@ export default function AdminDashboardPage() {
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Doanh thu thống kê theo{" "}
-              {period === "week"
-                ? "các ngày trong tuần"
-                : period === "month"
-                  ? "các tuần trong tháng"
-                  : "các tháng trong năm"}
+              {period === "week" ? "7 ngày gần nhất" : "12 tháng gần nhất"}
             </p>
           </div>
 

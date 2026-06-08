@@ -9,7 +9,7 @@ import { useDesignStore } from "@/lib/store";
 import { orderApi, paymentApi, addressApi } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Loader2, MapPin, Check, Plus } from "lucide-react";
-import { AddressResponseDto } from "@/types/api";
+import type { AddressResponseDto, OrderRequestDto } from "@/types/api";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -299,16 +299,41 @@ export default function CheckoutPage() {
 
     try {
       // 1. Create Order
-      const orderRequest = {
+      const customDesigns = cartItems
+        .filter((item) => item.customDesign)
+        .map((item) => ({
+          cartItemId: item.id,
+          productName: item.name,
+          quantity: item.quantity,
+          customDesign: item.customDesign,
+        }));
+      const customDesignNote =
+        customDesigns.length > 0
+          ? `CUSTOM_DESIGNS=${JSON.stringify(customDesigns)}`
+          : "";
+      const orderRequest: OrderRequestDto = {
         userId: (user as unknown as { id: string })?.id || "guest",
-        note: "", // added note
+        note: customDesignNote,
         products: cartItems.map((item) => ({
           variantId: item.id,
           quantity: item.quantity,
+          customDesign: item.customDesign,
         })),
       };
 
-      const orderResponse = await orderApi.createOrder(orderRequest);
+      let orderResponse: Awaited<ReturnType<typeof orderApi.createOrder>>;
+      try {
+        orderResponse = await orderApi.createOrder(orderRequest);
+      } catch (orderError) {
+        if (customDesigns.length === 0) throw orderError;
+        orderResponse = await orderApi.createOrder({
+          ...orderRequest,
+          products: orderRequest.products.map(({ variantId, quantity }) => ({
+            variantId,
+            quantity,
+          })),
+        });
+      }
 
       // Save address if checked
       if (saveInfo && user?.id) {

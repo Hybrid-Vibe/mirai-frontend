@@ -163,9 +163,7 @@ export default function UsersPage() {
 
     const roleName =
       newRoleId === "1" ? "Admin" : newRoleId === "2" ? "Staff" : "Customer";
-    const updateToast = toast.loading(
-      `Đang chuyển quyền sang ${roleName}... `,
-    );
+    const updateToast = toast.loading(`Đang chuyển quyền sang ${roleName}... `);
 
     try {
       await adminApi.updateUserRole(selectedUser.userId, { roleId: newRoleId });

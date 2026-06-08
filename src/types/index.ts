@@ -3,3 +3,4 @@ export * from "./database";
 export * from "./ai";
 export * from "./integrations";
 export * from "./api";
+export * from "./custom-design";

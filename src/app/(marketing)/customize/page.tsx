@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
 import {
   ImagePlus,
   Sparkles,
@@ -29,12 +29,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import type Konva from "konva";
+import type { PhoneCaseArAssets } from "@/components/features/customize/PhoneCaseViewer";
 
 import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 import {
   PHONE_CASE_TEMPLATES,
+  PREVIEW_MAX_HEIGHT,
+  PREVIEW_MAX_WIDTH,
+  getDisplayScale,
   getTemplateById,
 } from "@/constants/phone-templates";
 
@@ -64,6 +68,8 @@ const DynamicPhoneCaseViewer = dynamic(
 
 const SUPABASE_STORAGE_URL =
   "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/phone-models";
+const CUSTOM_DESIGN_TEMPLATE_VERSION = "phone-case-templates-v1";
+const CUSTOM_CASE_SHELL_VERSION = "frontend-shell-v2";
 
 const PRESET_COLORS = [
   "#ffffff",
@@ -87,6 +93,22 @@ const CASE_BG_PRESETS = [
   "#4a1942",
   "#0d3b0d",
 ];
+const DEFAULT_CASE_BG_COLOR = "#1a1a2e";
+
+function getCenteredTemplatePosition(
+  template: (typeof PHONE_CASE_TEMPLATES)[number] | null,
+  width: number,
+  height: number,
+) {
+  if (!template) {
+    return { x: 80, y: 200 };
+  }
+
+  return {
+    x: template.bleedPx + Math.max(0, (template.printAreaWidth - width) / 2),
+    y: template.bleedPx + Math.max(0, (template.printAreaHeight - height) / 2),
+  };
+}
 
 export default function CustomizePage() {
   const router = useRouter();
@@ -105,11 +127,11 @@ export default function CustomizePage() {
     updateElement,
     removeElement,
     elements,
+    setElements,
     selectedElementId,
     setSelectedElementId,
     canvasDataUrl,
     setCanvasDataUrl,
-    selectedTemplate,
     setSelectedTemplate,
     showGuides,
     setShowGuides,
@@ -122,16 +144,25 @@ export default function CustomizePage() {
   const [selectedColor, setSelectedColor] = useState("#ffffff");
   const [isGenerating, setIsGenerating] = useState(false);
   const [textInput, setTextInput] = useState("");
-  const [bgColor, setBgColor] = useState("#1a1a2e");
+  const [bgColor, setBgColor] = useState(DEFAULT_CASE_BG_COLOR);
+  const [casePreviewTextureUrl, setCasePreviewTextureUrl] = useState<
+    string | null
+  >(null);
+  const [arPreviewAssets, setArPreviewAssets] =
+    useState<PhoneCaseArAssets | null>(null);
+  const [hasEditedCaseBackground, setHasEditedCaseBackground] = useState(false);
   const [fontSize, setFontSize] = useState(32);
   const [fontFamily, setFontFamily] = useState("Bricolage Grotesque");
   const [selectedCategory, setSelectedCategory] = useState(0);
+  const [canvasResetRevision, setCanvasResetRevision] = useState(0);
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const previousTemplateIdRef = useRef<string | null>(null);
   const [shouldLoadTurnstile, setShouldLoadTurnstile] = useState(false);
   const pendingGenerateRef = useRef(false);
   const [refImage, setRefImage] = useState<string | null>(null);
+  const pendingModelResetRef = useRef<string | null>(null);
 
   const handleRefImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -188,6 +219,14 @@ export default function CustomizePage() {
     }
   };
 
+  const handleCaseBackgroundChange = (color: string) => {
+    setBgColor(color);
+    setHasEditedCaseBackground(true);
+    setCanvasDataUrl(null);
+    setCasePreviewTextureUrl(null);
+    setArPreviewAssets(null);
+  };
+
   // Sync selected text element values back to the control inputs when selection changes
   useEffect(() => {
     if (selectedElement && selectedElement.type === "text") {
@@ -201,33 +240,96 @@ export default function CustomizePage() {
   }, [selectedElementId, selectedElement]);
 
   // Derive model URL for 3D preview
-  const currentTemplate = selectedTemplate;
+  const currentTemplate = useMemo(() => {
+    if (!phoneModel) return null;
+
+    return (
+      getTemplateById(phoneModel) ??
+      PHONE_CASE_TEMPLATES.find((template) => template.label === phoneModel) ??
+      null
+    );
+  }, [phoneModel]);
   const modelUrl = currentTemplate
     ? `${SUPABASE_STORAGE_URL}/${currentTemplate.glbFile}`
     : null;
+  const previewScale = currentTemplate
+    ? getDisplayScale(currentTemplate, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT)
+    : Math.min(PREVIEW_MAX_WIDTH / 960, PREVIEW_MAX_HEIGHT / 1200);
+  const previewDisplayWidth = Math.round(
+    (currentTemplate?.canvasWidth ?? 960) * previewScale,
+  );
+  const previewDisplayHeight = Math.round(
+    (currentTemplate?.canvasHeight ?? 1200) * previewScale,
+  );
+  const hasSelfCustomDesign = Boolean(
+    mode === "self" && (elements.length > 0 || hasEditedCaseBackground),
+  );
+  const hasAiPreviewDesign = Boolean(
+    mode === "ai" && (selectedImage || elements.length > 0),
+  );
+  const shouldApplyCaseTexture = Boolean(
+    casePreviewTextureUrl && (hasSelfCustomDesign || hasAiPreviewDesign),
+  );
+  const shouldShowCaseSurface = hasSelfCustomDesign || hasAiPreviewDesign;
+  const resetCanvasForModelChange = useCallback(() => {
+    setElements([]);
+    setSelectedElementId(null);
+    setSelectedImage(null);
+    setBackgroundImage(null);
+    setCanvasDataUrl(null);
+    setCasePreviewTextureUrl(null);
+    setArPreviewAssets(null);
+    setBgColor(DEFAULT_CASE_BG_COLOR);
+    setHasEditedCaseBackground(false);
+    setTextInput("");
+    setSelectedColor("#ffffff");
+    setFontSize(32);
+    setFontFamily("Bricolage Grotesque");
+    setCanvasResetRevision((revision) => revision + 1);
+  }, [
+    setBackgroundImage,
+    setCanvasDataUrl,
+    setElements,
+    setSelectedElementId,
+    setSelectedImage,
+  ]);
 
   // Auto-load template when phone model changes
   useEffect(() => {
     if (!phoneModel) {
+      previousTemplateIdRef.current = null;
       setSelectedTemplate(null);
+      Promise.resolve().then(resetCanvasForModelChange);
       return;
     }
 
-    const templateById = getTemplateById(phoneModel);
-    const templateByLabel = PHONE_CASE_TEMPLATES.find(
-      (template) => template.label === phoneModel,
-    );
-    const resolvedTemplate = templateById ?? templateByLabel ?? null;
+    const resolvedTemplate = currentTemplate;
 
     if (resolvedTemplate) {
+      if (previousTemplateIdRef.current !== resolvedTemplate.id) {
+        if (pendingModelResetRef.current === resolvedTemplate.id) {
+          pendingModelResetRef.current = null;
+        } else {
+          Promise.resolve().then(resetCanvasForModelChange);
+        }
+      }
+      previousTemplateIdRef.current = resolvedTemplate.id;
       setSelectedTemplate(resolvedTemplate);
       if (resolvedTemplate.id !== phoneModel) {
         setPhoneModel(resolvedTemplate.id);
       }
     } else {
+      previousTemplateIdRef.current = null;
       setSelectedTemplate(null);
+      Promise.resolve().then(resetCanvasForModelChange);
     }
-  }, [phoneModel, setPhoneModel, setSelectedTemplate]);
+  }, [
+    currentTemplate,
+    phoneModel,
+    resetCanvasForModelChange,
+    setPhoneModel,
+    setSelectedTemplate,
+  ]);
 
   // When AI image is selected, set it as background
   useEffect(() => {
@@ -307,6 +409,10 @@ export default function CustomizePage() {
       return;
     }
     try {
+      const designImageUrl =
+        arPreviewAssets?.designImageUrl ||
+        casePreviewTextureUrl ||
+        (mode === "self" ? canvasDataUrl || "" : selectedImage || "");
       await useCartStore.getState().addItem(
         {
           id: `custom-${phoneModel}-${Date.now()}`,
@@ -315,6 +421,17 @@ export default function CustomizePage() {
           quantity: 1,
           imageUrl: mode === "self" ? canvasDataUrl || "" : selectedImage || "",
           phoneModel: currentTemplate?.label || phoneModel,
+          customDesign: {
+            phoneModelId: currentTemplate?.id || phoneModel,
+            phoneModelLabel: currentTemplate?.label || phoneModel,
+            caseColor: bgColor,
+            templateVersion: CUSTOM_DESIGN_TEMPLATE_VERSION,
+            caseShellVersion: CUSTOM_CASE_SHELL_VERSION,
+            designImageUrl,
+            arGlbUrl: arPreviewAssets?.glbUrl,
+            arUsdzUrl: arPreviewAssets?.usdzUrl,
+            mode,
+          },
         },
         (useDesignStore.getState().user as unknown as { id: string })?.id,
       );
@@ -351,11 +468,22 @@ export default function CustomizePage() {
           {/* Phone Model */}
           <Select
             value={phoneModel}
-            onValueChange={(val) => val && setPhoneModel(val)}
+            onValueChange={(val) => {
+              if (!val) return;
+              if (val !== phoneModel) {
+                resetCanvasForModelChange();
+                pendingModelResetRef.current = val;
+              }
+              setSelectedTemplate(getTemplateById(val) ?? null);
+              setPhoneModel(val);
+            }}
           >
-            <SelectTrigger className="h-10 w-56 text-sm font-semibold bg-card">
+            <SelectTrigger
+              className="h-10 w-56 text-sm font-semibold bg-card"
+              data-testid="phone-model-select"
+            >
               <SelectValue placeholder="Chọn dòng điện thoại">
-                {PHONE_CASE_TEMPLATES.find((m) => m.id === phoneModel)?.label}
+                {currentTemplate?.label}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -567,12 +695,21 @@ export default function CustomizePage() {
                         const file = e.target.files?.[0];
                         if (file) {
                           const url = URL.createObjectURL(file);
+                          const imagePosition = getCenteredTemplatePosition(
+                            currentTemplate,
+                            currentTemplate?.printAreaWidth
+                              ? currentTemplate.printAreaWidth * 0.72
+                              : 360,
+                            currentTemplate?.printAreaHeight
+                              ? currentTemplate.printAreaHeight * 0.36
+                              : 300,
+                          );
                           addElement({
                             id: `img-${Date.now()}`,
                             type: "image",
                             imageUrl: url,
-                            x: 50,
-                            y: 80,
+                            x: imagePosition.x,
+                            y: imagePosition.y,
                           });
                           toast.success("Đã thêm ảnh vào canvas");
                         }
@@ -603,12 +740,23 @@ export default function CustomizePage() {
                           toast.error("Nhập nội dung chữ");
                           return;
                         }
+                        const estimatedTextWidth = Math.min(
+                          textInput.trim().length * fontSize * 0.62,
+                          currentTemplate?.printAreaWidth
+                            ? currentTemplate.printAreaWidth * 0.86
+                            : 420,
+                        );
+                        const textPosition = getCenteredTemplatePosition(
+                          currentTemplate,
+                          estimatedTextWidth,
+                          fontSize,
+                        );
                         addElement({
                           id: `text-${Date.now()}`,
                           type: "text",
                           text: textInput,
-                          x: 80,
-                          y: 200,
+                          x: textPosition.x,
+                          y: textPosition.y,
                           fontSize,
                           fontFamily,
                           color: selectedColor,
@@ -729,7 +877,7 @@ export default function CustomizePage() {
                         <button
                           key={color}
                           type="button"
-                          onClick={() => setBgColor(color)}
+                          onClick={() => handleCaseBackgroundChange(color)}
                           className={`h-7 w-7 rounded-lg border transition-all ${bgColor === color ? "ring-2 ring-primary ring-offset-1 ring-offset-background scale-110" : "border-border hover:scale-105"}`}
                           style={{ backgroundColor: color }}
                         />
@@ -739,7 +887,9 @@ export default function CustomizePage() {
                       <input
                         type="color"
                         value={bgColor}
-                        onChange={(e) => setBgColor(e.target.value)}
+                        onChange={(e) =>
+                          handleCaseBackgroundChange(e.target.value)
+                        }
                         className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                       />
                       <div className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2 text-xs text-muted-foreground">
@@ -756,7 +906,7 @@ export default function CustomizePage() {
                 </div>
 
                 {/* Canvas guides toggle */}
-                {selectedTemplate && (
+                {currentTemplate && (
                   <div className="flex gap-2">
                     <Button
                       variant={showGuides ? "default" : "outline"}
@@ -828,14 +978,14 @@ export default function CustomizePage() {
           {/* RIGHT: Canvas + 3D Preview */}
           <section className="space-y-6">
             {/* Headers row (Canvas + 3D Preview) */}
-            <div className="grid gap-6 xl:grid-cols-[1fr_380px] items-end">
+            <div className="grid items-end gap-6 xl:grid-cols-2">
               {/* Canvas header */}
               <div className="flex items-center justify-between h-6">
                 <div className="text-sm font-semibold text-foreground">
                   Canvas Editor 2D
-                  {selectedTemplate && (
+                  {currentTemplate && (
                     <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      — {selectedTemplate.label}
+                      — {currentTemplate.label}
                     </span>
                   )}
                 </div>
@@ -851,7 +1001,10 @@ export default function CustomizePage() {
               </div>
 
               {/* 3D Preview header (only on xl viewports) */}
-              <div className="hidden xl:flex items-center justify-between h-6">
+              <div
+                className="hidden h-6 items-center justify-between xl:flex"
+                style={{ width: previewDisplayWidth }}
+              >
                 <h3 className="text-sm font-semibold text-foreground">
                   3D / AR Preview
                 </h3>
@@ -862,14 +1015,23 @@ export default function CustomizePage() {
             </div>
 
             {/* Canvas + 3D side by side */}
-            <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+            <div className="grid gap-6 xl:grid-cols-2">
               {/* Canvas */}
-              <div>
-                <div className="flex justify-center rounded-2xl border border-border bg-[repeating-conic-gradient(#80808015_0%_25%,transparent_0%_50%)] bg-[length:20px_20px] p-6">
+              <div className="flex flex-col items-center xl:items-stretch">
+                <div
+                  className="flex justify-center overflow-hidden rounded-2xl border border-border bg-[repeating-conic-gradient(#80808015_0%_25%,transparent_0%_50%)] bg-[length:20px_20px]"
+                  style={{
+                    width: previewDisplayWidth,
+                    maxWidth: "100%",
+                    aspectRatio: `${previewDisplayWidth} / ${previewDisplayHeight}`,
+                  }}
+                >
                   <div className="w-fit rounded-lg border border-border/50 shadow-xl overflow-hidden mx-auto bg-card">
                     <DynamicDesignEditor
+                      key={`${currentTemplate?.id ?? "no-template"}-${canvasResetRevision}`}
                       stageRef={stageRef}
                       onCanvasExport={setCanvasDataUrl}
+                      onCasePreviewExport={setCasePreviewTextureUrl}
                       backgroundColor={bgColor}
                     />
                   </div>
@@ -898,7 +1060,7 @@ export default function CustomizePage() {
               </div>
 
               {/* 3D AR Preview - bigger */}
-              <div>
+              <div className="flex flex-col items-center xl:items-stretch">
                 {/* 3D Preview header (only shown when stacked, i.e., less than xl) */}
                 <div className="xl:hidden flex items-center justify-between mb-3 h-6">
                   <h3 className="text-sm font-semibold text-foreground">
@@ -908,12 +1070,25 @@ export default function CustomizePage() {
                     Xoay · Zoom · AR
                   </span>
                 </div>
-                <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
-                  <div className="relative aspect-[3/4] w-full bg-gradient-to-b from-muted/20 to-muted/5 flex items-center justify-center">
+                <div
+                  className="flex max-w-full flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                  style={{
+                    width: previewDisplayWidth,
+                    maxWidth: "100%",
+                    aspectRatio: `${previewDisplayWidth} / ${previewDisplayHeight}`,
+                  }}
+                >
+                  <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-b from-muted/20 to-muted/5">
                     {modelUrl ? (
                       <DynamicPhoneCaseViewer
+                        key={`${currentTemplate?.id ?? modelUrl}-${canvasResetRevision}`}
                         modelUrl={modelUrl}
-                        textureUrl={canvasDataUrl}
+                        textureUrl={casePreviewTextureUrl}
+                        template={currentTemplate}
+                        shouldShowCaseSurface={shouldShowCaseSurface}
+                        shouldApplyCaseTexture={shouldApplyCaseTexture}
+                        caseColor={bgColor}
+                        onArAssetsChange={setArPreviewAssets}
                       />
                     ) : (
                       <div className="text-center p-4">

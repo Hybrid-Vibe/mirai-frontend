@@ -526,7 +526,7 @@ export default function ProductsPage() {
                   <TableCell className="text-xs">
                     {product.ratingAvg ? (
                       <span className="flex items-center gap-1 font-semibold text-amber-500">
-                        {product.ratingAvg} {" "}
+                        {product.ratingAvg}{" "}
                         <span className="text-muted-foreground font-normal">
                           ({product.ratingCount})
                         </span>

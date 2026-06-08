@@ -12,7 +12,6 @@ import {
   User,
   X,
   ShoppingBag,
-  XCircle,
   Star,
   LogOut,
 } from "lucide-react";
@@ -29,7 +28,6 @@ import { toast } from "sonner";
 const ACCOUNT_MENU_ITEMS = [
   { href: "/account", label: "Quản lý tài khoản", icon: User },
   { href: "/orders", label: "Đơn hàng của tôi", icon: ShoppingBag },
-  { href: "/cancellations", label: "Đơn hàng đã huỷ", icon: XCircle },
   { href: "/reviews", label: "Đánh giá của tôi", icon: Star },
 ];
 

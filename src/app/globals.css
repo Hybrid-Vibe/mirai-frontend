@@ -397,6 +397,19 @@
   display: none !important;
 }
 
+/* ─── model-viewer Web Component sizing ─── */
+/* React's className → lowercased 'classname' attr on custom elements,
+   so Tailwind utilities never reach the shadow DOM.  Explicit CSS is required. */
+model-viewer,
+model-viewer.mirai-model-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  background-color: transparent;
+  --poster-color: transparent;
+}
+
 [data-sonner-toast][data-type="success"] [data-icon],
 [data-sonner-toast][data-type="success"] svg,
 [data-sonner-toast][data-type="error"] [data-icon],

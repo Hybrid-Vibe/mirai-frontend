@@ -731,9 +731,7 @@ function ProfileForm({
                 if (val.trim() === "") {
                   setPhoneError("Số điện thoại không được để trống.");
                 } else if (!/^(0|84)(3|5|7|8|9)[0-9]{8}$/.test(val)) {
-                  setPhoneError(
-                    "Số điện thoại không hợp lệ.",
-                  );
+                  setPhoneError("Số điện thoại không hợp lệ.");
                 } else {
                   setPhoneError("");
                 }
@@ -2002,20 +2000,20 @@ function PaymentSection({
 
 // Map numeric order status to Vietnamese label
 const ORDER_STATUS_MAP: Record<number, { label: string; color: string }> = {
-  0: { label: "Đã đặt", color: "bg-blue-100 text-blue-700" },
-  1: { label: "Đang sản xuất", color: "bg-yellow-100 text-yellow-700" },
-  2: { label: "Đang giao", color: "bg-orange-100 text-orange-700" },
-  3: { label: "Đã giao", color: "bg-green-100 text-green-700" },
-  4: { label: "Đã huỷ", color: "bg-red-100 text-red-700" },
+  1: { label: "Đã tạo", color: "bg-blue-100 text-blue-700" },
+  2: { label: "Đã xác nhận", color: "bg-purple-100 text-purple-700" },
+  3: { label: "Đang giao", color: "bg-orange-100 text-orange-700" },
+  4: { label: "Đã giao", color: "bg-green-100 text-green-700" },
+  5: { label: "Đã huỷ", color: "bg-red-100 text-red-700" },
 };
 
 const FILTER_STATUS_MAP: Record<string, number | null> = {
   all: null,
-  "Đã đặt": 0,
-  "Đang sản xuất": 1,
-  "Đang giao": 2,
-  "Đã giao": 3,
-  "Đã huỷ": 4,
+  "Đã tạo": 1,
+  "Đã xác nhận": 2,
+  "Đang giao": 3,
+  "Đã giao": 4,
+  "Đã huỷ": 5,
 };
 
 function OrdersSection({ initialFilter }: { initialFilter: string }) {
@@ -2063,8 +2061,8 @@ function OrdersSection({ initialFilter }: { initialFilter: string }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="Đã đặt">Đã đặt</SelectItem>
-              <SelectItem value="Đang sản xuất">Đang sản xuất</SelectItem>
+              <SelectItem value="Đã tạo">Đã tạo</SelectItem>
+              <SelectItem value="Đã xác nhận">Đã xác nhận</SelectItem>
               <SelectItem value="Đang giao">Đang giao</SelectItem>
               <SelectItem value="Đã giao">Đã giao</SelectItem>
               <SelectItem value="Đã huỷ">Đã huỷ</SelectItem>
