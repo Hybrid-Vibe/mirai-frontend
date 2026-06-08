@@ -4,6 +4,8 @@
 // Base URL: http://localhost:5236/api
 // ======================================================================
 
+import type { CustomDesignMetadata } from "@/types/custom-design";
+
 // ----------------------------------------------------------------------
 // Enums (mapped to string unions from C# enums)
 // ----------------------------------------------------------------------
@@ -304,6 +306,7 @@ export interface GetAllProductVariantsByFilterDto {
   isFlashSale?: boolean;
   flashSaleStartTime?: string;
   flashSaleEndTime?: string;
+  imageUrl?: string;
 }
 
 export interface GetFlashSaleProductsDto {
@@ -365,6 +368,7 @@ export interface GetAllProductsByFilterDto {
 export interface OrderItemRequestDto {
   variantId?: string;
   quantity: number;
+  customDesign?: CustomDesignMetadata;
 }
 
 /** POST /api/Order/Create-Order — Request body */
@@ -685,4 +689,11 @@ export interface AdminAIImageFilter {
   userId?: string;
   pageNumber?: number;
   pageSize?: number;
+}
+
+export interface UpdateOrderStatusResponse {
+  orderId: string;
+  status: number;
+  paymentStatus: number;
+  updatedAt: string;
 }

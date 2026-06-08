@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { cartApi } from "@/lib/api-client";
 import { CartDto, CartItemDto } from "@/types/api";
+import type { CustomDesignMetadata } from "@/types/custom-design";
 import { useDesignStore } from "@/lib/store";
 
 export interface CartItem {
@@ -12,6 +13,7 @@ export interface CartItem {
   quantity: number;
   imageUrl?: string;
   phoneModel?: string;
+  customDesign?: CustomDesignMetadata;
 }
 
 interface CartState {
@@ -56,7 +58,7 @@ export const useCartStore = create<CartState>()(
 
         // Backend sync if user is logged in
         const activeUserId = userId || useDesignStore.getState().user?.id;
-        if (activeUserId) {
+        if (activeUserId && !item.customDesign) {
           try {
             await cartApi.createCartItem({
               userId: activeUserId,
@@ -141,7 +143,13 @@ export const useCartStore = create<CartState>()(
                 }),
               );
               // Filter out any invalid items
-              const validItems = newItems.filter((i: CartItem) => i.id !== "");
+              const customItems = get().items.filter(
+                (item) => item.customDesign,
+              );
+              const validItems = [
+                ...customItems,
+                ...newItems.filter((i: CartItem) => i.id !== ""),
+              ];
               set({ items: validItems });
               if (typeof window !== "undefined") {
                 localStorage.setItem(
@@ -150,11 +158,14 @@ export const useCartStore = create<CartState>()(
                 );
               }
             } else {
-              set({ items: [] });
+              const customItems = get().items.filter(
+                (item) => item.customDesign,
+              );
+              set({ items: customItems });
               if (typeof window !== "undefined") {
                 localStorage.setItem(
                   `mirai_cart_${userId}`,
-                  JSON.stringify([]),
+                  JSON.stringify(customItems),
                 );
               }
             }
