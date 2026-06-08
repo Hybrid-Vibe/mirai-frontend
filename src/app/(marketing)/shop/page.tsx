@@ -431,23 +431,26 @@ export default function ShopPage() {
                         </TooltipContent>
                       </Tooltip>
 
-                      <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative">
+                      <Link
+                        href={`/shop/${product.productId}`}
+                        className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 cursor-pointer hover:scale-105 transition-transform duration-300 block"
+                      >
                         {product.productImages?.[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={product.productImages[0].imageUrl || ""}
                             alt={product.name}
-                            className="w-full h-full object-cover"
+                            className="max-h-full max-w-full object-contain"
                           />
                         ) : (
                           <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
                         )}
-                      </div>
+                      </Link>
 
                       <button
                         type="button"
                         onClick={() => handleAdd(product)}
-                        className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2 text-xs font-medium text-(--mirai-sem-background) hover:opacity-90 transition-opacity"
+                        className="w-full rounded-[4px] bg-(--mirai-sem-text) py-2 text-xs font-medium text-(--mirai-sem-background) hover:opacity-90 transition-opacity cursor-pointer"
                         disabled={addingId === product.productId}
                       >
                         {addingId === product.productId
@@ -456,9 +459,14 @@ export default function ShopPage() {
                       </button>
                     </div>
 
-                    <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate">
-                      {product.name}
-                    </h2>
+                    <Link
+                      href={`/shop/${product.productId}`}
+                      className="cursor-pointer block hover:text-(--mirai-sem-primary) transition-colors"
+                    >
+                      <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate">
+                        {product.name}
+                      </h2>
+                    </Link>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {product.variants?.[0]?.phoneModel || "Universal"}
                     </p>
