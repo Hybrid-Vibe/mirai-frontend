@@ -39,8 +39,6 @@ import type {
   // Order
   OrderRequestDto,
   OrderResponseDto,
-  OrderStatus,
-  PaymentStatus,
   // Payment
   PaymentInformationModel,
   PaymentByCODDto,
@@ -79,6 +77,7 @@ import type {
   AdminCreateShippingDto,
   AdminUpdateShippingDto,
   AdminAIImageFilter,
+  UpdateOrderStatusResponse,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 
@@ -471,20 +470,36 @@ export const orderApi = {
 
   /** GET /api/Order/Orders-History-By-User/{userId} */
   getOrdersByUserId: async (userId: string): Promise<OrderResponseDto[]> => {
-    const { data } = await apiClient.get<OrderResponseDto[]>(
-      `/Order/Orders-History-By-User/${userId}`,
-    );
-    return normalizeArray<OrderResponseDto>(data);
+    try {
+      const { data } = await apiClient.get<OrderResponseDto[]>(
+        `/Order/Orders-History-By-User/${userId}`,
+      );
+      if (data && typeof data === "object" && !Array.isArray(data)) {
+        const dataObj = data as Partial<OrderResponseDto>;
+        if (dataObj.orderId) {
+          return [dataObj as OrderResponseDto];
+        }
+      }
+      return normalizeArray<OrderResponseDto>(data);
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      if (err?.response?.status === 404) {
+        // Safe fallback if user has no orders yet (which returns 404 from backend)
+        return [];
+      }
+      throw error;
+    }
   },
 
   /** PUT /api/Order/Update-Order-Status/{id} */
   updateOrderStatus: async (
     id: string,
-    newStatus: OrderStatus,
-  ): Promise<string> => {
-    const { data } = await apiClient.put<string>(
+    newStatus: number,
+  ): Promise<UpdateOrderStatusResponse> => {
+    const { data } = await apiClient.put<UpdateOrderStatusResponse>(
       `/Order/Update-Order-Status/${id}`,
-      JSON.stringify(newStatus),
+      newStatus,
+      { headers: { "Content-Type": "application/json" } },
     );
     return data;
   },
@@ -492,11 +507,12 @@ export const orderApi = {
   /** PUT /api/Order/Update-Payment-Status/{id} */
   updatePaymentStatus: async (
     id: string,
-    newStatus: PaymentStatus,
-  ): Promise<string> => {
-    const { data } = await apiClient.put<string>(
+    newStatus: number,
+  ): Promise<UpdateOrderStatusResponse> => {
+    const { data } = await apiClient.put<UpdateOrderStatusResponse>(
       `/Order/Update-Payment-Status/${id}`,
-      JSON.stringify(newStatus),
+      newStatus,
+      { headers: { "Content-Type": "application/json" } },
     );
     return data;
   },
