@@ -33,6 +33,29 @@ export interface ButtonPosition {
   label: string;
 }
 
+export type PreviewBackAxis = "x" | "y" | "z";
+
+export interface PreviewBackSide {
+  /** Optional explicit thin axis for model families whose back is not the default axis */
+  thicknessAxis?: PreviewBackAxis;
+  /** Which side of the thin axis is the phone back */
+  sign: 1 | -1;
+}
+
+export type CasePreviewTextureRotation = 0 | 90 | 180 | 270;
+
+export interface CasePreviewTextureTransform {
+  /** Rotation applied to fallback case-plane texture in degrees */
+  rotate: CasePreviewTextureRotation;
+  /** Mirror texture horizontally on the fallback case plane */
+  flipX?: boolean;
+  /** Mirror texture vertically on the fallback case plane */
+  flipY?: boolean;
+}
+
+export const PREVIEW_MAX_WIDTH = 420;
+export const PREVIEW_MAX_HEIGHT = 620;
+
 /** Complete phone case template for print production */
 export interface PhoneCaseTemplate {
   /** Unique identifier matching PHONE_MODELS value */
@@ -65,6 +88,14 @@ export interface PhoneCaseTemplate {
   safeZonePx: number;
   /** GLB file name for 3D preview */
   glbFile: string;
+  /** Material names that are safe to texture for 3D case mockup preview */
+  casePreviewMaterialNames?: string[];
+  /** Partial material-name matches that are safe to texture */
+  casePreviewMaterialMatchers?: string[];
+  /** Fallback back-facing side for 3D preview when material mapping is absent */
+  previewBackSide?: PreviewBackSide;
+  /** Fallback case-plane texture orientation for this GLB */
+  casePreviewTextureTransform?: CasePreviewTextureTransform;
 }
 
 // Helper: convert mm to pixels at 300 DPI
@@ -104,6 +135,14 @@ function createTemplate(
 
 const IPHONE_STANDARD_BLEED = 3; // mm
 const IPHONE_STANDARD_SAFE = 5; // mm
+const CASE_TEXTURE_FLIP_X = {
+  rotate: 0,
+  flipX: true,
+} satisfies CasePreviewTextureTransform;
+const CASE_TEXTURE_FLIP_Y = {
+  rotate: 0,
+  flipY: true,
+} satisfies CasePreviewTextureTransform;
 
 export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
   // --- iPhone 13 Series ---
@@ -130,6 +169,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_13.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -155,6 +196,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_13_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   createTemplate({
@@ -180,6 +223,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 45, yEnd: 62, label: "Volume" },
     ],
     glbFile: "iphone_13_pro_max.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   // --- iPhone 14 Series ---
@@ -206,6 +251,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_14.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -231,6 +278,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_14_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -256,6 +305,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 45, yEnd: 62, label: "Volume" },
     ],
     glbFile: "iphone_14_pro_max.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   // --- iPhone 15 Series ---
@@ -282,6 +333,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_15.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   createTemplate({
@@ -306,6 +359,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_15_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -330,6 +385,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 45, yEnd: 62, label: "Volume" },
     ],
     glbFile: "iphone_15_pro_max.glb",
+    previewBackSide: { thicknessAxis: "x", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   // --- iPhone 16 Series ---
@@ -356,6 +413,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_16.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -381,6 +440,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 45, yEnd: 62, label: "Volume" },
     ],
     glbFile: "iphone_16_plus.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -406,6 +467,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 43, yEnd: 60, label: "Volume" },
     ],
     glbFile: "iphone_16_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -431,6 +494,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 46, yEnd: 64, label: "Volume" },
     ],
     glbFile: "iphone_16_pro_max.glb",
+    previewBackSide: { thicknessAxis: "x", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   // --- iPhone 17 Series ---
@@ -456,6 +521,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_17_air.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   createTemplate({
@@ -468,11 +535,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
+        x: 3.5,
         y: 5,
-        width: 29,
-        height: 29,
-        radius: 7,
+        width: 68,
+        height: 30,
+        radius: 8,
       },
     ],
     buttons: [
@@ -481,6 +548,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 43, yEnd: 60, label: "Volume" },
     ],
     glbFile: "iphone_17_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   createTemplate({
@@ -495,9 +564,9 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
         shape: "rounded-rect",
         x: 4,
         y: 5,
-        width: 30,
+        width: 70,
         height: 30,
-        radius: 7,
+        radius: 8,
       },
     ],
     buttons: [
@@ -506,6 +575,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 46, yEnd: 64, label: "Volume" },
     ],
     glbFile: "iphone_17_pro_max.glb",
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
   }),
 
   // --- iPhone 12 Series ---
@@ -532,6 +603,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 36, yEnd: 50, label: "Volume" },
     ],
     glbFile: "iphone_12_mini.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   createTemplate({
@@ -557,6 +630,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_12_pro.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   // --- Samsung Series ---
@@ -582,6 +657,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "right", yStart: 56, yEnd: 72, label: "Volume" },
     ],
     glbFile: "samsung_galaxy_s21_ultra.glb",
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 
   createTemplate({
@@ -595,13 +672,17 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { shape: "circle", x: 12, y: 12, width: 14, height: 14 },
       { shape: "circle", x: 12, y: 30, width: 14, height: 14 },
       { shape: "circle", x: 12, y: 48, width: 14, height: 14 },
-      { shape: "circle", x: 12, y: 66, width: 10, height: 10 },
+      { shape: "circle", x: 30, y: 13, width: 8, height: 8 },
+      { shape: "circle", x: 30, y: 31, width: 8, height: 8 },
     ],
     buttons: [
       { side: "right", yStart: 42, yEnd: 52, label: "Power" },
       { side: "right", yStart: 56, yEnd: 72, label: "Volume" },
     ],
     glbFile: "samsung_galaxy_s25_ultra.glb",
+    casePreviewMaterialNames: ["Back glass"],
+    previewBackSide: { thicknessAxis: "x", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
   }),
 ];
 

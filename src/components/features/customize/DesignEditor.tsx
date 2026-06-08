@@ -18,6 +18,7 @@ import type Konva from "konva";
 // Max viewport size for the editor display area
 const VIEWPORT_MAX_W = 420;
 const VIEWPORT_MAX_H = 620;
+const EXPORT_PIXEL_RATIO = 1.5;
 
 // ─── Draggable + Resizable Image ────────────────────────────────
 function URLImage({
@@ -249,10 +250,12 @@ function BackgroundImageLayer({
 // ─── Main Design Editor ─────────────────────────────────────────
 export default function DesignEditor({
   onCanvasExport,
+  onCasePreviewExport,
   backgroundColor,
   stageRef: externalStageRef,
 }: {
   onCanvasExport?: (dataUrl: string) => void;
+  onCasePreviewExport?: (dataUrl: string) => void;
   backgroundColor?: string;
   stageRef?: React.RefObject<Konva.Stage | null>;
 }) {
@@ -291,9 +294,11 @@ export default function DesignEditor({
 
   // Debounced canvas export for 3D preview
   const exportCanvas = useCallback(() => {
-    if (!stageRef.current || !onCanvasExport) return;
+    if (!stageRef.current) return;
+    if (!onCanvasExport && !onCasePreviewExport) return;
 
     const stage = stageRef.current;
+    const previousScale = stage.scale();
 
     // Hide elements we don't want in the export
     const overlayLayer = stage.findOne("#overlay-layer");
@@ -302,14 +307,31 @@ export default function DesignEditor({
     const transformers = stage.find("Transformer");
     transformers.forEach((tr) => tr.hide());
 
+    stage.scale({ x: 1, y: 1 });
+    stage.batchDraw();
+
     // Export synchronous
-    const dataUrl = stage.toDataURL({ pixelRatio: 1.5 });
-    onCanvasExport(dataUrl);
+    const dataUrl = stage.toDataURL({ pixelRatio: EXPORT_PIXEL_RATIO });
+    onCanvasExport?.(dataUrl);
+
+    if (selectedTemplate && onCasePreviewExport) {
+      const printAreaDataUrl = stage.toDataURL({
+        x: selectedTemplate.bleedPx,
+        y: selectedTemplate.bleedPx,
+        width: selectedTemplate.printAreaWidth,
+        height: selectedTemplate.printAreaHeight,
+        pixelRatio: EXPORT_PIXEL_RATIO,
+      });
+
+      onCasePreviewExport(printAreaDataUrl);
+    }
 
     // Restore visibility
+    stage.scale(previousScale);
     if (overlayLayer) overlayLayer.show();
     transformers.forEach((tr) => tr.show());
-  }, [onCanvasExport, stageRef]);
+    stage.batchDraw();
+  }, [onCanvasExport, onCasePreviewExport, selectedTemplate, stageRef]);
 
   // Auto-export when elements change
   useEffect(() => {
@@ -324,6 +346,7 @@ export default function DesignEditor({
     backgroundImage,
     backgroundColor,
     exportCanvas,
+    onCasePreviewExport,
     onCanvasExport,
   ]);
 
