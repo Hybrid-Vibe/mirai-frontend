@@ -27,9 +27,9 @@ type Product = {
 const mockDenimProducts: Product[] = [
   {
     id: "denim-1",
-    name: "Ốp Classic Blue Indigo Denim",
+    name: "Denim & Gold Stars Case",
     price: "160.000đ",
-    badge: "TREND",
+    badge: "ON DENIM",
     ratingAvg: 4.9,
     ratingCount: 25,
     imageUrl:
@@ -37,9 +37,9 @@ const mockDenimProducts: Product[] = [
   },
   {
     id: "denim-2",
-    name: "Ốp Retro Ripped Denim Case",
+    name: "Denim Badge 'I Did My Best' Case",
     price: "165.000đ",
-    badge: "ON DENIM",
+    badge: "PATCH",
     ratingAvg: 4.7,
     ratingCount: 19,
     imageUrl:
@@ -47,10 +47,9 @@ const mockDenimProducts: Product[] = [
   },
   {
     id: "denim-3",
-    name: "Ốp Acid Wash Denim Pattern",
+    name: "Denim & White Lace Case",
     price: "155.000đ",
-    oldPrice: "180.000đ",
-    badge: "SALE",
+    badge: "LACE",
     ratingAvg: 4.8,
     ratingCount: 30,
     imageUrl:
@@ -58,9 +57,9 @@ const mockDenimProducts: Product[] = [
   },
   {
     id: "denim-4",
-    name: "Ốp Premium Black Denim & Leather",
+    name: "Denim & Teddy Bear Case",
     price: "175.000đ",
-    badge: "PREMIUM",
+    badge: "BEAR",
     ratingAvg: 5,
     ratingCount: 12,
     imageUrl:
@@ -78,11 +77,12 @@ export default function DenimCollectionPage() {
       try {
         const res = await productApi.getProductsByFilter({ pageSize: 100 });
         if (res && res.length > 0) {
-          // Lọc các sản phẩm có chữ Denim từ database nếu có
           const filtered = res.filter(
             (p) =>
-              p.name?.toLowerCase().includes("denim") ||
-              p.description?.toLowerCase().includes("denim"),
+              p.name?.toLowerCase().includes("gold stars") ||
+              p.name?.toLowerCase().includes("i did my best") ||
+              p.name?.toLowerCase().includes("white lace") ||
+              p.name?.toLowerCase().includes("teddy bear"),
           );
 
           if (filtered.length > 0) {
@@ -135,9 +135,7 @@ export default function DenimCollectionPage() {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/collections">Bộ sưu tập</BreadcrumbLink>
-            </BreadcrumbItem>
+            <BreadcrumbLink href="/collections">Bộ sưu tập</BreadcrumbLink>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage>ON DENIM</BreadcrumbPage>

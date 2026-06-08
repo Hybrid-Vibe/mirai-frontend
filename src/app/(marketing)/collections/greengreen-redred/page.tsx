@@ -27,44 +27,83 @@ type Product = {
 const mockGreenRedProducts: Product[] = [
   {
     id: "gr-1",
-    name: "Ốp Camo Green & Crimson Red",
-    price: "135.000đ",
-    badge: "NEW",
+    name: "Green Butterflies Case",
+    price: "150.000đ",
+    badge: "BUTTERFLY",
     ratingAvg: 4.8,
     ratingCount: 16,
     imageUrl:
-      "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1545486332-9e0998c535b2?w=500&auto=format&fit=crop&q=60",
   },
   {
     id: "gr-2",
-    name: "Ốp Forest Green & Burgundy Red",
-    price: "140.000đ",
-    badge: "GREENGREEN",
+    name: "Green Star Case",
+    price: "150.000đ",
+    badge: "STAR",
     ratingAvg: 5,
     ratingCount: 10,
     imageUrl:
-      "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=500&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60",
   },
   {
     id: "gr-3",
-    name: "Ốp Mint Green & Cherry Red",
-    price: "125.000đ",
+    name: "Lucky Vicky Case",
+    price: "150.000đ",
     badge: "REDRED",
     ratingAvg: 4.6,
     ratingCount: 22,
     imageUrl:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?w=500&auto=format&fit=crop&q=60",
   },
   {
     id: "gr-4",
-    name: "Ốp Lime Green & Scarlet Red",
-    price: "130.000đ",
-    oldPrice: "160.000đ",
-    badge: "SALE",
+    name: "Polka Dots Green Case",
+    price: "150.000đ",
+    badge: "DOTS",
     ratingAvg: 4.9,
     ratingCount: 14,
     imageUrl:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60",
+      "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: "gr-5",
+    name: "Polka Dots Red Case",
+    price: "150.000đ",
+    badge: "DOTS",
+    ratingAvg: 4.7,
+    ratingCount: 18,
+    imageUrl:
+      "https://images.unsplash.com/photo-1582298538104-fe2e74c27f59?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: "gr-6",
+    name: "Red Star Case",
+    price: "150.000đ",
+    badge: "STAR",
+    ratingAvg: 4.9,
+    ratingCount: 21,
+    imageUrl:
+      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: "gr-7",
+    name: "Green Stripe Case",
+    price: "150.000đ",
+    badge: "STRIPE",
+    ratingAvg: 4.8,
+    ratingCount: 15,
+    imageUrl:
+      "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=500&auto=format&fit=crop&q=60",
+  },
+  {
+    id: "gr-8",
+    name: "Red Stripe Case",
+    price: "150.000đ",
+    badge: "STRIPE",
+    ratingAvg: 4.5,
+    ratingCount: 19,
+    imageUrl:
+      "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=500&auto=format&fit=crop&q=60",
   },
 ];
 
@@ -78,13 +117,17 @@ export default function GreenRedCollectionPage() {
       try {
         const res = await productApi.getProductsByFilter({ pageSize: 100 });
         if (res && res.length > 0) {
-          // Lọc các sản phẩm có chữ Green hoặc Red trong tên hoặc mô tả từ database nếu có
           const filtered = res.filter(
             (p) =>
-              p.name?.toLowerCase().includes("green") ||
-              p.name?.toLowerCase().includes("red") ||
-              p.name?.toLowerCase().includes("đỏ") ||
-              p.name?.toLowerCase().includes("xanh lá"),
+              p.name?.toLowerCase().includes("green butterflies") ||
+              p.name?.toLowerCase().includes("green star") ||
+              p.name?.toLowerCase().includes("lucky vicky") ||
+              p.name?.toLowerCase().includes("luckyvicky") ||
+              p.name?.toLowerCase().includes("polka dots green") ||
+              p.name?.toLowerCase().includes("polka dots red") ||
+              p.name?.toLowerCase().includes("red star") ||
+              p.name?.toLowerCase().includes("green stripe") ||
+              p.name?.toLowerCase().includes("red stripe"),
           );
 
           if (filtered.length > 0) {
@@ -137,9 +180,7 @@ export default function GreenRedCollectionPage() {
               <BreadcrumbLink href="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/collections">Bộ sưu tập</BreadcrumbLink>
-            </BreadcrumbItem>
+            <BreadcrumbLink href="/collections">Bộ sưu tập</BreadcrumbLink>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage>GREENGREEN + REDRED</BreadcrumbPage>

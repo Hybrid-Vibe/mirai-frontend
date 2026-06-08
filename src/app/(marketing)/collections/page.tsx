@@ -29,9 +29,9 @@ export default function CollectionsPage() {
       description:
         "Sự kết hợp màu sắc đầy ngẫu hứng và độc đáo giữa tông xanh lá mát mắt cùng tông đỏ cá tính và nhiệt huyết.",
       coverImage:
-        "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=800&auto=format&fit=crop&q=80",
       href: "/collections/greengreen-redred",
-      itemCount: 4,
+      itemCount: 8,
       tag: "Nổi bật",
     },
     {
@@ -40,7 +40,7 @@ export default function CollectionsPage() {
       description:
         "Bộ sưu tập mang chất liệu và họa tiết Denim cổ điển bụi bặm, đậm chất thời trang đường phố và cực kỳ phong cách.",
       coverImage:
-        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1565084888279-aca607ecce0c?w=800&auto=format&fit=crop&q=80",
       href: "/collections/on-denim",
       itemCount: 4,
       tag: "Xu hướng",
