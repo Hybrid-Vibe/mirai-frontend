@@ -44,6 +44,9 @@ export default function ShopPage() {
   const [addingId, setAddingId] = useState<string | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 8;
+
   const addItem = useCartStore((state) => state.addItem);
   const wishlisted = useWishlistStore((state) => state.wishlistProductIds);
   const toggleWishlist = useWishlistStore((state) => state.toggleWishlist);
@@ -55,7 +58,7 @@ export default function ShopPage() {
       setError(null);
       try {
         const [productsData, categoriesData] = await Promise.all([
-          productApi.getProductsByFilter({}),
+          productApi.getProductsByFilter({ pageSize: 9999 }),
           categoryApi.getAllCategoriesActive(),
         ]);
         setProducts(productsData);
@@ -68,6 +71,11 @@ export default function ShopPage() {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentPage(1);
+  }, [activeCategoryId, priceFilter, activeColor, sortBy]);
 
   const visibleProducts = useMemo(() => {
     let filtered = products.filter((product) => {
@@ -111,6 +119,13 @@ export default function ShopPage() {
 
     return filtered;
   }, [products, activeCategoryId, priceFilter, sortBy, activeColor]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return visibleProducts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [visibleProducts, currentPage]);
+
+  const totalPages = Math.ceil(visibleProducts.length / PAGE_SIZE);
 
   const handleAdd = async (product: GetAllProductsByFilterDto) => {
     const variant = product.variants?.[0];
@@ -393,7 +408,7 @@ export default function ShopPage() {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {visibleProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <article key={product.productId}>
                     <div className="relative rounded-[4px] bg-(--mirai-sem-surface-muted) p-4">
                       {product.variants?.[0]?.isFlashSale ? (
@@ -498,6 +513,55 @@ export default function ShopPage() {
                     </div>
                   </article>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-12 flex items-center justify-center gap-2 border-t border-border/40 pt-8">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="inline-flex h-9 items-center justify-center rounded-[4px] border border-border bg-card px-3 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:text-foreground active:scale-95 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                >
+                  Trang trước
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: totalPages }).map((_, i) => {
+                    const pageNum = i + 1;
+                    const isActive = pageNum === currentPage;
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={cn(
+                          "inline-flex h-9 w-9 items-center justify-center rounded-[4px] text-xs font-bold transition-all duration-200 cursor-pointer transform hover:scale-105 active:scale-95",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 scale-105"
+                            : "border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
+                        )}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="inline-flex h-9 items-center justify-center rounded-[4px] border border-border bg-card px-3 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:text-foreground active:scale-95 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                >
+                  Trang sau
+                </button>
               </div>
             )}
 
