@@ -132,10 +132,12 @@ export function useSupabaseAuth() {
         const err = error as { code?: string };
         if (
           err?.code === "54001" ||
-          (typeof error === "string" && error.includes("54001"))
+          err?.code === "57014" ||
+          (typeof error === "string" &&
+            (error.includes("54001") || error.includes("57014")))
         ) {
           console.warn(
-            "Supabase database RLS recursion (54001) detected. Skipping public.users fetch and relying on auth.users metadata.",
+            `Supabase database fetch failed (${err?.code || "timeout/recursion"}). Skipping public.users fetch and relying on auth.users metadata.`,
           );
           return;
         }

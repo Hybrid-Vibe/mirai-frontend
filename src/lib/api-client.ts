@@ -85,8 +85,18 @@ import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 // Constants
 // ======================================================================
 
-const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5236";
+const getBackendBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window === "undefined") {
+    if (!envUrl || envUrl.startsWith("/")) {
+      return "http://mirai.runasp.net";
+    }
+    return envUrl;
+  }
+  return envUrl || "http://localhost:5236";
+};
+
+const BACKEND_BASE_URL = getBackendBaseUrl();
 
 const TOKEN_KEY = "mirai_auth_token";
 

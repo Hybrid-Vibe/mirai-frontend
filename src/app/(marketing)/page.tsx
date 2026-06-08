@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -24,6 +26,7 @@ type Product = {
   ratingAvg?: number;
   ratingCount?: number;
   endTime?: string;
+  imageUrl?: string;
 };
 
 const heroCategories = [
@@ -145,12 +148,64 @@ function SectionHeading({
 
 // ProductCard is removed and replaced by InteractiveProductCard from features/marketing
 
+const mockJardinProducts: Product[] = [
+  {
+    id: "jardin-1",
+    name: "Hoa Cẩm Tú Cầu",
+    price: "150.000đ",
+    badge: "JARDIN",
+    ratingAvg: 5,
+    ratingCount: 12,
+    imageUrl:
+      "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/images/uploads/camtucau.jpg",
+  },
+  {
+    id: "jardin-2",
+    name: "Hoa Lily",
+    price: "150.000đ",
+    badge: "JARDIN",
+    ratingAvg: 5,
+    ratingCount: 8,
+    imageUrl:
+      "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/images/uploads/lily.jpg",
+  },
+  {
+    id: "jardin-3",
+    name: "Hoa Mẫu Đơn",
+    price: "150.000đ",
+    badge: "JARDIN",
+    ratingAvg: 5,
+    ratingCount: 15,
+    imageUrl:
+      "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/images/uploads/peony.jpg",
+  },
+  {
+    id: "jardin-4",
+    name: "Hoa Hồng",
+    price: "150.000đ",
+    badge: "JARDIN",
+    ratingAvg: 5,
+    ratingCount: 22,
+    imageUrl:
+      "https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/images/uploads/rose.jpg",
+  },
+];
+
 export default async function HomePage() {
   let dbProducts: Product[] = [];
+  let jardinProducts: Product[] = [];
   try {
-    const res = await productApi.getProductsByFilter({ pageSize: 20 });
+    const res = await productApi.getProductsByFilter({ pageSize: 100 });
     if (res && res.length > 0) {
-      dbProducts = res.map((p) => {
+      const jardinRes = res.filter(
+        (p) =>
+          p.name?.toLowerCase().includes("hoa cẩm tú cầu") ||
+          p.name?.toLowerCase().includes("hoa lily") ||
+          p.name?.toLowerCase().includes("hoa mẫu đơn") ||
+          p.name?.toLowerCase().includes("hoa hồng"),
+      );
+
+      const mapProduct = (p: (typeof res)[0]): Product => {
         const variant = p.variants?.[0];
         let priceStr = (variant?.price ?? 0).toLocaleString("vi-VN") + "đ";
         let oldPriceStr = undefined;
@@ -173,8 +228,12 @@ export default async function HomePage() {
           ratingAvg: p.ratingAvg ?? 5,
           ratingCount: p.ratingCount ?? 0,
           endTime: endTimeStr,
+          imageUrl: p.productImages?.[0]?.imageUrl,
         };
-      });
+      };
+
+      jardinProducts = jardinRes.map(mapProduct);
+      dbProducts = res.filter((p) => !jardinRes.includes(p)).map(mapProduct);
     }
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -191,6 +250,7 @@ export default async function HomePage() {
         oldPrice: fs.originalPrice.toLocaleString("vi-VN") + "đ",
         badge: "FLASH SALE",
         endTime: fs.endTime,
+        imageUrl: fs.imageUrl,
       }));
     }
   } catch (error) {
@@ -200,11 +260,16 @@ export default async function HomePage() {
   const flashSalesDisplay =
     dbFlashSales.length > 0 ? dbFlashSales.slice(0, 8) : flashSales;
   const bestSellingDisplay =
-    dbProducts.length >= 4 ? dbProducts.slice(0, 4) : bestSelling;
+    dbProducts.length > 0 ? dbProducts.slice(0, 4) : bestSelling;
   const exploreProductsDisplay =
     dbProducts.length > 0
-      ? dbProducts.slice(0, 8)
+      ? dbProducts.length > 4
+        ? dbProducts.slice(4, 12)
+        : dbProducts
       : exploreProducts.slice(0, 8);
+
+  const jardinProductsDisplay =
+    jardinProducts.length > 0 ? jardinProducts : mockJardinProducts;
 
   const targetFlashSaleDate = flashSalesDisplay.find((p) => p.endTime)?.endTime;
 
@@ -333,6 +398,24 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Jardin De Fleurs Collection Section */}
+      <section className="page-shell border-t border-(--mirai-color-line) py-16 bg-gradient-to-b from-transparent via-accent/5 to-transparent">
+        <SectionHeading label="Bộ sưu tập" title="Jardin De Fleurs" />
+        <p className="mb-8 -mt-6 text-sm text-muted-foreground">
+          Khám phá dòng sản phẩm ốp lưng họa tiết hoa cỏ thiên nhiên, tinh tế và
+          sang trọng.
+        </p>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {jardinProductsDisplay.map((product, index) => (
+            <InteractiveProductCard
+              key={`${product.id}-${index}`}
+              product={product}
+            />
+          ))}
+        </div>
+      </section>
+
       <section className="page-shell border-t border-(--mirai-color-line) py-16">
         <SectionHeading
           label="Tháng này"
@@ -433,13 +516,23 @@ export default async function HomePage() {
           </article>
 
           <div className="grid gap-5">
-            <article className="relative min-h-[200px] rounded-[4px] bg-(--mirai-sem-text) p-6 text-(--mirai-sem-background)">
-              <h3 className="font-heading text-3xl font-semibold">
-                Women&apos;s Collections
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Các bộ sưu tập theo chủ đề nổi bật trong tuần.
-              </p>
+            <article className="relative min-h-[200px] rounded-[4px] bg-(--mirai-sem-text) p-6 text-(--mirai-sem-background) flex flex-col justify-between">
+              <div>
+                <Link href="/collections/jardin-de-fleurs">
+                  <h3 className="font-heading text-3xl font-semibold text-(--mirai-sem-primary) hover:underline cursor-pointer">
+                    Jardin De Fleurs
+                  </h3>
+                </Link>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Bộ sưu tập ốp lưng họa tiết hoa cỏ thiên nhiên mới ra mắt.
+                </p>
+              </div>
+              <Link
+                href="/collections/jardin-de-fleurs"
+                className="mt-4 inline-flex items-center text-xs underline transition-colors hover:text-(--mirai-sem-primary)"
+              >
+                Xem bộ sưu tập
+              </Link>
             </article>
 
             <div className="grid gap-5 md:grid-cols-2">
