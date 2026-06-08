@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { adminApi } from "@/lib/api-client";
+import { adminApi, orderApi } from "@/lib/api-client";
 import {
   AdminOrderListDto,
   AdminOrderDetailDto,
@@ -201,13 +201,19 @@ export default function OrdersPage() {
     );
 
     try {
-      await adminApi.updateOrderStatus(orderId, nextStatus);
+      const res = await orderApi.updateOrderStatus(orderId, nextStatus);
+      setOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o.orderId === orderId ? { ...o, status: res.status } : o,
+        ),
+      );
       toast.success("Cập nhật trạng thái đơn hàng thành công! ✨", {
         id: updateToast,
       });
-      fetchOrders();
       if (isDetailOpen && selectedOrderId === orderId) {
-        handleViewDetail(orderId); // Tải lại chi tiết
+        setOrderDetail((prevDetail) =>
+          prevDetail ? { ...prevDetail, status: res.status } : null,
+        );
       }
     } catch (error) {
       console.error("Failed to update order status:", error);
@@ -230,13 +236,26 @@ export default function OrdersPage() {
     );
 
     try {
-      await adminApi.updateOrderPaymentStatus(orderId, nextPaymentStatus);
+      const res = await orderApi.updatePaymentStatus(
+        orderId,
+        nextPaymentStatus,
+      );
+      setOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o.orderId === orderId
+            ? { ...o, paymentStatus: res.paymentStatus }
+            : o,
+        ),
+      );
       toast.success("Cập nhật trạng thái thanh toán thành công! ", {
         id: updateToast,
       });
-      fetchOrders();
       if (isDetailOpen && selectedOrderId === orderId) {
-        handleViewDetail(orderId); // Tải lại chi tiết
+        setOrderDetail((prevDetail) =>
+          prevDetail
+            ? { ...prevDetail, paymentStatus: res.paymentStatus }
+            : null,
+        );
       }
     } catch (error) {
       console.error("Failed to update payment status:", error);
@@ -280,11 +299,15 @@ export default function OrdersPage() {
 
       // Chuyển luôn trạng thái đơn hàng sang "Đang giao (3)" để đồng bộ UI/UX
       if (orderDetail && orderDetail.status < 3) {
-        await adminApi.updateOrderStatus(selectedOrderId, 3);
+        const res = await orderApi.updateOrderStatus(selectedOrderId, 3);
+        setOrders((prevOrders) =>
+          prevOrders.map((o) =>
+            o.orderId === selectedOrderId ? { ...o, status: res.status } : o,
+          ),
+        );
       }
 
       handleViewDetail(selectedOrderId); // Tải lại thông tin
-      fetchOrders();
     } catch (err) {
       console.error("Failed to create shipping:", err);
       toast.error("Lỗi khi tạo vận đơn. Vui lòng thử lại! ", {
@@ -312,13 +335,17 @@ export default function OrdersPage() {
 
       // Nếu giao thành công, tự động chuyển đơn hàng sang trạng thái "Đã giao (4)"
       if (status === "Delivered" && selectedOrderId) {
-        await adminApi.updateOrderStatus(selectedOrderId, 4);
+        const res = await orderApi.updateOrderStatus(selectedOrderId, 4);
+        setOrders((prevOrders) =>
+          prevOrders.map((o) =>
+            o.orderId === selectedOrderId ? { ...o, status: res.status } : o,
+          ),
+        );
       }
 
       if (selectedOrderId) {
         handleViewDetail(selectedOrderId);
       }
-      fetchOrders();
     } catch (err) {
       console.error("Failed to update shipping:", err);
       toast.error("Lỗi khi cập nhật trạng thái vận đơn! ", {
