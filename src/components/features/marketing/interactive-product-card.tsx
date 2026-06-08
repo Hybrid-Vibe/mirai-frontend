@@ -14,6 +14,7 @@ export type Product = {
   badge?: string;
   ratingAvg?: number;
   ratingCount?: number;
+  imageUrl?: string;
 };
 
 export function InteractiveProductCard({ product }: { product: Product }) {
@@ -75,7 +76,18 @@ export function InteractiveProductCard({ product }: { product: Product }) {
           />
         </button>
 
-        <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary) transition-transform duration-500 group-hover:scale-105" />
+        <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 transition-transform duration-500 group-hover:scale-105">
+          {product.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="max-h-full max-w-full object-contain"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
+          )}
+        </div>
 
         <div
           className={`absolute inset-x-0 bottom-0 p-4 transition-transform duration-300 ${isHovered ? "translate-y-0" : "translate-y-full"}`}
