@@ -41,6 +41,7 @@ interface ModelViewerAttributes {
   className?: string;
   style?: React.CSSProperties & Record<string, any>;
   children?: React.ReactNode;
+  key?: React.Key;
 }
 
 declare module "react" {
