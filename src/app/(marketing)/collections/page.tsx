@@ -14,7 +14,7 @@ export default function CollectionsPage() {
   const collections = [
     {
       id: "jardin-de-fleurs",
-      name: "Jardin De Fleurs",
+      name: "JARDIN DE FLEURS",
       description:
         "Dòng sản phẩm lấy cảm hứng từ thiên nhiên hoa cỏ nhiệt đới rực rỡ và nghệ thuật. Mang đến vẻ ngoài tinh tế, thời trang cho chiếc điện thoại của bạn.",
       coverImage:
@@ -24,15 +24,26 @@ export default function CollectionsPage() {
       tag: "Mới nhất",
     },
     {
-      id: "ai-custom-art",
-      name: "AI Custom Showcase",
+      id: "greengreen-redred",
+      name: "GREENGREEN + REDRED",
       description:
-        "Nơi tụ hội những mẫu thiết kế độc nhất vô nhị được kiến tạo bởi trí tuệ nhân tạo và chính sự sáng tạo từ người dùng.",
+        "Sự kết hợp màu sắc đầy ngẫu hứng và độc đáo giữa tông xanh lá mát mắt cùng tông đỏ cá tính và nhiệt huyết.",
       coverImage:
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60",
-      href: "/customize",
-      itemCount: "Custom",
+        "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&auto=format&fit=crop&q=80",
+      href: "/collections/greengreen-redred",
+      itemCount: 4,
       tag: "Nổi bật",
+    },
+    {
+      id: "on-denim",
+      name: "ON DENIM",
+      description:
+        "Bộ sưu tập mang chất liệu và họa tiết Denim cổ điển bụi bặm, đậm chất thời trang đường phố và cực kỳ phong cách.",
+      coverImage:
+        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&auto=format&fit=crop&q=80",
+      href: "/collections/on-denim",
+      itemCount: 4,
+      tag: "Xu hướng",
     },
   ];
 
@@ -61,7 +72,7 @@ export default function CollectionsPage() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="grid gap-8 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {collections.map((col) => (
             <article
               key={col.id}
@@ -87,10 +98,10 @@ export default function CollectionsPage() {
                   <span className="text-xs font-semibold text-primary tracking-wider uppercase">
                     {col.itemCount} sản phẩm
                   </span>
-                  <h2 className="mt-2 font-heading text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                  <h2 className="mt-2 font-heading text-2xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
                     {col.name}
                   </h2>
-                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed line-clamp-3">
                     {col.description}
                   </p>
                 </div>
