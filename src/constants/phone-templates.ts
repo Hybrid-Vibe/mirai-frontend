@@ -676,11 +676,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 6,
-        width: 18,
-        height: 42,
-        radius: 8,
+        x: 0,
+        y: 0,
+        width: 34,
+        height: 58,
+        radius: 10,
       },
     ],
     buttons: [
