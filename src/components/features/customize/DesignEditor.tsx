@@ -51,6 +51,44 @@ function URLImage({
     (s) => s.selectedTemplate?.canvasHeight ?? 1200,
   );
 
+  // Auto-correct aspect ratio in store for old/undefined elements
+  useEffect(() => {
+    if (image && (!element.width || !element.height)) {
+      const imgRatio = image.width / image.height;
+      const maxW = canvasW * 0.8;
+      const maxH = canvasH * 0.6;
+      let w = maxW;
+      let h = maxW / imgRatio;
+      if (w / imgRatio > maxH) {
+        h = maxH;
+        w = maxH * imgRatio;
+      }
+      onTransformEnd({
+        width: w,
+        height: h,
+      });
+    }
+  }, [image, element.width, element.height, canvasW, canvasH, onTransformEnd]);
+
+  let drawW = element.width;
+  let drawH = element.height;
+  if (!drawW || !drawH) {
+    if (image) {
+      const imgRatio = image.width / image.height;
+      const maxW = canvasW * 0.8;
+      const maxH = canvasH * 0.6;
+      drawW = maxW;
+      drawH = maxW / imgRatio;
+      if (drawW / imgRatio > maxH) {
+        drawH = maxH;
+        drawW = maxH * imgRatio;
+      }
+    } else {
+      drawW = canvasW * 0.5;
+      drawH = canvasH * 0.4;
+    }
+  }
+
   return (
     <>
       <KonvaImage
@@ -58,16 +96,8 @@ function URLImage({
         image={image}
         x={element.x}
         y={element.y}
-        width={
-          element.width ||
-          (image?.width ? Math.min(image.width, canvasW * 0.8) : canvasW * 0.5)
-        }
-        height={
-          element.height ||
-          (image?.height
-            ? Math.min(image.height, canvasH * 0.6)
-            : canvasH * 0.4)
-        }
+        width={drawW}
+        height={drawH}
         rotation={element.rotation || 0}
         scaleX={element.scaleX || 1}
         scaleY={element.scaleY || 1}
@@ -279,10 +309,32 @@ export default function DesignEditor({
   const canvasW = selectedTemplate?.canvasWidth ?? 960;
   const canvasH = selectedTemplate?.canvasHeight ?? 1200;
 
+  const [viewportMaxW, setViewportMaxW] = useState(VIEWPORT_MAX_W);
+  const [viewportMaxH, setViewportMaxH] = useState(VIEWPORT_MAX_H);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 480) {
+        setViewportMaxW(w - 48);
+        setViewportMaxH((w - 48) * (620 / 420));
+      } else if (w < 768) {
+        setViewportMaxW(380);
+        setViewportMaxH(380 * (620 / 420));
+      } else {
+        setViewportMaxW(VIEWPORT_MAX_W);
+        setViewportMaxH(VIEWPORT_MAX_H);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Display scale: fit canvas into viewport
   const displayScale = selectedTemplate
-    ? getDisplayScale(selectedTemplate, VIEWPORT_MAX_W, VIEWPORT_MAX_H)
-    : Math.min(VIEWPORT_MAX_W / canvasW, VIEWPORT_MAX_H / canvasH);
+    ? getDisplayScale(selectedTemplate, viewportMaxW, viewportMaxH)
+    : Math.min(viewportMaxW / canvasW, viewportMaxH / canvasH);
 
   const displayW = Math.round(canvasW * displayScale);
   const displayH = Math.round(canvasH * displayScale);
