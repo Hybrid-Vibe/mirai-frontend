@@ -95,12 +95,44 @@ export default function CartPage() {
                   className="border-b border-(--mirai-color-line) last:border-b-0"
                 >
                   <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-8 rounded-md bg-gradient-to-b from-(--mirai-sem-text-muted) to-(--mirai-sem-accent)" />
-                      <span className="text-sm font-medium text-foreground">
-                        {row.name}
-                      </span>
-                    </div>
+                    {row.productId ? (
+                      <Link
+                        href={`/shop/${row.productId}`}
+                        className="flex items-center gap-4 hover:text-(--mirai-sem-primary) transition-colors"
+                      >
+                        {row.imageUrl ? (
+                          <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-md border border-border bg-muted hover:scale-105 transition-transform">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={row.imageUrl}
+                              alt={row.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-8 shrink-0 rounded-md bg-gradient-to-b from-(--mirai-sem-text-muted) to-(--mirai-sem-accent)" />
+                        )}
+                        <span className="text-sm font-medium">{row.name}</span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        {row.imageUrl ? (
+                          <div className="relative h-12 w-8 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={row.imageUrl}
+                              alt={row.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-8 shrink-0 rounded-md bg-gradient-to-b from-(--mirai-sem-text-muted) to-(--mirai-sem-accent)" />
+                        )}
+                        <span className="text-sm font-medium text-foreground">
+                          {row.name}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-8 py-6 text-sm text-foreground">
                     {formatCurrency(row.price)}

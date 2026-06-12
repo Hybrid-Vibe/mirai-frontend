@@ -94,8 +94,23 @@ export interface PhoneCaseTemplate {
   casePreviewMaterialMatchers?: string[];
   /** Fallback back-facing side for 3D preview when material mapping is absent */
   previewBackSide?: PreviewBackSide;
+  /** Custom 3D model rotation override in radians (if not the default Math.PI / 2 around X) */
+  modelRotation?: { x: number; y: number; z: number };
   /** Fallback case-plane texture orientation for this GLB */
   casePreviewTextureTransform?: CasePreviewTextureTransform;
+  /**
+   * When true, skip the automatic camera-island mesh detection for this model.
+   * The 3D shell camera hole will be drawn purely from the cameraCutouts template
+   * coordinates instead of merging with auto-detected 3D bounds.
+   * Use this when the GLB model's mesh naming causes incorrect camera placement.
+   */
+  disableCameraIslandDetection?: boolean;
+  /**
+   * When true, skip the automatic case corner radius estimation from 3D geometry.
+   * The fallback corner radius ratio (e.g. standard 0.105 for iPhones) will be used.
+   * Use this when the model's vertices cause incorrectly sharp shell case corners.
+   */
+  disableCornerRadiusEstimation?: boolean;
 }
 
 // Helper: convert mm to pixels at 300 DPI
@@ -171,6 +186,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     glbFile: "iphone_13.glb",
     previewBackSide: { thicknessAxis: "y", sign: 1 },
     casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
+    disableCornerRadiusEstimation: true,
   }),
 
   createTemplate({
@@ -251,8 +268,10 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_14.glb",
-    previewBackSide: { thicknessAxis: "y", sign: 1 },
-    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    disableCameraIslandDetection: true,
+    disableCornerRadiusEstimation: true,
   }),
 
   createTemplate({
@@ -278,8 +297,9 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_14_pro.glb",
-    previewBackSide: { thicknessAxis: "y", sign: 1 },
-    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    disableCameraIslandDetection: true,
   }),
 
   createTemplate({
@@ -292,11 +312,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 5,
-        width: 28,
-        height: 28,
-        radius: 6,
+        x: 3.5,
+        y: 4.5,
+        width: 36,
+        height: 36,
+        radius: 9,
       },
     ],
     buttons: [
@@ -307,6 +327,7 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     glbFile: "iphone_14_pro_max.glb",
     previewBackSide: { thicknessAxis: "y", sign: 1 },
     casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
   }),
 
   // --- iPhone 15 Series ---
@@ -320,11 +341,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 5,
-        y: 6,
-        width: 24,
-        height: 24,
-        radius: 5,
+        x: 4.5,
+        y: 5.5,
+        width: 30,
+        height: 30,
+        radius: 7,
       },
     ],
     buttons: [
@@ -333,8 +354,10 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_15.glb",
-    previewBackSide: { thicknessAxis: "y", sign: -1 },
-    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
+    disableCornerRadiusEstimation: true,
   }),
 
   createTemplate({
@@ -373,11 +396,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 5,
-        width: 28,
-        height: 28,
-        radius: 6,
+        x: 4.5,
+        y: 5.5,
+        width: 38,
+        height: 38,
+        radius: 10,
       },
     ],
     buttons: [
@@ -385,8 +408,10 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 45, yEnd: 62, label: "Volume" },
     ],
     glbFile: "iphone_15_pro_max.glb",
+    modelRotation: { x: 0, y: 0, z: 0 },
     previewBackSide: { thicknessAxis: "x", sign: -1 },
-    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
   }),
 
   // --- iPhone 16 Series ---
@@ -400,11 +425,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 5,
-        width: 27,
-        height: 27,
-        radius: 6,
+        x: 8,
+        y: 8,
+        width: 17,
+        height: 36,
+        radius: 8.5,
       },
     ],
     buttons: [
@@ -413,8 +438,9 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_16.glb",
-    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    previewBackSide: { thicknessAxis: "y", sign: -1 },
     casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
   }),
 
   createTemplate({
@@ -427,11 +453,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 5,
-        width: 28,
-        height: 28,
-        radius: 6,
+        x: 9,
+        y: 8,
+        width: 18,
+        height: 38,
+        radius: 9,
       },
     ],
     buttons: [
@@ -442,6 +468,7 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     glbFile: "iphone_16_plus.glb",
     previewBackSide: { thicknessAxis: "y", sign: 1 },
     casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
   }),
 
   createTemplate({
@@ -509,11 +536,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 25,
+        x: 4,
         y: 4,
-        width: 22,
-        height: 22,
-        radius: 5,
+        width: 64,
+        height: 20,
+        radius: 10,
       },
     ],
     buttons: [
@@ -523,6 +550,8 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     glbFile: "iphone_17_air.glb",
     previewBackSide: { thicknessAxis: "y", sign: -1 },
     casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    disableCameraIslandDetection: true,
+    disableCornerRadiusEstimation: true,
   }),
 
   createTemplate({
@@ -617,11 +646,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 5,
-        width: 25,
-        height: 25,
-        radius: 5,
+        x: 4.5,
+        y: 5.5,
+        width: 28,
+        height: 28,
+        radius: 6,
       },
     ],
     buttons: [
@@ -630,8 +659,10 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
       { side: "left", yStart: 42, yEnd: 58, label: "Volume" },
     ],
     glbFile: "iphone_12_pro.glb",
-    previewBackSide: { thicknessAxis: "y", sign: -1 },
-    casePreviewTextureTransform: CASE_TEXTURE_FLIP_Y,
+    previewBackSide: { thicknessAxis: "y", sign: 1 },
+    casePreviewTextureTransform: CASE_TEXTURE_FLIP_X,
+    disableCameraIslandDetection: true,
+    disableCornerRadiusEstimation: true,
   }),
 
   // --- Samsung Series ---
@@ -645,11 +676,11 @@ export const PHONE_CASE_TEMPLATES: PhoneCaseTemplate[] = [
     cameraCutouts: [
       {
         shape: "rounded-rect",
-        x: 4,
-        y: 6,
-        width: 18,
-        height: 42,
-        radius: 8,
+        x: 0,
+        y: 0,
+        width: 34,
+        height: 58,
+        radius: 10,
       },
     ],
     buttons: [

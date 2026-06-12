@@ -19,6 +19,7 @@ import { productApi } from "@/lib/api-client";
 
 type Product = {
   id: string;
+  productId?: string;
   name: string;
   price: string;
   oldPrice?: string;
@@ -39,76 +40,76 @@ const heroCategories = [
 
 const flashSales: Product[] = [
   {
-    id: "fs-1",
-    name: "Ốp lưng ASA STAR HEART",
-    price: "85.000d",
-    oldPrice: "100.000d",
-    badge: "-15%",
+    id: "VAR121",
+    name: "Ốp lưng ASA STAR HEART (PayOS Test)",
+    price: "2.000đ",
+    oldPrice: "100.000đ",
+    badge: "TEST",
   },
   {
-    id: "fs-2",
+    id: "VAR002",
     name: "Phụ kiện móc khoá",
-    price: "95.000d",
-    oldPrice: "120.000d",
+    price: "95.000đ",
+    oldPrice: "120.000đ",
     badge: "-20%",
   },
   {
-    id: "fs-3",
+    id: "VAR003",
     name: "Ốp lưng Airpod Metallic",
-    price: "120.000d",
-    oldPrice: "150.000d",
+    price: "120.000đ",
+    oldPrice: "150.000đ",
   },
   {
-    id: "fs-4",
+    id: "VAR004",
     name: "Phone Case Icon",
-    price: "90.000d",
-    oldPrice: "100.000d",
+    price: "90.000đ",
+    oldPrice: "100.000đ",
   },
   {
-    id: "fs-5",
+    id: "VAR005",
     name: "Phone Case Wave",
-    price: "88.000d",
-    oldPrice: "96.000d",
+    price: "88.000đ",
+    oldPrice: "96.000đ",
   },
 ];
 
 const bestSelling: Product[] = [
   {
-    id: "bs-1",
+    id: "VAR006",
     name: "Phone Case Chrome",
-    price: "120.000d",
-    oldPrice: "150.000d",
+    price: "120.000đ",
+    oldPrice: "150.000đ",
   },
   {
-    id: "bs-2",
+    id: "VAR007",
     name: "Phone Case Pixel",
-    price: "129.000d",
-    oldPrice: "150.000d",
+    price: "129.000đ",
+    oldPrice: "150.000đ",
   },
   {
-    id: "bs-3",
+    id: "VAR008",
     name: "Phone Case Bloom",
-    price: "129.000d",
-    oldPrice: "150.000d",
+    price: "129.000đ",
+    oldPrice: "150.000đ",
   },
-  { id: "bs-4", name: "Phone Case Mini", price: "122.000d" },
+  { id: "VAR009", name: "Phone Case Mini", price: "122.000đ" },
 ];
 
 const exploreProducts: Product[] = [
   {
-    id: "ep-1",
+    id: "VAR010",
     name: "Phone Case",
-    price: "120.000d",
-    oldPrice: "150.000d",
+    price: "120.000đ",
+    oldPrice: "150.000đ",
     badge: "-35%",
   },
-  { id: "ep-2", name: "Phone Case", price: "129.000d" },
-  { id: "ep-3", name: "Phone Case", price: "129.000d" },
-  { id: "ep-4", name: "Phone Case", price: "120.000d" },
-  { id: "ep-5", name: "Phone Case", price: "120.000d", oldPrice: "150.000d" },
-  { id: "ep-6", name: "Phone Case", price: "129.000d" },
-  { id: "ep-7", name: "Phone Case", price: "110.000d", badge: "NEW" },
-  { id: "ep-8", name: "Phone Case", price: "120.000d" },
+  { id: "VAR011", name: "Phone Case", price: "129.000đ" },
+  { id: "VAR012", name: "Phone Case", price: "129.000đ" },
+  { id: "VAR013", name: "Phone Case", price: "120.000đ" },
+  { id: "VAR014", name: "Phone Case", price: "120.000đ", oldPrice: "150.000đ" },
+  { id: "VAR015", name: "Phone Case", price: "129.000đ" },
+  { id: "VAR016", name: "Phone Case", price: "110.000đ", badge: "NEW" },
+  { id: "VAR017", name: "Phone Case", price: "120.000đ" },
 ];
 
 const categories = [
@@ -221,6 +222,7 @@ export default async function HomePage() {
 
         return {
           id: variant?.variantId || p.productId,
+          productId: p.productId,
           name: p.name || "Sản phẩm",
           price: priceStr,
           oldPrice: oldPriceStr,
@@ -245,6 +247,7 @@ export default async function HomePage() {
     if (fsRes && fsRes.length > 0) {
       dbFlashSales = fsRes.map((fs) => ({
         id: fs.variantId || fs.productId,
+        productId: fs.productId,
         name: fs.productName || "Sản phẩm Flash Sale",
         price: fs.flashSalePrice.toLocaleString("vi-VN") + "đ",
         oldPrice: fs.originalPrice.toLocaleString("vi-VN") + "đ",

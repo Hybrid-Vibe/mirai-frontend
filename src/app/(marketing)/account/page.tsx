@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDesignStore } from "@/lib/store";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AuthGuard } from "@/components/common/guards/auth-guard";
 import {
   MapPin,
   CreditCard,
@@ -61,123 +62,125 @@ export default function AccountPage() {
   };
 
   return (
-    <main className="bg-background py-16">
-      <div className="page-shell">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>My Account</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-foreground">
-            Welcome!{" "}
-            <span className="font-semibold text-(--mirai-sem-danger)">
-              {user?.name || "Guest"}
-            </span>
-          </p>
-        </div>
+    <AuthGuard>
+      <main className="bg-background py-16">
+        <div className="page-shell">
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>My Account</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-foreground">
+              Welcome!{" "}
+              <span className="font-semibold text-(--mirai-sem-danger)">
+                {user?.name || "Guest"}
+              </span>
+            </p>
+          </div>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[220px_1fr]">
-          <aside>
-            <h1 className="font-heading text-3xl font-semibold text-foreground hover:text-(--mirai-sem-danger) transition-colors">
-              <Link href="/account">Quản Lý Tài Khoản</Link>
-            </h1>
-            <ul className="mt-5 space-y-2 text-base text-muted-foreground">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("profile")}
-                  className={`flex items-center gap-2 hover:text-foreground transition-colors ${
-                    activeSection === "profile"
-                      ? "font-semibold text-(--mirai-sem-danger)"
-                      : ""
-                  }`}
-                >
-                  Tài Khoản Của Tôi
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("address")}
-                  className={`flex items-center gap-2 hover:text-foreground transition-colors ${
-                    activeSection === "address"
-                      ? "font-semibold text-(--mirai-sem-danger)"
-                      : ""
-                  }`}
-                >
-                  Địa Chỉ
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setActiveSection("payment")}
-                  className={`flex items-center gap-2 hover:text-foreground transition-colors ${
-                    activeSection === "payment"
-                      ? "font-semibold text-(--mirai-sem-danger)"
-                      : ""
-                  }`}
-                >
-                  Phương Thức Thanh Toán
-                </button>
-              </li>
-            </ul>
-
-            <h2 className="mt-8 font-heading text-2xl font-semibold text-foreground">
-              <button
-                type="button"
-                onClick={() => handleOrderSection("all")}
-                className={`hover:text-(--mirai-sem-danger) transition-colors ${
-                  activeSection === "orders" && orderFilter === "all"
-                    ? "text-(--mirai-sem-danger)"
-                    : ""
-                }`}
-              >
-                Đơn Hàng Của Tôi
-              </button>
-            </h2>
-            <ul className="mt-5 space-y-2 text-base text-muted-foreground">
-              {[
-                "Đã đặt",
-                "Đang sản xuất",
-                "Đang giao",
-                "Đã giao",
-                "Đã huỷ",
-              ].map((status) => (
-                <li key={status}>
+          <div className="mt-12 grid gap-10 lg:grid-cols-[220px_1fr]">
+            <aside>
+              <h1 className="font-heading text-3xl font-semibold text-foreground hover:text-(--mirai-sem-danger) transition-colors">
+                <Link href="/account">Quản Lý Tài Khoản</Link>
+              </h1>
+              <ul className="mt-5 space-y-2 text-base text-muted-foreground">
+                <li>
                   <button
-                    onClick={() => handleOrderSection(status)}
-                    className={`hover:text-foreground transition-colors ${
-                      activeSection === "orders" && orderFilter === status
-                        ? "text-foreground font-medium"
+                    type="button"
+                    onClick={() => setActiveSection("profile")}
+                    className={`flex items-center gap-2 hover:text-foreground transition-colors ${
+                      activeSection === "profile"
+                        ? "font-semibold text-(--mirai-sem-danger)"
                         : ""
                     }`}
                   >
-                    {status}
+                    Tài Khoản Của Tôi
                   </button>
                 </li>
-              ))}
-            </ul>
-          </aside>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("address")}
+                    className={`flex items-center gap-2 hover:text-foreground transition-colors ${
+                      activeSection === "address"
+                        ? "font-semibold text-(--mirai-sem-danger)"
+                        : ""
+                    }`}
+                  >
+                    Địa Chỉ
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("payment")}
+                    className={`flex items-center gap-2 hover:text-foreground transition-colors ${
+                      activeSection === "payment"
+                        ? "font-semibold text-(--mirai-sem-danger)"
+                        : ""
+                    }`}
+                  >
+                    Phương Thức Thanh Toán
+                  </button>
+                </li>
+              </ul>
 
-          <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-8 lg:p-10 min-h-[500px]">
-            {activeSection === "profile" && <ProfileSection user={user} />}
-            {activeSection === "address" && <AddressSection user={user} />}
-            {activeSection === "payment" && <PaymentSection user={user} />}
-            {activeSection === "orders" && (
-              <OrdersSection key={orderFilter} initialFilter={orderFilter} />
-            )}
-          </section>
+              <h2 className="mt-8 font-heading text-2xl font-semibold text-foreground">
+                <button
+                  type="button"
+                  onClick={() => handleOrderSection("all")}
+                  className={`hover:text-(--mirai-sem-danger) transition-colors ${
+                    activeSection === "orders" && orderFilter === "all"
+                      ? "text-(--mirai-sem-danger)"
+                      : ""
+                  }`}
+                >
+                  Đơn Hàng Của Tôi
+                </button>
+              </h2>
+              <ul className="mt-5 space-y-2 text-base text-muted-foreground">
+                {[
+                  "Đã đặt",
+                  "Đang sản xuất",
+                  "Đang giao",
+                  "Đã giao",
+                  "Đã huỷ",
+                ].map((status) => (
+                  <li key={status}>
+                    <button
+                      onClick={() => handleOrderSection(status)}
+                      className={`hover:text-foreground transition-colors ${
+                        activeSection === "orders" && orderFilter === status
+                          ? "text-foreground font-medium"
+                          : ""
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+
+            <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-8 lg:p-10 min-h-[500px]">
+              {activeSection === "profile" && <ProfileSection user={user} />}
+              {activeSection === "address" && <AddressSection user={user} />}
+              {activeSection === "payment" && <PaymentSection user={user} />}
+              {activeSection === "orders" && (
+                <OrdersSection key={orderFilter} initialFilter={orderFilter} />
+              )}
+            </section>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </AuthGuard>
   );
 }
 

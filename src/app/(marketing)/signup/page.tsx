@@ -97,7 +97,9 @@ export default function SignupPage() {
   return (
     <main className="bg-background py-16">
       <div className="page-shell grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
-        <AuthShowcase />
+        <div className="hidden lg:block">
+          <AuthShowcase />
+        </div>
 
         <section>
           <h1 className="font-heading text-5xl font-semibold text-foreground">

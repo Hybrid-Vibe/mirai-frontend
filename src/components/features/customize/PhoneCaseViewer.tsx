@@ -303,8 +303,8 @@ interface ThreePathLike {
 
 const DEFAULT_CASE_COLOR = "#1a1a2e";
 const CASE_SHELL_BACK_SCALE = 1.01;
-const CASE_SHELL_DEPTH_RATIO = 0.065;
-const CASE_SHELL_MIN_DEPTH_RATIO = 0.003;
+const CASE_SHELL_DEPTH_RATIO = 0.045;
+const CASE_SHELL_MIN_DEPTH_RATIO = 0.002;
 const CASE_SHELL_MAX_DEPTH_RATIO = 0.009;
 const CASE_SIDE_WRAP_OUTER_SCALE = 1.016;
 const CASE_SIDE_WRAP_DEPTH_RATIO = 1.015;
@@ -748,7 +748,7 @@ function isCaseOutlineEntry(entry: ThreeMeshMaterialEntry) {
     return false;
   }
 
-  return /(back|body|frame|glass|screen|display|bezel|housing|chassis|touch|lcd|oled)/.test(
+  return /(back|body|frame|glass|screen|display|bezel|housing|chassis|touch|lcd|oled|titanium|aluminum)/.test(
     key,
   );
 }
@@ -764,7 +764,7 @@ function isCaseCornerRadiusReferenceEntry(entry: ThreeMeshMaterialEntry) {
     return false;
   }
 
-  return /(back|body|frame|glass|screen|display|front.?glass|touch|lcd|oled)/.test(
+  return /(back|body|frame|glass|screen|display|front.?glass|touch|lcd|oled|titanium|aluminum)/.test(
     key,
   );
 }
@@ -780,7 +780,7 @@ function isCaseFitReferenceEntry(entry: ThreeMeshMaterialEntry) {
     return false;
   }
 
-  return /(back|body|frame|housing|chassis|glass|screen|display|front.?glass|touch|lcd|oled)/.test(
+  return /(back|body|frame|housing|chassis|glass|screen|display|front.?glass|touch|lcd|oled|titanium|aluminum)/.test(
     key,
   );
 }
@@ -837,7 +837,6 @@ function getModelCornerRadiusRatio(
   template: PhoneCaseTemplate | null | undefined,
 ) {
   if (template?.id.includes("samsung")) return 0.045;
-  if (template?.id.includes("iphone_17")) return 0.075;
   return 0.105;
 }
 
@@ -1062,14 +1061,15 @@ function createCaseModelOutlineFromBounds(
   const height = baseHeight + clearance * 2;
   const fallbackCornerRadius =
     Math.min(width, height) * getModelCornerRadiusRatio(template);
-  const cornerRadius =
-    estimateCaseCornerRadiusFromGeometry(
-      THREE,
-      meshEntries,
-      placement,
-      bounds,
-      template,
-    ) ?? fallbackCornerRadius;
+  const cornerRadius = template?.disableCornerRadiusEstimation
+    ? fallbackCornerRadius
+    : (estimateCaseCornerRadiusFromGeometry(
+        THREE,
+        meshEntries,
+        placement,
+        bounds,
+        template,
+      ) ?? fallbackCornerRadius);
 
   return {
     centerX: (bounds.minX + bounds.maxX) / 2,
@@ -1572,7 +1572,12 @@ function createCaseShellGeometry(
       const cameraHeight = getProjectedHeight(paddedBounds);
       const cameraLeft = paddedBounds.minX;
       const cameraBottom = paddedBounds.minY;
-      const cameraRadius = Math.min(cameraWidth, cameraHeight) * 0.22;
+      const cameraRadius =
+        singleCameraCutout!.shape === "pill"
+          ? Math.min(cameraWidth, cameraHeight) * 0.5
+          : singleCameraCutout!.radius
+            ? singleCameraCutout!.radius * radiusScale + cameraPadding * 0.25
+            : Math.min(cameraWidth, cameraHeight) * 0.22;
 
       if (cameraWidth > 0 && cameraHeight > 0) {
         shape.holes.push(
@@ -3033,12 +3038,16 @@ function getCaseSurfacePlacement(
       (total, center) => total + getAxisValue(center, axis),
       0,
     ) / Math.max(targetCenters.length, 1);
-  const backSign: 1 | -1 =
+  const autoDetectedBackSign: 1 | -1 =
     targetCenters.length > 0
       ? targetCenterAverage < 0
         ? -1
         : 1
       : (template?.previewBackSide?.sign ?? 1);
+  // If the template explicitly provides a sign hint, always honour it
+  // (auto-detection can be fooled by symmetrical models or unusual pivot origins)
+  const backSign: 1 | -1 =
+    template?.previewBackSide?.sign ?? autoDetectedBackSign;
   const maxDim = Math.max(size.x, size.y, size.z, 1);
   const surfaceSize = getCaseSurfaceSize(
     getAxisValue(size, axes.widthAxis) * CASE_SHELL_BACK_SCALE,
@@ -3123,9 +3132,10 @@ function getCaseFitMetrics(
     meshEntries,
     placement,
   );
-  const iphoneCameraIslandBounds = isIphoneTemplate(template)
-    ? getIphoneCameraIslandBounds(THREE, meshEntries, placement)
-    : null;
+  const iphoneCameraIslandBounds =
+    isIphoneTemplate(template) && !template?.disableCameraIslandDetection
+      ? getIphoneCameraIslandBounds(THREE, meshEntries, placement)
+      : null;
   const sideWrapXScale =
     placement.sideWrapWidth / Math.max(placement.planeWidth, Number.EPSILON);
   const sideWrapYScale =
@@ -3542,13 +3552,14 @@ export default function PhoneCaseViewer({
       // Touch gestures: ONE finger = rotate, TWO fingers = dolly/zoom
       tunedControls.touches = { ONE: 0 /* ROTATE */, TWO: 3 /* DOLLY_PAN */ };
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.4));
-      const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 3.0));
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
       keyLight.position.set(3, 4, 5);
-      scene.add(keyLight);
-      const fillLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      (camera as unknown as { add: (obj: unknown) => void }).add(keyLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 1.4);
       fillLight.position.set(-4, 2, 3);
-      scene.add(fillLight);
+      (camera as unknown as { add: (obj: unknown) => void }).add(fillLight);
+      scene.add(camera);
 
       const setSize = () => {
         const { clientWidth, clientHeight } = container;
@@ -3569,7 +3580,13 @@ export default function PhoneCaseViewer({
       }
 
       const root = gltf.scene;
-      root.rotation.x = Math.PI / 2;
+      if (template?.modelRotation) {
+        root.rotation.x = template.modelRotation.x;
+        root.rotation.y = template.modelRotation.y;
+        root.rotation.z = template.modelRotation.z;
+      } else {
+        root.rotation.x = Math.PI / 2;
+      }
       const materials = new Set<ThreeMaterialLike>();
       const meshEntries: ThreeMeshMaterialEntry[] = [];
       root.traverse((node: unknown) => {

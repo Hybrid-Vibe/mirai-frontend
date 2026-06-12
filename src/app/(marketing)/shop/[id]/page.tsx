@@ -182,6 +182,7 @@ export default function ProductDetailPage() {
       await addItem(
         {
           id: selectedVariant.variantId || "",
+          productId: product?.productId || id,
           name: product?.name || "Sản phẩm",
           price: isFlashSale && flashSalePrice != null ? flashSalePrice : price,
           quantity: quantity,

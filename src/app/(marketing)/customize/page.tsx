@@ -164,6 +164,28 @@ export default function CustomizePage() {
   const [refImage, setRefImage] = useState<string | null>(null);
   const pendingModelResetRef = useRef<string | null>(null);
 
+  const [maxPreviewWidth, setMaxPreviewWidth] = useState(PREVIEW_MAX_WIDTH);
+  const [maxPreviewHeight, setMaxPreviewHeight] = useState(PREVIEW_MAX_HEIGHT);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 480) {
+        setMaxPreviewWidth(w - 48);
+        setMaxPreviewHeight((w - 48) * (620 / 420));
+      } else if (w < 768) {
+        setMaxPreviewWidth(380);
+        setMaxPreviewHeight(380 * (620 / 420));
+      } else {
+        setMaxPreviewWidth(PREVIEW_MAX_WIDTH);
+        setMaxPreviewHeight(PREVIEW_MAX_HEIGHT);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleRefImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -253,8 +275,8 @@ export default function CustomizePage() {
     ? `${SUPABASE_STORAGE_URL}/${currentTemplate.glbFile}`
     : null;
   const previewScale = currentTemplate
-    ? getDisplayScale(currentTemplate, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT)
-    : Math.min(PREVIEW_MAX_WIDTH / 960, PREVIEW_MAX_HEIGHT / 1200);
+    ? getDisplayScale(currentTemplate, maxPreviewWidth, maxPreviewHeight)
+    : Math.min(maxPreviewWidth / 960, maxPreviewHeight / 1200);
   const previewDisplayWidth = Math.round(
     (currentTemplate?.canvasWidth ?? 960) * previewScale,
   );
@@ -695,23 +717,40 @@ export default function CustomizePage() {
                         const file = e.target.files?.[0];
                         if (file) {
                           const url = URL.createObjectURL(file);
-                          const imagePosition = getCenteredTemplatePosition(
-                            currentTemplate,
-                            currentTemplate?.printAreaWidth
-                              ? currentTemplate.printAreaWidth * 0.72
-                              : 360,
-                            currentTemplate?.printAreaHeight
-                              ? currentTemplate.printAreaHeight * 0.36
-                              : 300,
-                          );
-                          addElement({
-                            id: `img-${Date.now()}`,
-                            type: "image",
-                            imageUrl: url,
-                            x: imagePosition.x,
-                            y: imagePosition.y,
-                          });
-                          toast.success("Đã thêm ảnh vào canvas");
+                          const img = new window.Image();
+                          img.src = url;
+                          img.onload = () => {
+                            const imgRatio = img.width / img.height;
+                            const canvasW = currentTemplate?.canvasWidth ?? 960;
+                            const canvasH =
+                              currentTemplate?.canvasHeight ?? 1200;
+                            const maxW = canvasW * 0.8;
+                            const maxH = canvasH * 0.6;
+
+                            let w = maxW;
+                            let h = maxW / imgRatio;
+                            if (w / imgRatio > maxH) {
+                              h = maxH;
+                              w = maxH * imgRatio;
+                            }
+
+                            const imagePosition = getCenteredTemplatePosition(
+                              currentTemplate,
+                              w,
+                              h,
+                            );
+
+                            addElement({
+                              id: `img-${Date.now()}`,
+                              type: "image",
+                              imageUrl: url,
+                              x: imagePosition.x,
+                              y: imagePosition.y,
+                              width: w,
+                              height: h,
+                            });
+                            toast.success("Đã thêm ảnh vào canvas");
+                          };
                         }
                       }}
                     />

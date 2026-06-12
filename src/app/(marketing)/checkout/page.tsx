@@ -8,7 +8,15 @@ import { useCartStore } from "@/stores/cart-store";
 import { useDesignStore } from "@/lib/store";
 import { orderApi, paymentApi, addressApi } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Loader2, MapPin, Check, Plus } from "lucide-react";
+import {
+  Loader2,
+  MapPin,
+  Check,
+  Plus,
+  QrCode,
+  CreditCard,
+  Banknote,
+} from "lucide-react";
 import type { AddressResponseDto, OrderRequestDto } from "@/types/api";
 import {
   Breadcrumb,
@@ -55,7 +63,9 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [coupon, setCoupon] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"vnpay" | "payos" | "cod">(
+    "cod",
+  );
   const [saveInfo, setSaveInfo] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -336,7 +346,9 @@ export default function CheckoutPage() {
       }
 
       // Save address if checked
-      if (saveInfo && user?.id) {
+      const isCustomAddress =
+        !selectedAddressId || selectedAddressId === "custom";
+      if (saveInfo && user?.id && isCustomAddress) {
         try {
           const recipientName =
             `${lastName} ${firstName}`.trim() || firstName.trim();
@@ -358,8 +370,8 @@ export default function CheckoutPage() {
       }
 
       // 2. Handle Payment
-      if (paymentMethod === "online") {
-        toast.loading("Đang khởi tạo cổng thanh toán trực tuyến...", {
+      if (paymentMethod === "vnpay") {
+        toast.loading("Đang khởi tạo cổng thanh toán VNPay...", {
           id: toastId,
         });
         try {
@@ -368,16 +380,44 @@ export default function CheckoutPage() {
             amount: total,
           });
           if (paymentUrlData.paymentUrl) {
-            toast.success("Chuyển đến trang thanh toán...", { id: toastId });
+            toast.success("Chuyển đến trang thanh toán VNPay...", {
+              id: toastId,
+            });
             setTimeout(() => {
               window.location.replace(paymentUrlData.paymentUrl);
             }, 800);
             return;
           }
         } catch (paymentErr) {
-          console.error("Payment URL creation failed", paymentErr);
+          console.error("VNPay URL creation failed", paymentErr);
           toast.error(
-            "Không thể khởi tạo thanh toán trực tuyến. Vui lòng thử lại.",
+            "Không thể khởi tạo thanh toán VNPay. Vui lòng thử lại.",
+            { id: toastId },
+          );
+          setIsProcessing(false);
+          return;
+        }
+      } else if (paymentMethod === "payos") {
+        toast.loading("Đang khởi tạo cổng thanh toán PayOS...", {
+          id: toastId,
+        });
+        try {
+          const paymentUrlData = await paymentApi.createPayOSUrl(
+            orderResponse.orderId!,
+          );
+          if (paymentUrlData.paymentUrl) {
+            toast.success("Chuyển đến trang thanh toán PayOS...", {
+              id: toastId,
+            });
+            setTimeout(() => {
+              window.location.replace(paymentUrlData.paymentUrl);
+            }, 800);
+            return;
+          }
+        } catch (paymentErr) {
+          console.error("PayOS URL creation failed", paymentErr);
+          toast.error(
+            "Không thể khởi tạo thanh toán PayOS. Vui lòng thử lại.",
             { id: toastId },
           );
           setIsProcessing(false);
@@ -781,12 +821,25 @@ export default function CheckoutPage() {
                 </label>
               </div>
 
-              <label className="mt-5 flex items-center gap-3 text-sm text-foreground cursor-pointer">
+              <label
+                className={`mt-5 flex items-center gap-3 text-sm ${
+                  selectedAddressId && selectedAddressId !== "custom"
+                    ? "opacity-50 cursor-not-allowed"
+                    : "text-foreground cursor-pointer"
+                }`}
+              >
                 <input
                   type="checkbox"
-                  checked={saveInfo}
+                  checked={
+                    selectedAddressId && selectedAddressId !== "custom"
+                      ? false
+                      : saveInfo
+                  }
                   onChange={(event) => setSaveInfo(event.target.checked)}
-                  className="h-4 w-4 accent-(--mirai-sem-accent) rounded border-gray-300"
+                  disabled={
+                    selectedAddressId !== null && selectedAddressId !== "custom"
+                  }
+                  className="h-4 w-4 accent-(--mirai-sem-accent) rounded border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 Lưu thông tin này để thanh toán nhanh hơn lần sau
               </label>
@@ -858,41 +911,115 @@ export default function CheckoutPage() {
                 Phương thức thanh toán
               </p>
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-3 rounded-lg border border-(--mirai-color-line) cursor-pointer hover:bg-muted transition-colors">
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="payment-method"
-                      className="h-4 w-4 accent-(--mirai-sem-primary)"
-                      checked={paymentMethod === "online"}
-                      onChange={() => setPaymentMethod("online")}
-                    />
-                    <span className="text-sm font-medium">
-                      Thanh Toán Trực Tuyến
-                    </span>
-                  </span>
-                  <div className="flex gap-1">
-                    <span
-                      className="h-4 w-6 bg-blue-600 rounded-sm"
-                      title="VISA"
-                    ></span>
-                    <span
-                      className="h-4 w-6 bg-red-500 rounded-sm"
-                      title="MOMO"
-                    ></span>
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-(--mirai-color-line) cursor-pointer hover:bg-muted transition-colors">
+                {/* PayOS option */}
+                <label
+                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                    paymentMethod === "payos"
+                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                  }`}
+                >
                   <input
                     type="radio"
                     name="payment-method"
-                    className="h-4 w-4 accent-(--mirai-sem-primary)"
+                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
+                    checked={paymentMethod === "payos"}
+                    onChange={() => setPaymentMethod("payos")}
+                  />
+                  <div className="flex gap-3 items-start w-full">
+                    <div
+                      className={`p-2 rounded-lg shrink-0 ${
+                        paymentMethod === "payos"
+                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <QrCode className="h-5 w-5 animate-pulse" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        Thanh toán qua PayOS
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Quét mã QR VietQR từ mọi ứng dụng ngân hàng hoặc thẻ
+                        ATM/Visa/Mastercard. Nhanh chóng, tự động xác nhận đơn.
+                      </p>
+                    </div>
+                  </div>
+                </label>
+
+                {/* VNPay option */}
+                <label
+                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                    paymentMethod === "vnpay"
+                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
+                    checked={paymentMethod === "vnpay"}
+                    onChange={() => setPaymentMethod("vnpay")}
+                  />
+                  <div className="flex gap-3 items-start w-full">
+                    <div
+                      className={`p-2 rounded-lg shrink-0 ${
+                        paymentMethod === "vnpay"
+                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <CreditCard className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        Thanh toán qua VNPay
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Thanh toán qua ví VNPay, quét mã QR ngân hàng hoặc cổng
+                        thanh toán nội địa/quốc tế VNPay.
+                      </p>
+                    </div>
+                  </div>
+                </label>
+
+                {/* COD option */}
+                <label
+                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                    paymentMethod === "cod"
+                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
                     checked={paymentMethod === "cod"}
                     onChange={() => setPaymentMethod("cod")}
                   />
-                  <span className="text-sm font-medium">
-                    Thanh toán khi nhận hàng (COD)
-                  </span>
+                  <div className="flex gap-3 items-start w-full">
+                    <div
+                      className={`p-2 rounded-lg shrink-0 ${
+                        paymentMethod === "cod"
+                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <Banknote className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        Thanh toán khi nhận hàng (COD)
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Bạn sẽ thanh toán bằng tiền mặt trực tiếp cho đơn vị vận
+                        chuyển khi nhận hàng tại địa chỉ cung cấp.
+                      </p>
+                    </div>
+                  </div>
                 </label>
               </div>
             </div>

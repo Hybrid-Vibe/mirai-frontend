@@ -15,6 +15,7 @@ import {
 
 type Product = {
   id: string;
+  productId?: string;
   name: string;
   price: string;
   oldPrice?: string;
@@ -102,6 +103,7 @@ export default function DenimCollectionPage() {
 
               return {
                 id: variant?.variantId || p.productId,
+                productId: p.productId,
                 name: p.name || "Sản phẩm",
                 price: priceStr,
                 oldPrice: oldPriceStr,

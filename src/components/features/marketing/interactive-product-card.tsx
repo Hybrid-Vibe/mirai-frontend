@@ -5,9 +5,11 @@ import { useState } from "react";
 import { useCartStore } from "@/stores";
 import { useDesignStore } from "@/lib/store";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export type Product = {
   id: string;
+  productId?: string;
   name: string;
   price: string;
   oldPrice?: string;
@@ -76,7 +78,10 @@ export function InteractiveProductCard({ product }: { product: Product }) {
           />
         </button>
 
-        <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 transition-transform duration-500 group-hover:scale-105">
+        <Link
+          href={`/shop/${product.productId || product.id}`}
+          className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 transition-transform duration-500 group-hover:scale-105 block"
+        >
           {product.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -87,7 +92,7 @@ export function InteractiveProductCard({ product }: { product: Product }) {
           ) : (
             <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
           )}
-        </div>
+        </Link>
 
         <div
           className={`absolute inset-x-0 bottom-0 p-4 transition-transform duration-300 ${isHovered ? "translate-y-0" : "translate-y-full"}`}
@@ -103,9 +108,11 @@ export function InteractiveProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      <h3 className="mt-4 font-body text-base font-semibold text-foreground cursor-pointer hover:text-(--mirai-sem-primary) transition-colors">
-        {product.name}
-      </h3>
+      <Link href={`/shop/${product.productId || product.id}`} className="block">
+        <h3 className="mt-4 font-body text-base font-semibold text-foreground cursor-pointer hover:text-(--mirai-sem-primary) transition-colors">
+          {product.name}
+        </h3>
+      </Link>
       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
         <span className="font-semibold text-(--mirai-sem-danger) text-base">
           {product.price}

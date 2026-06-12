@@ -80,6 +80,8 @@ import type {
   UpdateOrderStatusResponse,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
+import { useDesignStore } from "@/lib/store";
+import { toast } from "sonner";
 
 // ======================================================================
 // Constants
@@ -147,6 +149,36 @@ apiClient.interceptors.response.use(
         if (typeof window !== "undefined") {
           localStorage.removeItem(TOKEN_KEY);
           console.warn("[API] Unauthorized (401) — token cleared.");
+
+          // Clear Zustand stores
+          useDesignStore.getState().setUser(null);
+          useDesignStore.getState().setAuthLoading(false);
+
+          import("@/stores/cart-store")
+            .then((m) => {
+              m.useCartStore.getState().clearCart();
+            })
+            .catch((err) => console.error("Lazy load cart-store error:", err));
+
+          import("@/stores/wishlist-store")
+            .then((m) => {
+              m.useWishlistStore.getState().clearWishlist();
+            })
+            .catch((err) =>
+              console.error("Lazy load wishlist-store error:", err),
+            );
+
+          toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+
+          // Check if on protected path
+          const protectedPaths = ["/account", "/admin", "/checkout", "/orders"];
+          const currentPath = window.location.pathname;
+          const isProtected = protectedPaths.some((p) =>
+            currentPath.startsWith(p),
+          );
+          if (isProtected) {
+            window.location.replace("/login");
+          }
         }
       }
 
@@ -540,6 +572,14 @@ export const paymentApi = {
     const { data } = await apiClient.post<CreatePaymentUrlResponse>(
       "/Payment/Create-Payment-Url",
       model,
+    );
+    return data;
+  },
+
+  /** POST /api/Payment/PayOS-Url */
+  createPayOSUrl: async (orderId: string): Promise<{ paymentUrl: string }> => {
+    const { data } = await apiClient.post<{ paymentUrl: string }>(
+      `/Payment/PayOS-Url?orderId=${orderId}`,
     );
     return data;
   },

@@ -74,6 +74,7 @@ export default function WishlistPage() {
       await addItem(
         {
           id: variant.variantId || "",
+          productId: product.productId,
           name: product.name,
           price: variant.price || 0,
           quantity: 1,
@@ -105,6 +106,7 @@ export default function WishlistPage() {
           await addItem(
             {
               id: variant.variantId || "",
+              productId: item.productId,
               name: item.name,
               price: variant.price || 0,
               quantity: 1,
@@ -191,7 +193,10 @@ export default function WishlistPage() {
                     <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/80" />
                   </button>
 
-                  <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                  <Link
+                    href={`/shop/${item.productId}`}
+                    className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
+                  >
                     {item.productImages?.[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -202,7 +207,7 @@ export default function WishlistPage() {
                     ) : (
                       <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
                     )}
-                  </div>
+                  </Link>
 
                   <Button
                     type="button"
@@ -224,9 +229,11 @@ export default function WishlistPage() {
                   </Button>
                 </div>
 
-                <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                  {item.name}
-                </h2>
+                <Link href={`/shop/${item.productId}`} className="block">
+                  <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                    {item.name}
+                  </h2>
+                </Link>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {item.variants?.[0]?.phoneModel || "Universal"}
                 </p>
@@ -284,7 +291,10 @@ export default function WishlistPage() {
                       </TooltipContent>
                     </Tooltip>
 
-                    <div className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                    <Link
+                      href={`/shop/${item.productId}`}
+                      className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
+                    >
                       {item.productImages?.[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -295,7 +305,7 @@ export default function WishlistPage() {
                       ) : (
                         <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
                       )}
-                    </div>
+                    </Link>
 
                     <Button
                       type="button"
@@ -312,9 +322,11 @@ export default function WishlistPage() {
                     </Button>
                   </div>
 
-                  <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                    {item.name}
-                  </h2>
+                  <Link href={`/shop/${item.productId}`} className="block">
+                    <h2 className="mt-4 font-body text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                      {item.name}
+                    </h2>
+                  </Link>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {item.variants?.[0]?.phoneModel || "Universal"}
                   </p>

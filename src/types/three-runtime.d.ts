@@ -175,6 +175,7 @@ declare module "three/examples/jsm/loaders/GLTFLoader.js" {
         position: import("three").Vector3;
         rotation: {
           x: number;
+          y: number;
           z: number;
         };
         traverse(callback: (node: unknown) => void): void;
