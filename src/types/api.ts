@@ -391,6 +391,7 @@ export interface OrderItemResponseDto {
 export interface OrderResponseDto {
   orderId?: string;
   orderNumber?: string;
+  payosOrderCode?: number;
   totalAmount: number;
   status?: number;
   paymentStatus?: number;
@@ -456,6 +457,7 @@ export interface CartSearchFilter {
 export interface CartItemDto {
   cartItemId?: string;
   variantId?: string;
+  productId?: string;
   productName?: string;
   image?: string;
   price?: number;
