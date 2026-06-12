@@ -1572,11 +1572,12 @@ function createCaseShellGeometry(
       const cameraHeight = getProjectedHeight(paddedBounds);
       const cameraLeft = paddedBounds.minX;
       const cameraBottom = paddedBounds.minY;
-      const cameraRadius = singleCameraCutout!.shape === "pill"
-        ? Math.min(cameraWidth, cameraHeight) * 0.5
-        : singleCameraCutout!.radius
-        ? singleCameraCutout!.radius * radiusScale + cameraPadding * 0.25
-        : Math.min(cameraWidth, cameraHeight) * 0.22;
+      const cameraRadius =
+        singleCameraCutout!.shape === "pill"
+          ? Math.min(cameraWidth, cameraHeight) * 0.5
+          : singleCameraCutout!.radius
+            ? singleCameraCutout!.radius * radiusScale + cameraPadding * 0.25
+            : Math.min(cameraWidth, cameraHeight) * 0.22;
 
       if (cameraWidth > 0 && cameraHeight > 0) {
         shape.holes.push(
@@ -3554,10 +3555,10 @@ export default function PhoneCaseViewer({
       scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 3.0));
       const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
       keyLight.position.set(3, 4, 5);
-      (camera as any).add(keyLight);
+      camera.add(keyLight);
       const fillLight = new THREE.DirectionalLight(0xffffff, 1.4);
       fillLight.position.set(-4, 2, 3);
-      (camera as any).add(fillLight);
+      camera.add(fillLight);
       scene.add(camera);
 
       const setSize = () => {
