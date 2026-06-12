@@ -24,6 +24,7 @@ export interface User {
   email: string;
   name: string;
   avatar_url?: string;
+  role?: string;
 }
 
 interface DesignState {
@@ -35,6 +36,7 @@ interface DesignState {
   selectedElementId: string | null;
   canvasDataUrl: string | null;
   user: User | null;
+  isAuthLoading: boolean;
 
   // --- Template & Canvas 2D state ---
   selectedTemplate: PhoneCaseTemplate | null;
@@ -53,6 +55,7 @@ interface DesignState {
   setSelectedElementId: (id: string | null) => void;
   setCanvasDataUrl: (url: string | null) => void;
   setUser: (user: User | null) => void;
+  setAuthLoading: (loading: boolean) => void;
 
   // --- Template & Canvas 2D actions ---
   setSelectedTemplate: (template: PhoneCaseTemplate | null) => void;
@@ -72,6 +75,7 @@ export const useDesignStore = create<DesignState>((set) => ({
   selectedElementId: null,
   canvasDataUrl: null,
   user: null,
+  isAuthLoading: true,
 
   // --- Template & Canvas 2D defaults ---
   selectedTemplate: null,
@@ -101,6 +105,7 @@ export const useDesignStore = create<DesignState>((set) => ({
   setSelectedElementId: (selectedElementId) => set({ selectedElementId }),
   setCanvasDataUrl: (canvasDataUrl) => set({ canvasDataUrl }),
   setUser: (user) => set({ user }),
+  setAuthLoading: (isAuthLoading) => set({ isAuthLoading }),
 
   // --- Template & Canvas 2D actions ---
   setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),

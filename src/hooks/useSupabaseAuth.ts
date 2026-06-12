@@ -7,10 +7,12 @@ import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import { toast } from "sonner";
-import { setAuthToken, clearAuthToken } from "@/lib/api-client";
+import { setAuthToken, clearAuthToken, userApi } from "@/lib/api-client";
+import { decodeJwt, isJwtExpired } from "@/lib/jwt";
 
 export function useSupabaseAuth() {
   const setUser = useDesignStore((state) => state.setUser);
+  const setAuthLoading = useDesignStore((state) => state.setAuthLoading);
 
   const handleUserLogin = useCallback(
     async (authUser: User) => {
@@ -40,6 +42,7 @@ export function useSupabaseAuth() {
         email: email || "",
         name: nameToUse,
         avatar_url: googleAvatar,
+        role: "3", // default role for users
       });
 
       // Load user cart and wishlist immediately
@@ -120,6 +123,7 @@ export function useSupabaseAuth() {
             email: existingUser.email || email || "",
             name: nameToUse,
             avatar_url: existingUser.avatar_url || googleAvatar,
+            role: existingUser.role_id || "3",
           });
         }
 
@@ -155,12 +159,71 @@ export function useSupabaseAuth() {
 
   useEffect(() => {
     // Sync current session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && session.access_token) {
-        setAuthToken(session.access_token);
-        handleUserLogin(session.user);
+    const initializeAuth = async () => {
+      setAuthLoading(true);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user && session.access_token) {
+          setAuthToken(session.access_token);
+          await handleUserLogin(session.user);
+        } else {
+          // No Supabase session, check local C# JWT session
+          const token = localStorage.getItem("mirai_auth_token");
+          if (token) {
+            if (isJwtExpired(token)) {
+              clearAuthToken();
+              setUser(null);
+            } else {
+              const decoded = decodeJwt(token);
+              if (decoded && decoded.sub) {
+                setAuthToken(token);
+                const profile = await userApi.getUserById(decoded.sub);
+
+                let nameToUse =
+                  profile.fullName || decoded.email?.split("@")[0] || "User";
+                if (typeof window !== "undefined") {
+                  const savedLocal = localStorage.getItem(
+                    `mirai_profile_${decoded.sub}`,
+                  );
+                  if (savedLocal) {
+                    try {
+                      const localData = JSON.parse(savedLocal);
+                      if (localData.fullName) nameToUse = localData.fullName;
+                    } catch (e) {
+                      console.error("Failed to parse local profile:", e);
+                    }
+                  }
+                }
+
+                setUser({
+                  id: decoded.sub,
+                  email: profile.email || decoded.email || "",
+                  name: nameToUse,
+                  role:
+                    profile.roleId || profile.roleName || decoded.role || "3",
+                });
+
+                // Load user cart and wishlist
+                useCartStore.getState().loadUserCart(decoded.sub);
+                useWishlistStore.getState().loadUserWishlist(decoded.sub);
+                useCartStore.getState().fetchCart(decoded.sub);
+              } else {
+                clearAuthToken();
+                setUser(null);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to rehydrate auth session:", err);
+      } finally {
+        setAuthLoading(false);
       }
-    });
+    };
+
+    initializeAuth();
 
     // Listen to auth changes (e.g. after OAuth redirect)
     const {
@@ -186,5 +249,5 @@ export function useSupabaseAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser, handleUserLogin]);
+  }, [setUser, handleUserLogin, setAuthLoading]);
 }
