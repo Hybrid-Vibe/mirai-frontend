@@ -722,7 +722,8 @@ export default function CustomizePage() {
                           img.onload = () => {
                             const imgRatio = img.width / img.height;
                             const canvasW = currentTemplate?.canvasWidth ?? 960;
-                            const canvasH = currentTemplate?.canvasHeight ?? 1200;
+                            const canvasH =
+                              currentTemplate?.canvasHeight ?? 1200;
                             const maxW = canvasW * 0.8;
                             const maxH = canvasH * 0.6;
 
