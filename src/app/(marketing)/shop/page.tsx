@@ -139,6 +139,7 @@ export default function ShopPage() {
       await addItem(
         {
           id: variant.variantId || "",
+          productId: product.productId,
           name: product.name,
           price: variant.price || 0,
           quantity: 1,
