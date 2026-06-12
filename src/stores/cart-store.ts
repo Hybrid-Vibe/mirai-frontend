@@ -8,6 +8,7 @@ import { useDesignStore } from "@/lib/store";
 export interface CartItem {
   id: string; // This is the variantId from backend
   cartItemId?: string; // Unique ID for backend deletion
+  productId?: string;
   name: string;
   price: number;
   quantity: number;
@@ -136,6 +137,7 @@ export const useCartStore = create<CartState>()(
                 (item: CartItemDto) => ({
                   id: item.variantId || "",
                   cartItemId: item.cartItemId,
+                  productId: item.productId,
                   name: item.productName || "Sản phẩm",
                   price: item.price || 0,
                   quantity: item.quantity || 1,
