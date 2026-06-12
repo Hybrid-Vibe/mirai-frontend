@@ -3555,10 +3555,10 @@ export default function PhoneCaseViewer({
       scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 3.0));
       const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
       keyLight.position.set(3, 4, 5);
-      camera.add(keyLight);
+      (camera as unknown as { add: (obj: unknown) => void }).add(keyLight);
       const fillLight = new THREE.DirectionalLight(0xffffff, 1.4);
       fillLight.position.set(-4, 2, 3);
-      camera.add(fillLight);
+      (camera as unknown as { add: (obj: unknown) => void }).add(fillLight);
       scene.add(camera);
 
       const setSize = () => {
