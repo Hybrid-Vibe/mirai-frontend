@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   HelpCircle,
 } from "lucide-react";
+import { AuthGuard } from "@/components/common/guards/auth-guard";
 
 function PaymentCancelContent() {
   const searchParams = useSearchParams();
@@ -99,25 +100,27 @@ function PaymentCancelContent() {
 
 export default function PaymentCancelPage() {
   return (
-    <main className="bg-background py-24 min-h-[75vh] flex items-center justify-center relative overflow-hidden">
-      {/* Decorative gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl -z-20" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -z-20" />
+    <AuthGuard>
+      <main className="bg-background py-24 min-h-[75vh] flex items-center justify-center relative overflow-hidden">
+        {/* Decorative gradients */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl -z-20" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -z-20" />
 
-      <div className="page-shell w-full flex items-center justify-center px-4">
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
-              <p className="text-sm text-muted-foreground">
-                Đang xử lý thông tin hủy...
-              </p>
-            </div>
-          }
-        >
-          <PaymentCancelContent />
-        </Suspense>
-      </div>
-    </main>
+        <div className="page-shell w-full flex items-center justify-center px-4">
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
+                <p className="text-sm text-muted-foreground">
+                  Đang xử lý thông tin hủy...
+                </p>
+              </div>
+            }
+          >
+            <PaymentCancelContent />
+          </Suspense>
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCartStore } from "@/stores";
+import { AuthGuard } from "@/components/common/guards/auth-guard";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
@@ -109,25 +110,27 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <main className="bg-background py-24 min-h-[75vh] flex items-center justify-center relative overflow-hidden">
-      {/* Decorative gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -z-20" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-20" />
+    <AuthGuard>
+      <main className="bg-background py-24 min-h-[75vh] flex items-center justify-center relative overflow-hidden">
+        {/* Decorative gradients */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -z-20" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-20" />
 
-      <div className="page-shell w-full flex items-center justify-center px-4">
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
-              <p className="text-sm text-muted-foreground">
-                Đang xử lý kết quả thanh toán...
-              </p>
-            </div>
-          }
-        >
-          <PaymentSuccessContent />
-        </Suspense>
-      </div>
-    </main>
+        <div className="page-shell w-full flex items-center justify-center px-4">
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
+                <p className="text-sm text-muted-foreground">
+                  Đang xử lý kết quả thanh toán...
+                </p>
+              </div>
+            }
+          >
+            <PaymentSuccessContent />
+          </Suspense>
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

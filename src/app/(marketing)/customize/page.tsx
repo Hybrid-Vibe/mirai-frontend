@@ -138,6 +138,7 @@ export default function CustomizePage() {
     showCameraCutout,
     setShowCameraCutout,
     setBackgroundImage,
+    user,
   } = useDesignStore();
 
   const [mode, setMode] = useState<"ai" | "self">("ai");
@@ -426,6 +427,12 @@ export default function CustomizePage() {
   };
 
   const handleAddToCart = async () => {
+    // Require authentication before adding to cart
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để thêm thiết kế vào giỏ hàng!");
+      router.push("/login?next=/customize");
+      return;
+    }
     if (mode === "ai" && !selectedImage) {
       toast.error("Vui lòng generate và chọn một thiết kế trước!");
       return;
