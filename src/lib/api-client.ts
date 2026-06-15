@@ -14,6 +14,7 @@ import type {
   LoginRequestDto,
   RegisterUserDto,
   AuthResponseDto,
+  RefreshTokenRequest,
   GetUserDto,
   ChangePasswordRequestDto,
   UpdateProfileRequestDto,
@@ -101,6 +102,11 @@ const getBackendBaseUrl = () => {
 const BACKEND_BASE_URL = getBackendBaseUrl();
 
 const TOKEN_KEY = "mirai_auth_token";
+const REFRESH_TOKEN_KEY = "mirai_refresh_token";
+
+type RetriableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
 
 // ======================================================================
 // Axios Instance — .NET Backend
@@ -139,15 +145,43 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status;
       const responseData = error.response.data;
 
       if (status === 401) {
+        const originalRequest = error.config as
+          | RetriableRequestConfig
+          | undefined;
+        const isRefreshRequest = originalRequest?.url?.includes(
+          "/User/refresh-token",
+        );
+
+        if (
+          typeof window !== "undefined" &&
+          originalRequest &&
+          !originalRequest._retry &&
+          !isRefreshRequest &&
+          getRefreshToken()
+        ) {
+          originalRequest._retry = true;
+          try {
+            const refreshed = await refreshAuthSession();
+            const accessToken = getAccessTokenFromAuthResponse(refreshed);
+            if (accessToken && originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            }
+            return apiClient(originalRequest);
+          } catch (refreshError) {
+            console.warn("[API] Token refresh failed:", refreshError);
+          }
+        }
+
         // Token expired or invalid — clear and redirect to login
         if (typeof window !== "undefined") {
           localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
           console.warn("[API] Unauthorized (401) — token cleared.");
 
           // Clear Zustand stores
@@ -229,10 +263,18 @@ export function setAuthToken(token: string): void {
   }
 }
 
+/** Store refresh token for backend email/password sessions. */
+export function setRefreshToken(token: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  }
+}
+
 /** Clear stored auth token (call on logout) */
 export function clearAuthToken(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 }
 
@@ -242,6 +284,49 @@ export function getAuthToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }
   return null;
+}
+
+/** Get the stored backend refresh token, if this is a backend JWT session. */
+export function getRefreshToken(): string | null {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+  return null;
+}
+
+function getAccessTokenFromAuthResponse(data: AuthResponseDto): string {
+  return data.accessToken || data.token || "";
+}
+
+function persistAuthResponse(data: AuthResponseDto): void {
+  const accessToken = getAccessTokenFromAuthResponse(data);
+  if (accessToken) {
+    setAuthToken(accessToken);
+  }
+  if (data.refreshToken) {
+    setRefreshToken(data.refreshToken);
+  }
+}
+
+export async function refreshAuthSession(): Promise<AuthResponseDto> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    throw new Error("Missing refresh token");
+  }
+
+  const request: RefreshTokenRequest = { refreshToken };
+  const { data } = await axios.post<AuthResponseDto>(
+    `${BACKEND_BASE_URL}/api/User/refresh-token`,
+    request,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    },
+  );
+  persistAuthResponse(data);
+  return data;
 }
 
 /** Safely normalizes list arrays from backend that might be PagedResult or reference-looped ($values) */
@@ -265,9 +350,7 @@ export const userApi = {
   login: async (dto: LoginRequestDto): Promise<AuthResponseDto> => {
     const { data } = await apiClient.post<AuthResponseDto>("/User/login", dto);
     // Auto-store token on successful login
-    if (data.token) {
-      setAuthToken(data.token);
-    }
+    persistAuthResponse(data);
     return data;
   },
 

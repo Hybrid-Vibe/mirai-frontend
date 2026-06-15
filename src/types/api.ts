@@ -74,11 +74,19 @@ export interface RegisterUserDto {
 
 /** Login response — contains JWT token and user info */
 export interface AuthResponseDto {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  /** Legacy field kept for compatibility with older backend responses. */
+  token?: string;
   userId: string;
   email: string;
   fullName?: string;
   role: string;
+}
+
+/** POST /api/User/refresh-token — Request body */
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 /** POST /api/User/change-password — Request body */

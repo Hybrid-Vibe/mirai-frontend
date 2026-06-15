@@ -7,7 +7,12 @@ import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
 import { useWishlistStore } from "@/stores/wishlist-store";
 import { toast } from "sonner";
-import { setAuthToken, clearAuthToken, userApi } from "@/lib/api-client";
+import {
+  setAuthToken,
+  clearAuthToken,
+  userApi,
+  refreshAuthSession,
+} from "@/lib/api-client";
 import { decodeJwt, isJwtExpired } from "@/lib/jwt";
 
 export function useSupabaseAuth() {
@@ -170,12 +175,25 @@ export function useSupabaseAuth() {
           await handleUserLogin(session.user);
         } else {
           // No Supabase session, check local C# JWT session
-          const token = localStorage.getItem("mirai_auth_token");
+          let token = localStorage.getItem("mirai_auth_token");
           if (token) {
             if (isJwtExpired(token)) {
-              clearAuthToken();
-              setUser(null);
-            } else {
+              try {
+                const refreshedSession = await refreshAuthSession();
+                token =
+                  refreshedSession.accessToken || refreshedSession.token || "";
+              } catch (refreshError) {
+                console.warn(
+                  "Failed to refresh backend auth session:",
+                  refreshError,
+                );
+                clearAuthToken();
+                setUser(null);
+                return;
+              }
+            }
+
+            if (token) {
               const decoded = decodeJwt(token);
               if (decoded && decoded.sub) {
                 setAuthToken(token);
