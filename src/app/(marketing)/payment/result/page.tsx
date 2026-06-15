@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useCartStore } from "@/stores";
+import { AuthGuard } from "@/components/common/guards/auth-guard";
 
 function PaymentResultContent() {
   const searchParams = useSearchParams();
@@ -129,21 +130,23 @@ function PaymentResultContent() {
 
 export default function PaymentResultPage() {
   return (
-    <main className="bg-background py-24 min-h-[70vh] flex items-center justify-center">
-      <div className="page-shell w-full flex items-center justify-center">
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
-              <p className="text-sm text-muted-foreground">
-                Đang tải kết quả giao dịch...
-              </p>
-            </div>
-          }
-        >
-          <PaymentResultContent />
-        </Suspense>
-      </div>
-    </main>
+    <AuthGuard>
+      <main className="bg-background py-24 min-h-[70vh] flex items-center justify-center">
+        <div className="page-shell w-full flex items-center justify-center">
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 animate-spin text-(--mirai-sem-primary)" />
+                <p className="text-sm text-muted-foreground">
+                  Đang tải kết quả giao dịch...
+                </p>
+              </div>
+            }
+          >
+            <PaymentResultContent />
+          </Suspense>
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

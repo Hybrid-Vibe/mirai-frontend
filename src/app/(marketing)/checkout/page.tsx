@@ -17,6 +17,7 @@ import {
   CreditCard,
   Banknote,
 } from "lucide-react";
+import { AuthGuard } from "@/components/common/guards/auth-guard";
 import type { AddressResponseDto, OrderRequestDto } from "@/types/api";
 import {
   Breadcrumb,
@@ -441,628 +442,659 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="bg-background py-16">
-      <div className="page-shell">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/account">Tài khoản</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/shop">Sản phẩm</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/cart">Giỏ Hàng</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Thanh Toán</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <AuthGuard>
+      <main className="bg-background py-16">
+        <div className="page-shell">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/account">Tài khoản</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/shop">Sản phẩm</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/cart">Giỏ Hàng</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Thanh Toán</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_520px]">
-          <section>
-            <h1 className="font-heading text-4xl font-semibold text-foreground">
-              Chi tiết thanh toán
-            </h1>
+          <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_520px]">
+            <section>
+              <h1 className="font-heading text-4xl font-semibold text-foreground">
+                Chi tiết thanh toán
+              </h1>
 
-            {/* SAVED ADDRESS SELECTOR GRID */}
-            {user && (
-              <div className="mt-8 mb-6 p-6 rounded-xl border border-(--mirai-color-line) bg-card/20 backdrop-blur-md">
-                <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-(--mirai-sem-primary)" />
-                  Chọn từ địa chỉ đã lưu
-                </h2>
-                {isLoadingAddresses ? (
-                  <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-(--mirai-sem-primary)" />
-                    Đang tải danh sách địa chỉ...
-                  </div>
-                ) : savedAddresses.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {savedAddresses.map((addr) => {
-                      const isSelected = selectedAddressId === addr.addressId;
-                      return (
-                        <button
-                          key={addr.addressId}
-                          type="button"
-                          onClick={() => handleSelectAddress(addr)}
-                          className={`text-left p-3.5 rounded-lg border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
-                            isSelected
-                              ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.1)]"
-                              : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-1.5 w-full">
-                            <span className="font-semibold text-foreground text-xs line-clamp-1">
-                              {addr.recipientName || user.name}
-                            </span>
-                            {addr.isDefault && (
-                              <span className="text-[9px] bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary) px-1.5 py-0.5 rounded-full font-medium shrink-0">
-                                Mặc định
+              {/* SAVED ADDRESS SELECTOR GRID */}
+              {user && (
+                <div className="mt-8 mb-6 p-6 rounded-xl border border-(--mirai-color-line) bg-card/20 backdrop-blur-md">
+                  <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-(--mirai-sem-primary)" />
+                    Chọn từ địa chỉ đã lưu
+                  </h2>
+                  {isLoadingAddresses ? (
+                    <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-(--mirai-sem-primary)" />
+                      Đang tải danh sách địa chỉ...
+                    </div>
+                  ) : savedAddresses.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {savedAddresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.addressId;
+                        return (
+                          <button
+                            key={addr.addressId}
+                            type="button"
+                            onClick={() => handleSelectAddress(addr)}
+                            className={`text-left p-3.5 rounded-lg border transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+                              isSelected
+                                ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.1)]"
+                                : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-1.5 w-full">
+                              <span className="font-semibold text-foreground text-xs line-clamp-1">
+                                {addr.recipientName || user.name}
                               </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-muted-foreground mb-1">
-                            {addr.recipientPhone}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                            {[
-                              addr.addressLine,
-                              addr.ward,
-                              addr.district,
-                              addr.city,
-                            ]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </p>
-                          {isSelected && (
-                            <div className="absolute top-0 right-0 w-6 h-6 bg-(--mirai-sem-primary) rounded-bl-full flex items-center justify-center pl-1.5 pb-1.5">
-                              <Check className="w-2.5 h-2.5 text-white" />
+                              {addr.isDefault && (
+                                <span className="text-[9px] bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary) px-1.5 py-0.5 rounded-full font-medium shrink-0">
+                                  Mặc định
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </button>
-                      );
-                    })}
+                            <p className="text-[11px] text-muted-foreground mb-1">
+                              {addr.recipientPhone}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                              {[
+                                addr.addressLine,
+                                addr.ward,
+                                addr.district,
+                                addr.city,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </p>
+                            {isSelected && (
+                              <div className="absolute top-0 right-0 w-6 h-6 bg-(--mirai-sem-primary) rounded-bl-full flex items-center justify-center pl-1.5 pb-1.5">
+                                <Check className="w-2.5 h-2.5 text-white" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
 
-                    <button
-                      type="button"
-                      onClick={handleSelectCustomAddress}
-                      className={`text-left p-3.5 rounded-lg border border-dashed transition-all duration-300 flex flex-col justify-center items-center gap-1.5 min-h-[100px] ${
-                        selectedAddressId === "custom"
-                          ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5"
-                          : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
-                      }`}
-                    >
-                      <Plus className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium text-xs text-foreground text-center">
-                        Nhập địa chỉ mới
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={handleSelectCustomAddress}
+                        className={`text-left p-3.5 rounded-lg border border-dashed transition-all duration-300 flex flex-col justify-center items-center gap-1.5 min-h-[100px] ${
+                          selectedAddressId === "custom"
+                            ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5"
+                            : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                        }`}
+                      >
+                        <Plus className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium text-xs text-foreground text-center">
+                          Nhập địa chỉ mới
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Bạn chưa lưu địa chỉ nào. Vui lòng nhập thông tin giao
+                      hàng bên dưới.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <form className="mt-6 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Tên*
+                      <Input
+                        className={`mt-1.5 ${errors.firstName ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
+                        value={firstName}
+                        onChange={(event) => {
+                          setFirstName(event.target.value);
+                          if (errors.firstName)
+                            setErrors((prev) => ({
+                              ...prev,
+                              firstName: undefined,
+                            }));
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                        onBlur={() => {
+                          if (!firstName.trim()) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              firstName: "Vui lòng nhập tên nhận hàng.",
+                            }));
+                          }
+                        }}
+                        placeholder="Nhập tên"
+                        aria-invalid={!!errors.firstName}
+                      />
+                    </label>
+                    {errors.firstName && (
+                      <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
+                        {errors.firstName}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Bạn chưa lưu địa chỉ nào. Vui lòng nhập thông tin giao hàng
-                    bên dưới.
-                  </p>
-                )}
-              </div>
-            )}
 
-            <form className="mt-6 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Họ & Tên lót
+                      <Input
+                        className="mt-1.5"
+                        value={lastName}
+                        onChange={(event) => {
+                          setLastName(event.target.value);
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                        placeholder="Nhập họ và tên lót"
+                      />
+                    </label>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm text-muted-foreground">
-                    Tên*
+                    Địa Chỉ Nhận Hàng*
                     <Input
-                      className={`mt-1.5 ${errors.firstName ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
-                      value={firstName}
+                      className={`mt-1.5 ${errors.address ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
+                      value={address}
                       onChange={(event) => {
-                        setFirstName(event.target.value);
-                        if (errors.firstName)
+                        setAddress(event.target.value);
+                        if (errors.address)
                           setErrors((prev) => ({
                             ...prev,
-                            firstName: undefined,
+                            address: undefined,
                           }));
                         if (selectedAddressId && selectedAddressId !== "custom")
                           setSelectedAddressId("custom");
                       }}
                       onBlur={() => {
-                        if (!firstName.trim()) {
+                        if (!address.trim()) {
                           setErrors((prev) => ({
                             ...prev,
-                            firstName: "Vui lòng nhập tên nhận hàng.",
+                            address: "Vui lòng nhập địa chỉ nhận hàng.",
                           }));
                         }
                       }}
-                      placeholder="Nhập tên"
-                      aria-invalid={!!errors.firstName}
+                      placeholder="Số nhà, tên đường..."
+                      aria-invalid={!!errors.address}
                     />
                   </label>
-                  {errors.firstName && (
+                  {errors.address && (
                     <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
-                      {errors.firstName}
+                      {errors.address}
                     </p>
                   )}
                 </div>
 
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Tỉnh/Thành phố*
+                      <Select
+                        value={selectedProvince}
+                        onValueChange={(val) => {
+                          setSelectedProvince(val || "");
+                          setSelectedDistrict("");
+                          setSelectedWard("");
+                          setDistricts([]);
+                          setWards([]);
+                          setCity(val || "");
+                          if (errors.city)
+                            setErrors((prev) => ({ ...prev, city: undefined }));
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                      >
+                        <SelectTrigger className="mt-1.5 bg-background">
+                          <SelectValue placeholder="Chọn Tỉnh/Thành phố" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {provinces.map((p) => (
+                            <SelectItem key={p.code} value={p.name}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                    {errors.city && (
+                      <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
+                        {errors.city}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Quận/Huyện*
+                      <Select
+                        value={selectedDistrict}
+                        onValueChange={(val) => {
+                          setSelectedDistrict(val || "");
+                          setSelectedWard("");
+                          setWards([]);
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                        disabled={!selectedProvince}
+                      >
+                        <SelectTrigger className="mt-1.5 bg-background">
+                          <SelectValue placeholder="Chọn Quận/Huyện" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {districts.map((d) => (
+                            <SelectItem key={d.code} value={d.name}>
+                              {d.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Phường/Xã*
+                      <Select
+                        value={selectedWard}
+                        onValueChange={(val) => {
+                          setSelectedWard(val || "");
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                        disabled={!selectedDistrict}
+                      >
+                        <SelectTrigger className="mt-1.5 bg-background">
+                          <SelectValue placeholder="Chọn Phường/Xã" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {wards.map((w) => (
+                            <SelectItem key={w.code} value={w.name}>
+                              {w.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Số Điện Thoại*
+                      <Input
+                        className={`mt-1.5 ${errors.phone ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
+                        value={phone}
+                        onChange={(event) => {
+                          setPhone(event.target.value);
+                          if (errors.phone)
+                            setErrors((prev) => ({
+                              ...prev,
+                              phone: undefined,
+                            }));
+                          if (
+                            selectedAddressId &&
+                            selectedAddressId !== "custom"
+                          )
+                            setSelectedAddressId("custom");
+                        }}
+                        onBlur={() => {
+                          if (!phone.trim()) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              phone: "Vui lòng nhập số điện thoại.",
+                            }));
+                          } else if (
+                            !/^(0|84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())
+                          ) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              phone:
+                                "Số điện thoại không hợp lệ (gồm 10 số bắt đầu bằng 03, 05, 07, 08, 09).",
+                            }));
+                          }
+                        }}
+                        placeholder="09xx xxx xxx"
+                        aria-invalid={!!errors.phone}
+                      />
+                    </label>
+                    {errors.phone && (
+                      <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
+                        {errors.phone}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-muted-foreground">
+                      Email nhận thông báo*
+                      <Input
+                        className={`mt-1.5 ${errors.email ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
+                        value={email}
+                        onChange={(event) => {
+                          setEmail(event.target.value);
+                          if (errors.email)
+                            setErrors((prev) => ({
+                              ...prev,
+                              email: undefined,
+                            }));
+                        }}
+                        onBlur={() => {
+                          if (!email.trim()) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              email: "Vui lòng nhập email nhận thông báo.",
+                            }));
+                          } else if (
+                            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+                          ) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              email:
+                                "Địa chỉ email không hợp lệ (ví dụ: name@example.com).",
+                            }));
+                          }
+                        }}
+                        placeholder="example@gmail.com"
+                        aria-invalid={!!errors.email}
+                      />
+                    </label>
+                    {errors.email && (
+                      <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
+                        {errors.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm text-muted-foreground">
-                    Họ & Tên lót
+                    Ghi chú thêm (tùy chọn)
                     <Input
                       className="mt-1.5"
-                      value={lastName}
-                      onChange={(event) => {
-                        setLastName(event.target.value);
-                        if (selectedAddressId && selectedAddressId !== "custom")
-                          setSelectedAddressId("custom");
-                      }}
-                      placeholder="Nhập họ và tên lót"
+                      placeholder="Ví dụ: Giao giờ hành chính"
                     />
                   </label>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm text-muted-foreground">
-                  Địa Chỉ Nhận Hàng*
-                  <Input
-                    className={`mt-1.5 ${errors.address ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
-                    value={address}
-                    onChange={(event) => {
-                      setAddress(event.target.value);
-                      if (errors.address)
-                        setErrors((prev) => ({ ...prev, address: undefined }));
-                      if (selectedAddressId && selectedAddressId !== "custom")
-                        setSelectedAddressId("custom");
-                    }}
-                    onBlur={() => {
-                      if (!address.trim()) {
-                        setErrors((prev) => ({
-                          ...prev,
-                          address: "Vui lòng nhập địa chỉ nhận hàng.",
-                        }));
-                      }
-                    }}
-                    placeholder="Số nhà, tên đường..."
-                    aria-invalid={!!errors.address}
+                <label
+                  className={`mt-5 flex items-center gap-3 text-sm ${
+                    selectedAddressId && selectedAddressId !== "custom"
+                      ? "opacity-50 cursor-not-allowed"
+                      : "text-foreground cursor-pointer"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedAddressId && selectedAddressId !== "custom"
+                        ? false
+                        : saveInfo
+                    }
+                    onChange={(event) => setSaveInfo(event.target.checked)}
+                    disabled={
+                      selectedAddressId !== null &&
+                      selectedAddressId !== "custom"
+                    }
+                    className="h-4 w-4 accent-(--mirai-sem-accent) rounded border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
+                  Lưu thông tin này để thanh toán nhanh hơn lần sau
                 </label>
-                {errors.address && (
-                  <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
-                    {errors.address}
+              </form>
+            </section>
+
+            <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-6 lg:p-8 h-fit sticky top-24">
+              <h2 className="mb-6 text-xl font-semibold text-foreground">
+                Đơn hàng của bạn
+              </h2>
+              <div className="space-y-4 text-sm text-foreground max-h-[300px] overflow-y-auto pr-2">
+                {cartItems.length > 0 ? (
+                  cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="h-12 w-10 shrink-0 rounded-md bg-muted overflow-hidden border border-(--mirai-color-line)">
+                          {item.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-b from-muted to-muted/50" />
+                          )}
+                        </div>
+                        <div className="truncate">
+                          <p className="font-medium truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            SL: {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="shrink-0 font-medium">
+                        {formatPrice(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-4 text-center text-muted-foreground">
+                    Chưa có sản phẩm nào.
                   </p>
                 )}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <label className="block text-sm text-muted-foreground">
-                    Tỉnh/Thành phố*
-                    <Select
-                      value={selectedProvince}
-                      onValueChange={(val) => {
-                        setSelectedProvince(val || "");
-                        setSelectedDistrict("");
-                        setSelectedWard("");
-                        setDistricts([]);
-                        setWards([]);
-                        setCity(val || "");
-                        if (errors.city)
-                          setErrors((prev) => ({ ...prev, city: undefined }));
-                        if (selectedAddressId && selectedAddressId !== "custom")
-                          setSelectedAddressId("custom");
-                      }}
-                    >
-                      <SelectTrigger className="mt-1.5 bg-background">
-                        <SelectValue placeholder="Chọn Tỉnh/Thành phố" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {provinces.map((p) => (
-                          <SelectItem key={p.code} value={p.name}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </label>
-                  {errors.city && (
-                    <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
-                      {errors.city}
-                    </p>
-                  )}
+              <div className="mt-8 space-y-4 text-sm">
+                <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
+                  <span>Tạm tính:</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground">
-                    Quận/Huyện*
-                    <Select
-                      value={selectedDistrict}
-                      onValueChange={(val) => {
-                        setSelectedDistrict(val || "");
-                        setSelectedWard("");
-                        setWards([]);
-                        if (selectedAddressId && selectedAddressId !== "custom")
-                          setSelectedAddressId("custom");
-                      }}
-                      disabled={!selectedProvince}
-                    >
-                      <SelectTrigger className="mt-1.5 bg-background">
-                        <SelectValue placeholder="Chọn Quận/Huyện" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {districts.map((d) => (
-                          <SelectItem key={d.code} value={d.name}>
-                            {d.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </label>
+                <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
+                  <span>Phí vận chuyển:</span>
+                  <span className="text-green-600 font-medium">Miễn phí</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground">
-                    Phường/Xã*
-                    <Select
-                      value={selectedWard}
-                      onValueChange={(val) => {
-                        setSelectedWard(val || "");
-                        if (selectedAddressId && selectedAddressId !== "custom")
-                          setSelectedAddressId("custom");
-                      }}
-                      disabled={!selectedDistrict}
-                    >
-                      <SelectTrigger className="mt-1.5 bg-background">
-                        <SelectValue placeholder="Chọn Phường/Xã" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {wards.map((w) => (
-                          <SelectItem key={w.code} value={w.name}>
-                            {w.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </label>
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-base font-semibold">Tổng cộng:</span>
+                  <span className="text-xl font-bold text-(--mirai-sem-danger)">
+                    {formatPrice(total)}
+                  </span>
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm text-muted-foreground">
-                    Số Điện Thoại*
-                    <Input
-                      className={`mt-1.5 ${errors.phone ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
-                      value={phone}
-                      onChange={(event) => {
-                        setPhone(event.target.value);
-                        if (errors.phone)
-                          setErrors((prev) => ({ ...prev, phone: undefined }));
-                        if (selectedAddressId && selectedAddressId !== "custom")
-                          setSelectedAddressId("custom");
-                      }}
-                      onBlur={() => {
-                        if (!phone.trim()) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            phone: "Vui lòng nhập số điện thoại.",
-                          }));
-                        } else if (
-                          !/^(0|84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())
-                        ) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            phone:
-                              "Số điện thoại không hợp lệ (gồm 10 số bắt đầu bằng 03, 05, 07, 08, 09).",
-                          }));
-                        }
-                      }}
-                      placeholder="09xx xxx xxx"
-                      aria-invalid={!!errors.phone}
-                    />
-                  </label>
-                  {errors.phone && (
-                    <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
-                      {errors.phone}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground">
-                    Email nhận thông báo*
-                    <Input
-                      className={`mt-1.5 ${errors.email ? "border-(--mirai-sem-danger) focus-visible:ring-(--mirai-sem-danger)" : ""}`}
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        if (errors.email)
-                          setErrors((prev) => ({ ...prev, email: undefined }));
-                      }}
-                      onBlur={() => {
-                        if (!email.trim()) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            email: "Vui lòng nhập email nhận thông báo.",
-                          }));
-                        } else if (
-                          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-                        ) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            email:
-                              "Địa chỉ email không hợp lệ (ví dụ: name@example.com).",
-                          }));
-                        }
-                      }}
-                      placeholder="example@gmail.com"
-                      aria-invalid={!!errors.email}
-                    />
-                  </label>
-                  {errors.email && (
-                    <p className="mt-1 text-xs font-medium text-(--mirai-sem-danger) animate-in fade-in duration-200">
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-muted-foreground">
-                  Ghi chú thêm (tùy chọn)
-                  <Input
-                    className="mt-1.5"
-                    placeholder="Ví dụ: Giao giờ hành chính"
-                  />
-                </label>
-              </div>
-
-              <label
-                className={`mt-5 flex items-center gap-3 text-sm ${
-                  selectedAddressId && selectedAddressId !== "custom"
-                    ? "opacity-50 cursor-not-allowed"
-                    : "text-foreground cursor-pointer"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedAddressId && selectedAddressId !== "custom"
-                      ? false
-                      : saveInfo
-                  }
-                  onChange={(event) => setSaveInfo(event.target.checked)}
-                  disabled={
-                    selectedAddressId !== null && selectedAddressId !== "custom"
-                  }
-                  className="h-4 w-4 accent-(--mirai-sem-accent) rounded border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                Lưu thông tin này để thanh toán nhanh hơn lần sau
-              </label>
-            </form>
-          </section>
-
-          <section className="rounded-[4px] border border-(--mirai-color-line) bg-card p-6 lg:p-8 h-fit sticky top-24">
-            <h2 className="mb-6 text-xl font-semibold text-foreground">
-              Đơn hàng của bạn
-            </h2>
-            <div className="space-y-4 text-sm text-foreground max-h-[300px] overflow-y-auto pr-2">
-              {cartItems.length > 0 ? (
-                cartItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-4"
+              <div className="mt-8 space-y-4">
+                <p className="text-sm font-semibold text-foreground">
+                  Phương thức thanh toán
+                </p>
+                <div className="space-y-3">
+                  {/* PayOS option */}
+                  <label
+                    className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                      paymentMethod === "payos"
+                        ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                        : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                    }`}
                   >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="h-12 w-10 shrink-0 rounded-md bg-muted overflow-hidden border border-(--mirai-color-line)">
-                        {item.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-b from-muted to-muted/50" />
-                        )}
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
+                      checked={paymentMethod === "payos"}
+                      onChange={() => setPaymentMethod("payos")}
+                    />
+                    <div className="flex gap-3 items-start w-full">
+                      <div
+                        className={`p-2 rounded-lg shrink-0 ${
+                          paymentMethod === "payos"
+                            ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <QrCode className="h-5 w-5 animate-pulse" />
                       </div>
-                      <div className="truncate">
-                        <p className="font-medium truncate">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          SL: {item.quantity}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground">
+                          Thanh toán qua PayOS
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Quét mã QR VietQR từ mọi ứng dụng ngân hàng hoặc thẻ
+                          ATM/Visa/Mastercard. Nhanh chóng, tự động xác nhận
+                          đơn.
                         </p>
                       </div>
                     </div>
-                    <span className="shrink-0 font-medium">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-center text-muted-foreground">
-                  Chưa có sản phẩm nào.
-                </p>
-              )}
-            </div>
+                  </label>
 
-            <div className="mt-8 space-y-4 text-sm">
-              <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
-                <span>Tạm tính:</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
-                <span>Phí vận chuyển:</span>
-                <span className="text-green-600 font-medium">Miễn phí</span>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-base font-semibold">Tổng cộng:</span>
-                <span className="text-xl font-bold text-(--mirai-sem-danger)">
-                  {formatPrice(total)}
-                </span>
-              </div>
-            </div>
+                  {/* VNPay option */}
+                  <label
+                    className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                      paymentMethod === "vnpay"
+                        ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                        : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
+                      checked={paymentMethod === "vnpay"}
+                      onChange={() => setPaymentMethod("vnpay")}
+                    />
+                    <div className="flex gap-3 items-start w-full">
+                      <div
+                        className={`p-2 rounded-lg shrink-0 ${
+                          paymentMethod === "vnpay"
+                            ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground">
+                          Thanh toán qua VNPay
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Thanh toán qua ví VNPay, quét mã QR ngân hàng hoặc
+                          cổng thanh toán nội địa/quốc tế VNPay.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
 
-            <div className="mt-8 space-y-4">
-              <p className="text-sm font-semibold text-foreground">
-                Phương thức thanh toán
-              </p>
-              <div className="space-y-3">
-                {/* PayOS option */}
-                <label
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
-                    paymentMethod === "payos"
-                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
-                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
-                  }`}
+                  {/* COD option */}
+                  <label
+                    className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                      paymentMethod === "cod"
+                        ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
+                        : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
+                    />
+                    <div className="flex gap-3 items-start w-full">
+                      <div
+                        className={`p-2 rounded-lg shrink-0 ${
+                          paymentMethod === "cod"
+                            ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Banknote className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground">
+                          Thanh toán khi nhận hàng (COD)
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Bạn sẽ thanh toán bằng tiền mặt trực tiếp cho đơn vị
+                          vận chuyển khi nhận hàng tại địa chỉ cung cấp.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <Input
+                  placeholder="Mã giảm giá"
+                  value={coupon}
+                  onChange={(event) => setCoupon(event.target.value)}
+                  className="rounded-[4px]"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0 rounded-[4px]"
                 >
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
-                    checked={paymentMethod === "payos"}
-                    onChange={() => setPaymentMethod("payos")}
-                  />
-                  <div className="flex gap-3 items-start w-full">
-                    <div
-                      className={`p-2 rounded-lg shrink-0 ${
-                        paymentMethod === "payos"
-                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <QrCode className="h-5 w-5 animate-pulse" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        Thanh toán qua PayOS
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Quét mã QR VietQR từ mọi ứng dụng ngân hàng hoặc thẻ
-                        ATM/Visa/Mastercard. Nhanh chóng, tự động xác nhận đơn.
-                      </p>
-                    </div>
-                  </div>
-                </label>
-
-                {/* VNPay option */}
-                <label
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
-                    paymentMethod === "vnpay"
-                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
-                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
-                    checked={paymentMethod === "vnpay"}
-                    onChange={() => setPaymentMethod("vnpay")}
-                  />
-                  <div className="flex gap-3 items-start w-full">
-                    <div
-                      className={`p-2 rounded-lg shrink-0 ${
-                        paymentMethod === "vnpay"
-                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <CreditCard className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        Thanh toán qua VNPay
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Thanh toán qua ví VNPay, quét mã QR ngân hàng hoặc cổng
-                        thanh toán nội địa/quốc tế VNPay.
-                      </p>
-                    </div>
-                  </div>
-                </label>
-
-                {/* COD option */}
-                <label
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
-                    paymentMethod === "cod"
-                      ? "border-(--mirai-sem-primary) bg-(--mirai-sem-primary)/5 shadow-[0_0_15px_rgba(var(--mirai-sem-primary-rgb),0.08)]"
-                      : "border-(--mirai-color-line) bg-card/45 hover:border-foreground/20 hover:bg-card/75"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    className="mt-1 h-4 w-4 accent-(--mirai-sem-primary) shrink-0"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => setPaymentMethod("cod")}
-                  />
-                  <div className="flex gap-3 items-start w-full">
-                    <div
-                      className={`p-2 rounded-lg shrink-0 ${
-                        paymentMethod === "cod"
-                          ? "bg-(--mirai-sem-primary)/10 text-(--mirai-sem-primary)"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <Banknote className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        Thanh toán khi nhận hàng (COD)
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Bạn sẽ thanh toán bằng tiền mặt trực tiếp cho đơn vị vận
-                        chuyển khi nhận hàng tại địa chỉ cung cấp.
-                      </p>
-                    </div>
-                  </div>
-                </label>
+                  Áp Dụng
+                </Button>
               </div>
-            </div>
 
-            <div className="mt-6 flex gap-3">
-              <Input
-                placeholder="Mã giảm giá"
-                value={coupon}
-                onChange={(event) => setCoupon(event.target.value)}
-                className="rounded-[4px]"
-              />
               <Button
                 type="button"
-                variant="outline"
-                className="shrink-0 rounded-[4px]"
+                onClick={handleOrder}
+                disabled={isProcessing}
+                className="mt-8 w-full h-12 text-base font-bold bg-(--mirai-sem-primary) hover:bg-(--mirai-sem-primary)/90 text-foreground rounded-[4px]"
               >
-                Áp Dụng
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  "Xác nhận đặt hàng"
+                )}
               </Button>
-            </div>
 
-            <Button
-              type="button"
-              onClick={handleOrder}
-              disabled={isProcessing}
-              className="mt-8 w-full h-12 text-base font-bold bg-(--mirai-sem-primary) hover:bg-(--mirai-sem-primary)/90 text-foreground rounded-[4px]"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Đang xử lý...
-                </>
-              ) : (
-                "Xác nhận đặt hàng"
-              )}
-            </Button>
-
-            <p className="mt-4 text-[11px] text-center text-muted-foreground">
-              Bằng cách nhấn nút, bạn đồng ý với các Điều khoản & Chính sách của
-              Mirai.
-            </p>
-          </section>
+              <p className="mt-4 text-[11px] text-center text-muted-foreground">
+                Bằng cách nhấn nút, bạn đồng ý với các Điều khoản & Chính sách
+                của Mirai.
+              </p>
+            </section>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </AuthGuard>
   );
 }
