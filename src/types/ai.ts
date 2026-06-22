@@ -13,6 +13,8 @@ export interface GenerateRequest {
   style?: string;
   /** Reference image as base64 data URL (optional) */
   refImage?: string;
+  /** Negative prompt for visual exclusion (optional) */
+  negativePrompt?: string;
 }
 
 /** A single generated design variant */
@@ -51,3 +53,6 @@ export type GenerationStatus =
   | "processing"
   | "completed"
   | "failed";
+
+export const STANDARD_NEGATIVE_PROMPT =
+  "phone mockup, 3D case render, camera cutout, phone borders, low quality, deformed, blurry, text, watermark, signature";
