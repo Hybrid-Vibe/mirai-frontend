@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { prompt, phoneModel, style, refImage } = body;
+  const { prompt, phoneModel, style, refImage, negativePrompt } = body;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     return NextResponse.json<GenerateErrorResponse>(
@@ -61,7 +61,9 @@ export async function POST(request: Request) {
     // --- 3. Generate 1 design variant via Replicate ---
     const provider = getImageProvider();
     const designs: GeneratedDesign[] = [];
-    console.log(`[AI Generate] Generating 1 design variant via ${provider}...`);
+    console.log(
+      `[AI Generate] Generating 1 design variant via ${provider} with negativePrompt: "${negativePrompt || ""}"...`,
+    );
     const replicateResult = await generateReplicateImage(enhancedPrompt);
 
     designs.push({

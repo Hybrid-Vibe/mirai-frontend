@@ -33,6 +33,7 @@ import type { PhoneCaseArAssets } from "@/components/features/customize/PhoneCas
 
 import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
+import { STANDARD_NEGATIVE_PROMPT } from "@/types/ai";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 import {
   PHONE_CASE_TEMPLATES,
@@ -374,7 +375,12 @@ export default function CustomizePage() {
     setIsGenerating(true);
     try {
       const data = await aiApi.generateImage(
-        { prompt, phoneModel, refImage: refImage || undefined },
+        {
+          prompt,
+          phoneModel,
+          refImage: refImage || undefined,
+          negativePrompt: STANDARD_NEGATIVE_PROMPT,
+        },
         token,
       );
       if (data.designs && data.designs.length > 0) {

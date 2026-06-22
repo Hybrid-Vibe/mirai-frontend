@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import type { GeneratedDesign } from "@/types/ai";
+import { type GeneratedDesign, STANDARD_NEGATIVE_PROMPT } from "@/types/ai";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 // ---------------------------------------------------------------------------
@@ -159,6 +159,7 @@ export function GenerationDisplay({
         {
           prompt,
           phoneModel: phoneModel || "iPhone 15",
+          negativePrompt: STANDARD_NEGATIVE_PROMPT,
         },
         captchaToken || "",
       );
@@ -174,6 +175,7 @@ export function GenerationDisplay({
           await aiImageApi.createAIImage(
             {
               prompt: response.designs[0]?.enhancedPrompt || prompt,
+              negativePrompt: STANDARD_NEGATIVE_PROMPT,
               style: "default",
               width: 512,
               height: 512,
