@@ -120,6 +120,14 @@ export function getFriendlyErrorMessage(
     return "Mật khẩu quá ngắn. Vui lòng nhập mật khẩu tối thiểu 6 ký tự! 🔒";
   }
   if (
+    cleanMsg.includes("credit") ||
+    cleanMsg.includes("billing") ||
+    cleanMsg.includes("quota") ||
+    status === 402
+  ) {
+    return "Tài khoản dịch vụ AI đang hết số dư hoặc hết hạn mức. Vui lòng nạp thêm tiền hoặc kiểm tra cấu hình! 💳";
+  }
+  if (
     cleanMsg.includes("rate limit") ||
     cleanMsg.includes("too many requests") ||
     status === 429

@@ -84,11 +84,13 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : "Unknown error occurred.";
     const lowerMessage = message.toLowerCase();
-    const isRateLimit =
-      message.includes("429") ||
+    const isQuotaOrBilling =
+      lowerMessage.includes("402") ||
       lowerMessage.includes("quota") ||
       lowerMessage.includes("credit") ||
-      lowerMessage.includes("billing") ||
+      lowerMessage.includes("billing");
+    const isRateLimit =
+      message.includes("429") ||
       lowerMessage.includes("rate limit") ||
       lowerMessage.includes("too many requests") ||
       lowerMessage.includes("all replicate image models are unavailable");
@@ -97,6 +99,16 @@ export async function POST(request: Request) {
       lowerMessage.includes("api_key") ||
       lowerMessage.includes("api token") ||
       lowerMessage.includes("api key");
+
+    if (isQuotaOrBilling) {
+      return NextResponse.json<GenerateErrorResponse>(
+        {
+          error: "AI service is out of credit or quota limit exceeded.",
+          code: "SERVER_ERROR",
+        },
+        { status: 402 },
+      );
+    }
 
     return NextResponse.json<GenerateErrorResponse>(
       {
