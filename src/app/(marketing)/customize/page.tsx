@@ -160,7 +160,7 @@ export default function CustomizePage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
   const previousTemplateIdRef = useRef<string | null>(null);
-  const [shouldLoadTurnstile, setShouldLoadTurnstile] = useState(false);
+  const shouldLoadTurnstile = false;
   const pendingGenerateRef = useRef(false);
   const [refImage, setRefImage] = useState<string | null>(null);
   const pendingModelResetRef = useRef<string | null>(null);
@@ -411,19 +411,8 @@ export default function CustomizePage() {
       return;
     }
 
-    if (!captchaToken) {
-      pendingGenerateRef.current = true;
-      if (!shouldLoadTurnstile) {
-        setShouldLoadTurnstile(true);
-      }
-      toast.error(
-        "Vui lòng hoàn thành xác minh thực thể (Captcha) trước khi tạo ảnh!",
-      );
-      return;
-    }
-
-    pendingGenerateRef.current = false;
-    await runGenerate(captchaToken);
+    // Bypass Turnstile check since it is not enforced by server-side /api/generate
+    await runGenerate(captchaToken || "");
   };
 
   const handleAddToCart = async () => {

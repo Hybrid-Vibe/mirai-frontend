@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const suggestions = [
-  "Anime cyberpunk girl with blue hair",
-  "Vaporwave aesthetic sunset beach",
-  "Minimalist geometric line art black & gold",
-  "Cute pastel cat in space",
-  "Abstract marble fluid art purple",
-  "Vintage 90s retro pattern vibrant",
-  "Dark gothic forest with bioluminescence",
-  "Cyber-organic textures green neon",
+  "Họa tiết hoa mẫu đơn xanh dương nghệ thuật trên nền gradient vàng chanh tươi mát",
+  "Họa tiết bươm bướm vintage cổ điển tinh tế với hoa cỏ dại và lá xanh",
+  "Tranh sơn dầu hoa tulip hồng pastel dịu dàng với nét vẽ cọ mộc mạc",
+  "Bức vẽ minh họa chú cún đáng yêu phong cách hoạt hình vintage ngộ nghĩnh",
+  "Họa tiết các chòm sao và ngôi sao nhỏ lấp lánh phong cách tối giản thanh lịch",
+  "Họa tiết trái đào hồng dễ thương phong cách tranh màu nước",
+  "Phong cảnh núi non tối giản phong cách Bắc Âu màu sắc dịu nhẹ",
+  "Họa tiết vỏ sò và sóng biển màu kem thẩm mỹ thanh lịch",
 ];
 
 export function PromptInput({ onNext }: { onNext: () => void }) {

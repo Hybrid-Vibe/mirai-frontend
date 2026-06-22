@@ -979,17 +979,17 @@ export const aiImageApi = {
 // ======================================================================
 // API Services — AI Image Generation (Next.js Internal)
 // Calls Next.js internal API route (NOT the .NET backend directly)
-// because Gemini API key is a server-side secret
+// because AI provider keys are server-side secrets
 // ======================================================================
 
 export const aiApi = {
   /**
-   * POST /api/generate — Generate 3 AI phone case design variants.
+   * POST /api/generate — Generate AI phone case design variants.
    *
    * Sends prompt to Next.js server route which:
-   * 1. Enhances Vietnamese prompt → professional English prompt (Gemini text)
-   * 2. Generates 3 design variants in parallel (Gemini image)
-   * 3. Returns base64 data URLs for each design
+   * 1. Enhances Vietnamese prompt → professional English prompt
+   * 2. Generates a design with the configured server-side provider
+   * 3. Returns data URLs for each design
    *
    * @param request - { prompt, phoneModel, style? }
    * @returns { designs: GeneratedDesign[], durationMs: number }
@@ -1010,7 +1010,7 @@ export const aiApi = {
       "/api/generate",
       request,
       {
-        timeout: 60_000, // AI generation can take up to 60s
+        timeout: 120_000, // Replicate sync + polling can take longer on free tier
         headers,
       },
     );

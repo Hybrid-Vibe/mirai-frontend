@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { enhancePrompt, generateDesignImage } from "@/lib/gemini";
+import { buildFallbackEnhancedPrompt, enhancePrompt } from "@/lib/gemini";
+import { generateReplicateImage } from "@/lib/replicate";
 import type {
   GenerateRequest,
   GenerateResponse,
@@ -10,6 +11,12 @@ import type {
 // ---------------------------------------------------------------------------
 // POST /api/generate — AI Phone Case Design Generation
 // ---------------------------------------------------------------------------
+
+export const runtime = "nodejs";
+
+function getImageProvider(): "replicate" {
+  return "replicate";
+}
 
 export async function POST(request: Request) {
   const startTime = Date.now();
@@ -47,17 +54,21 @@ export async function POST(request: Request) {
   try {
     // --- 2. Enhance prompt (Vietnamese → English professional prompt) ---
     const rawPrompt = style ? `${prompt}, phong cách ${style}` : prompt;
-    const enhancedPrompt = await enhancePrompt(rawPrompt, phoneModel, refImage);
+    const enhancedPrompt = process.env.GEMINI_API_KEY
+      ? await enhancePrompt(rawPrompt, refImage)
+      : await buildFallbackEnhancedPrompt(rawPrompt);
 
-    // --- 3. Generate 1 design variant to prevent rate limit (429) on free tier ---
+    // --- 3. Generate 1 design variant via Replicate ---
+    const provider = getImageProvider();
     const designs: GeneratedDesign[] = [];
-    console.log(`[AI Generate] Generating 1 design variant...`);
-    const imageUrl = await generateDesignImage(enhancedPrompt);
+    console.log(`[AI Generate] Generating 1 design variant via ${provider}...`);
+    const replicateResult = await generateReplicateImage(enhancedPrompt);
 
     designs.push({
       id: `design-${Date.now()}-0`,
-      imageUrl,
+      imageUrl: replicateResult.imageUrl,
       enhancedPrompt,
+      model: replicateResult.model,
     });
 
     // --- 4. Return successful response ---
@@ -70,14 +81,33 @@ export async function POST(request: Request) {
     // Check for quota / rate limit errors
     const message =
       error instanceof Error ? error.message : "Unknown error occurred.";
-    const isRateLimit = message.includes("429") || message.includes("quota");
+    const lowerMessage = message.toLowerCase();
+    const isRateLimit =
+      message.includes("429") ||
+      lowerMessage.includes("quota") ||
+      lowerMessage.includes("credit") ||
+      lowerMessage.includes("billing") ||
+      lowerMessage.includes("rate limit") ||
+      lowerMessage.includes("too many requests") ||
+      lowerMessage.includes("all replicate image models are unavailable");
+    const isMissingConfig =
+      lowerMessage.includes("api_token") ||
+      lowerMessage.includes("api_key") ||
+      lowerMessage.includes("api token") ||
+      lowerMessage.includes("api key");
 
     return NextResponse.json<GenerateErrorResponse>(
       {
         error: isRateLimit
           ? "AI generation limit reached. Please try again in a few minutes."
-          : "Failed to generate designs. Please try again.",
-        code: isRateLimit ? "RATE_LIMITED" : "GENERATION_FAILED",
+          : isMissingConfig
+            ? "AI provider is not configured. Please add REPLICATE_API_TOKEN to .env.local."
+            : "Failed to generate designs. Please try again.",
+        code: isRateLimit
+          ? "RATE_LIMITED"
+          : isMissingConfig
+            ? "SERVER_ERROR"
+            : "GENERATION_FAILED",
       },
       { status: isRateLimit ? 429 : 500 },
     );
