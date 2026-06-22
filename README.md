@@ -71,7 +71,17 @@ Hiện tại, dự án đã hoàn thành giai đoạn Mockup và đã **tích h�
 
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:5236
+   AI_IMAGE_PROVIDER=replicate
+   REPLICATE_IMAGE_MODELS=google/imagen-4,black-forest-labs/flux-1.1-pro,ideogram-ai/ideogram-v3-turbo,black-forest-labs/flux-dev
+   REPLICATE_IMAGE_MODEL=google/imagen-4
+   REPLICATE_API_TOKEN=r8_...
    ```
+
+   Với chức năng **AI Generate**, app sẽ ưu tiên Replicate `google/imagen-4`
+   khi có `REPLICATE_API_TOKEN`; nếu model đầu tiên bị quota/rate limit hoặc
+   tạm không khả dụng, server sẽ tự thử model tiếp theo trong
+   `REPLICATE_IMAGE_MODELS`. Nếu muốn quay lại provider Gemini cũ, đặt
+   `AI_IMAGE_PROVIDER=gemini` và cấu hình `GEMINI_API_KEY`.
 
 3. **Chạy ở chế độ phát triển (Development):**
 

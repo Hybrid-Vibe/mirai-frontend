@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------
 // AI Generation Types
-// Types for the Gemini AI image generation pipeline.
+// Types for the AI image generation pipeline.
 // ----------------------------------------------------------------------
 
 /** Request body sent from client → POST /api/generate */
@@ -19,15 +19,17 @@ export interface GenerateRequest {
 export interface GeneratedDesign {
   /** Unique ID for this design */
   id: string;
-  /** Base64 data URL of the generated image (data:image/png;base64,...) */
+  /** Data URL of the generated image (data:image/png;base64,...) */
   imageUrl: string;
   /** The enhanced prompt used for generation (English) */
   enhancedPrompt: string;
+  /** AI model that produced this image, useful for fallback/debugging */
+  model?: string;
 }
 
 /** Successful response from POST /api/generate */
 export interface GenerateResponse {
-  /** Array of generated design variants (typically 3) */
+  /** Array of generated design variants */
   designs: GeneratedDesign[];
   /** Total generation time in milliseconds */
   durationMs: number;

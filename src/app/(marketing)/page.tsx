@@ -1,17 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import {
-  ArrowRight,
-  Camera,
-  Headphones,
-  Headset,
-  Laptop,
-  ShieldCheck,
-  Smartphone,
-  Truck,
-  Watch,
-} from "lucide-react";
+import { ArrowRight, Headset, ShieldCheck, Truck } from "lucide-react";
 import { InteractiveProductCard } from "@/components/features/marketing/interactive-product-card";
 import { CountdownTimer } from "@/components/features/marketing/countdown-timer";
 import { ScrollButtons } from "@/components/features/marketing/scroll-buttons";
@@ -110,14 +100,6 @@ const exploreProducts: Product[] = [
   { id: "VAR015", name: "Phone Case", price: "129.000đ" },
   { id: "VAR016", name: "Phone Case", price: "110.000đ", badge: "NEW" },
   { id: "VAR017", name: "Phone Case", price: "120.000đ" },
-];
-
-const categories = [
-  { label: "Phone Cases", icon: <Smartphone className="h-7 w-7" /> },
-  { label: "Laptop Cases", icon: <Laptop className="h-7 w-7" /> },
-  { label: "Smart Watch", icon: <Watch className="h-7 w-7" /> },
-  { label: "Airpod Cases", icon: <Headphones className="h-7 w-7" /> },
-  { label: "Others", icon: <Camera className="h-7 w-7" /> },
 ];
 
 function SectionHeading({
@@ -369,35 +351,6 @@ export default async function HomePage() {
           >
             Xem tất cả sản phẩm
           </Link>
-        </div>
-      </section>
-
-      <section className="page-shell border-t border-(--mirai-color-line) py-16">
-        <SectionHeading
-          label="Danh mục"
-          title="Tìm kiếm theo Danh mục"
-          targetId="categories-list"
-        />
-        <div
-          id="categories-list"
-          className="flex gap-4 overflow-x-auto pb-6 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
-        >
-          {categories.map((category, index) => (
-            <button
-              key={category.label}
-              type="button"
-              className={`min-w-[160px] sm:min-w-[180px] snap-start flex-1 h-36 flex flex-col items-center justify-center gap-3 rounded-[4px] border border-(--mirai-color-line) text-center transition-all duration-200 hover:border-(--mirai-sem-primary) hover:-translate-y-1 hover:shadow-md active:scale-[0.98] ${
-                index === 0
-                  ? "bg-(--mirai-sem-primary) text-foreground hover:bg-(--mirai-state-primary-hover)"
-                  : "bg-card text-foreground hover:text-(--mirai-sem-primary)"
-              }`}
-            >
-              {category.icon}
-              <span className="font-body text-sm font-medium">
-                {category.label}
-              </span>
-            </button>
-          ))}
         </div>
       </section>
 

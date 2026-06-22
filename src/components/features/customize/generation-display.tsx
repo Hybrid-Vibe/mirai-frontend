@@ -154,22 +154,13 @@ export function GenerationDisplay({
     setDesigns([]);
     setSelectedImage(null);
 
-    if (!captchaToken) {
-      setError({
-        message: "Vui lòng hoàn thành Captcha trước khi tạo ảnh.",
-        code: "CAPTCHA_REQUIRED",
-      });
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await aiApi.generateImage(
         {
           prompt,
           phoneModel: phoneModel || "iPhone 15",
         },
-        captchaToken,
+        captchaToken || "",
       );
 
       // Store designs in local state + zustand
@@ -182,12 +173,12 @@ export function GenerationDisplay({
         try {
           await aiImageApi.createAIImage(
             {
-              prompt,
+              prompt: response.designs[0]?.enhancedPrompt || prompt,
               style: "default",
               width: 512,
               height: 512,
             },
-            captchaToken,
+            captchaToken || undefined,
           );
           console.log(
             "[GenerationDisplay] Successfully saved AI Image to backend.",
