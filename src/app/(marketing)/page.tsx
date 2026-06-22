@@ -298,10 +298,13 @@ export default async function HomePage() {
                 </Link>
               </div>
 
-              <div className="mx-auto flex h-56 w-48 items-center justify-center rounded-[28px] border border-(--mirai-sem-border) bg-gradient-to-b from-(--mirai-sem-text-muted) via-(--mirai-sem-accent) to-(--mirai-sem-primary) shadow-[0_30px_80px_var(--mirai-state-focus-ring)]">
-                <span className="font-heading text-4xl font-semibold text-(--mirai-sem-background)">
-                  MIRAI
-                </span>
+              <div className="mx-auto flex h-56 w-48 items-center justify-center rounded-[28px] border border-(--mirai-sem-border) overflow-hidden relative shadow-[0_30px_80px_var(--mirai-state-focus-ring)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/static-image/ava-mirai%20.jpg"
+                  alt="MIRAI Custom Case"
+                  className="h-full w-full object-cover"
+                />
               </div>
             </div>
 
@@ -419,7 +422,14 @@ export default async function HomePage() {
               Mua ngay
             </Link>
           </div>
-          <div className="mx-auto h-64 w-full max-w-xs rounded-3xl border border-(--mirai-sem-border) bg-gradient-to-br from-(--mirai-sem-text-muted) via-(--mirai-sem-text) to-(--mirai-sem-primary)/70" />
+          <div className="mx-auto h-64 w-full max-w-xs rounded-3xl border border-(--mirai-sem-border) overflow-hidden relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/static-image/collection-banner.jpg"
+              alt="Monthly Collection"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
       </section>
 
