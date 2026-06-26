@@ -25,6 +25,7 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="mx-auto max-w-3xl">
+      {/* Prompt Input Textarea */}
       <div className="relative group">
         <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-(--mirai-sem-accent) to-(--mirai-sem-primary) opacity-20 blur-lg transition-opacity group-focus-within:opacity-40" />
         <div className="relative">
@@ -40,6 +41,7 @@ export function PromptInput({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
+      {/* Suggestions */}
       <div className="mt-8">
         <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <Sparkles className="h-4 w-4 text-primary" />

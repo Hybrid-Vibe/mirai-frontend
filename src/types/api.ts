@@ -344,6 +344,8 @@ export interface ProductSearchFilter {
   categoryName?: string;
   brandId?: string;
   brandName?: string;
+  collectionId?: string;
+  collectionSlug?: string;
   variantId?: string;
   color?: string;
   phoneModel?: string;
@@ -706,4 +708,47 @@ export interface UpdateOrderStatusResponse {
   status: number;
   paymentStatus: number;
   updatedAt: string;
+}
+
+// ----------------------------------------------------------------------
+// Collection DTOs
+// ----------------------------------------------------------------------
+
+export interface CollectionResponseDto {
+  collectionId: string;
+  name: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  tag?: string;
+  itemCount: number;
+}
+
+export interface CreateCollectionDto {
+  name: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  tag?: string;
+  displayOrder: number;
+}
+
+export interface UpdateCollectionDto {
+  name: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  tag?: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface AddProductsToCollectionRequestDto {
+  collectionId: string;
+  productIds: string[];
+}
+
+export interface RemoveProductsFromCollectionRequestDto {
+  collectionId: string;
+  productIds: string[];
 }

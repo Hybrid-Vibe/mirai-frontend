@@ -148,7 +148,7 @@ function buildModelInput(model: string, enhancedPrompt: string) {
       prompt: enhancedPrompt,
       go_fast: true,
       num_outputs: 1,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       output_format: "webp",
       output_quality: 80,
       num_inference_steps: 4,
@@ -159,7 +159,7 @@ function buildModelInput(model: string, enhancedPrompt: string) {
   if (model === "google/imagen-4") {
     return {
       prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       image_size: "1K",
       output_format: "png",
       safety_filter_level: "block_medium_and_above",
@@ -169,7 +169,7 @@ function buildModelInput(model: string, enhancedPrompt: string) {
   if (model === "black-forest-labs/flux-1.1-pro") {
     return {
       prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       output_format: "png",
       output_quality: 90,
       safety_tolerance: 2,
@@ -180,7 +180,7 @@ function buildModelInput(model: string, enhancedPrompt: string) {
   if (model === "ideogram-ai/ideogram-v3-turbo") {
     return {
       prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       resolution: "None",
       style_type: "Design",
       magic_prompt_option: "Auto",
@@ -194,7 +194,7 @@ function buildModelInput(model: string, enhancedPrompt: string) {
       guidance: 3,
       megapixels: "1",
       num_outputs: 1,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       output_format: "png",
       output_quality: 90,
       num_inference_steps: 28,

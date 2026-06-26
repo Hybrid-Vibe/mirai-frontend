@@ -33,7 +33,7 @@ import type { PhoneCaseArAssets } from "@/components/features/customize/PhoneCas
 
 import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
-import { STANDARD_NEGATIVE_PROMPT } from "@/types/ai";
+import { getNegativePromptForStyle } from "@/types/ai";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 import {
   PHONE_CASE_TEMPLATES,
@@ -140,6 +140,7 @@ export default function CustomizePage() {
     setShowCameraCutout,
     setBackgroundImage,
     user,
+    designStyle,
   } = useDesignStore();
 
   const [mode, setMode] = useState<"ai" | "self">("ai");
@@ -378,8 +379,9 @@ export default function CustomizePage() {
         {
           prompt,
           phoneModel,
+          style: designStyle,
           refImage: refImage || undefined,
-          negativePrompt: STANDARD_NEGATIVE_PROMPT,
+          negativePrompt: getNegativePromptForStyle(designStyle),
         },
         token,
       );

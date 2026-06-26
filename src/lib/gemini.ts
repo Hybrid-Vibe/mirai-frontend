@@ -1,4 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { DesignStyle } from "@/types/ai";
+import {
+  STYLE_PROMPT_SUFFIX,
+  PHONE_CASE_BASE_SUFFIX,
+  getNegativePromptForStyle,
+} from "@/types/ai";
 
 // ---------------------------------------------------------------------------
 // Gemini Client — singleton, server-side only
@@ -62,20 +68,40 @@ function cleanUserPrompt(prompt: string): string {
   return clean || prompt;
 }
 
-const ENHANCE_SYSTEM_PROMPT = `You are MIRAI's prompt engineer. Your job is to take a Vietnamese customer's casual description of a design and transform it into a premium, modern, high-end English prompt optimized for AI image generation (using Replicate FLUX).
+// ---------------------------------------------------------------------------
+// ENHANCE_SYSTEM_PROMPT — Gemini system instructions for prompt engineering
+// ---------------------------------------------------------------------------
 
-The output MUST describe ONLY the graphic design, illustration, pattern, or artwork itself.
+const ENHANCE_SYSTEM_PROMPT = `You are MIRAI's prompt engineer. Your job is to transform a Vietnamese customer's casual design description into a premium English prompt optimized for AI image generation (Replicate FLUX).
 
-CRITICAL DESIGN RULES:
-1. PRESERVE CHARACTERS & SUBJECTS: If the customer requests a specific character, anime, brand, or public figure (e.g., "Momo Ayase from Dan Da Dan", "Luffy", "Goku"), you MUST preserve their exact name and core identity. Since the image generator might not know the character by name, you MUST also append a brief, accurate description of their iconic visual features (such as hair style and color, signature clothing, facial features, or key accessories) in the output prompt to guide the generator. For example, Momo Ayase has brown hair styled in a high bun with side bangs, and wears a beige school cardigan over a white shirt with a red ribbon tie. Keep the character recognizable.
-2. AVOID CHEAP AESTHETICS: Do NOT use terms that lead to cheap vector clip-art, basic 3D renders, or amateurish digital drawings (avoid: "clip art", "basic vector", "cartoon mascot", "simple vector", "generic 2D illustration").
-3. CHOOSE PREMIUM STYLES: Direct the model towards premium, trendy, modern designer aesthetics (e.g., Casetify-style designer aesthetics, retro indie-chic, vintage botanical illustrations, watercolor/gouache textures, modern minimalist line art, boho-chic, fine art prints, or elegant typography layouts).
-4. BACKGROUNDS & COMPOSITIONS: Prefer beautiful organic gradients, paint strokes, linen textures, or delicate scattered patterns over plain solid color backgrounds. Allow organic compositions that cover the frame beautifully.
-5. FORBIDDEN WORDS: Do NOT include words like: "phone", "case", "mockup", "iphone", "samsung", "device", "hand", "outline", "border", "cutout", "camera", "template", "realistic shadow", "3D case", "no phone case", "no mockup". (Do not try to add negative constraints like "no phone case" as Flux will generate them. Instead, completely omit these words.)
-6. Output ONLY the enhanced English prompt, nothing else. Do not use markdown backticks, explanations, or labels.
-7. Keep the customer's intent and aesthetic preferences intact, but elevate it to a professional designer level.
-8. Keep it under 120 words.
-9. Always end with: "flat 2D texture, print-ready premium artwork, aesthetic design"`;
+CRITICAL CONTEXT:
+The output image is a FLAT ARTWORK / TEXTURE that will be applied onto a 3D phone case model. It is NOT an image of a phone case. Generate only the design/illustration/pattern itself.
+
+COMPOSITION RULES (Safe Zone):
+- The main subject must be in the CENTER 75% of the frame
+- Top 15% and bottom 10% should contain secondary elements or background only
+- NEVER place the main subject in the top-left corner (camera area will cover it)
+- Use vertical composition optimized for a tall narrow format (9:16)
+- Keep the composition balanced and symmetrical when possible
+
+STYLE GUIDELINES:
+The user will specify a style. Adapt the prompt accordingly:
+- "pop-art-floral": Use halftone print texture, floating gemstones, crescent moon elements, motion blur trails, duotone colors, vibrant gradient backgrounds. One large centered flower as focal point.
+- "kawaii-pastel": Use crayon texture, paper cutout effect, soft pastel colors, repeating patterns, cute kawaii aesthetic, handmade scrapbook feel. No single focal point — use scattered repeating elements.
+- "textile-pattern": Use seamless repeating pattern, woven fabric texture, clean minimal design, Scandinavian aesthetic. No focal subject — pure pattern.
+- "y2k-dreamy": Use holographic iridescent effects, dreamy pastel gradients, sparkle stars, soft glow aura, nostalgic Y2K aesthetic. Scattered cute elements.
+- "luxury-gem": Use gemstone collage, crystal facets, metallic gold accents, rich jewel tones, editorial luxury fashion print aesthetic.
+
+CHARACTER PRESERVATION:
+If the customer requests a specific character (anime, brand, etc.), PRESERVE their exact name AND append a brief accurate description of their iconic visual features (hair, clothing, accessories) to guide the image generator.
+
+FORBIDDEN WORDS (never include these — Flux will render them literally):
+phone, case, mockup, iphone, samsung, device, hand, outline, border, cutout, camera, template, 3D case, person, human, face, portrait, hands, body, text, letters, logo, watermark, signature, frame
+
+OUTPUT RULES:
+1. Output ONLY the enhanced English prompt — no markdown, no labels, no explanations
+2. Keep it under 120 words
+3. Always end with: "vertical composition, center-safe layout, print-ready premium artwork"`;
 
 function parseBase64DataUrl(
   dataUrl: string,
@@ -108,88 +134,104 @@ async function translateToEnglish(text: string): Promise<string> {
   }
 }
 
-/**
- * Enhance a raw Vietnamese prompt into a professional English prompt
- * suitable for image generation.
- */
-export async function buildFallbackEnhancedPrompt(
-  rawPrompt: string,
-): Promise<string> {
-  const cleanPrompt = cleanUserPrompt(rawPrompt);
-  const englishPrompt = await translateToEnglish(cleanPrompt);
+// ---------------------------------------------------------------------------
+// Character feature map — enriches prompt with iconic visual details
+// ---------------------------------------------------------------------------
 
-  const parts = [`premium aesthetic design of ${englishPrompt}`];
+function enrichCharacterDescription(englishPrompt: string): string[] {
+  const lower = englishPrompt.toLowerCase();
+  const extras: string[] = [];
 
-  const lowerPrompt = englishPrompt.toLowerCase();
   if (
-    lowerPrompt.includes("momo ayase") ||
-    lowerPrompt.includes("ayase momo") ||
-    lowerPrompt.includes("dandadan") ||
-    lowerPrompt.includes("dan da dan")
+    lower.includes("momo ayase") ||
+    lower.includes("ayase momo") ||
+    lower.includes("dandadan") ||
+    lower.includes("dan da dan")
   ) {
-    parts.push(
+    extras.push(
       "character Momo Ayase from the anime Dandadan",
       "short brown hair styled to the side, pinkish-red eyes, big turquoise circle disc earrings",
       "pink school sweater vest over a white collared shirt with a red bow tie",
       "dark blue pleated skirt",
       "anime style key art",
     );
-  } else if (
-    lowerPrompt.includes("luffy") ||
-    lowerPrompt.includes("one piece")
-  ) {
-    parts.push(
+  } else if (lower.includes("luffy") || lower.includes("one piece")) {
+    extras.push(
       "Monkey D. Luffy from One Piece",
       "black hair, straw hat with red band, scar under left eye",
       "open red button shirt, blue shorts, yellow sash",
       "classic anime style",
     );
-  } else if (
-    lowerPrompt.includes("goku") ||
-    lowerPrompt.includes("dragon ball")
-  ) {
-    parts.push(
+  } else if (lower.includes("goku") || lower.includes("dragon ball")) {
+    extras.push(
       "Son Goku from Dragon Ball",
       "spiky black hair, muscular build",
       "orange martial arts gi with blue undershirt and sash",
       "classic anime style",
     );
-  } else if (lowerPrompt.includes("doraemon")) {
-    parts.push(
+  } else if (lower.includes("doraemon")) {
+    extras.push(
       "Doraemon character",
       "blue robotic cat, white face and belly, red nose, yellow bell collar, no ears",
       "flat cartoon style",
     );
-  } else if (
-    lowerPrompt.includes("pikachu") ||
-    lowerPrompt.includes("pokemon")
-  ) {
-    parts.push(
+  } else if (lower.includes("pikachu") || lower.includes("pokemon")) {
+    extras.push(
       "Pikachu from Pokemon",
       "yellow electric mouse creature, long ears with black tips, red circular cheeks, lightning bolt tail",
       "vibrant anime style",
     );
   }
 
-  parts.push(
-    "modern designer style",
-    "beautiful color palette",
-    "detailed illustration",
-    "fine art textures",
-    "high resolution",
-    "print-ready flat artwork",
-    "flat 2D texture",
-    "aesthetic design",
-  );
+  return extras;
+}
+
+// ---------------------------------------------------------------------------
+// Fallback prompt builder (no Gemini required)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build an enhanced prompt without Gemini.
+ * Translates Vietnamese → English, appends style suffix + base suffix.
+ */
+export async function buildFallbackEnhancedPrompt(
+  rawPrompt: string,
+  style: DesignStyle = "pop-art-floral",
+): Promise<string> {
+  const cleanPrompt = cleanUserPrompt(rawPrompt);
+  const englishPrompt = await translateToEnglish(cleanPrompt);
+
+  const parts = [englishPrompt];
+
+  // Add character-specific descriptions
+  const characterExtras = enrichCharacterDescription(englishPrompt);
+  parts.push(...characterExtras);
+
+  // Add style-specific suffix
+  const styleSuffix = STYLE_PROMPT_SUFFIX[style];
+  if (styleSuffix) {
+    parts.push(styleSuffix);
+  }
+
+  // Add phone case base suffix
+  parts.push(PHONE_CASE_BASE_SUFFIX);
 
   return parts.join(", ");
 }
 
+// ---------------------------------------------------------------------------
+// Gemini-powered prompt enhancement
+// ---------------------------------------------------------------------------
+
 export async function enhancePrompt(
   rawPrompt: string,
+  style: DesignStyle = "pop-art-floral",
   refImage?: string,
 ): Promise<string> {
   const cleanedPrompt = cleanUserPrompt(rawPrompt);
+  const styleSuffix = STYLE_PROMPT_SUFFIX[style] || "";
+  const negativeWords = getNegativePromptForStyle(style);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const parts: any[] = [{ text: ENHANCE_SYSTEM_PROMPT }];
 
@@ -206,16 +248,18 @@ export async function enhancePrompt(
         text: `The user has provided a reference image above. 
 Your goal is to carefully analyze the artistic style, color palette, lighting, textures, layout, and composition of this reference image.
 Then, generate a highly detailed English image generation prompt that perfectly blends the customer's request ("${cleanedPrompt}") with the exact stylistic elements (but NOT the exact subject, unless it fits) of this reference image.
+Selected style: ${style}. Style hint: ${styleSuffix}.
+Avoid these subjects/words in your output: ${negativeWords}.
 Make sure the resulting prompt will guide the image generator to reproduce this exact style!`,
       });
     } else {
       parts.push({
-        text: `Customer prompt: ${cleanedPrompt}`,
+        text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nAvoid these subjects/words: ${negativeWords}`,
       });
     }
   } else {
     parts.push({
-      text: `Customer prompt: ${cleanedPrompt}`,
+      text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nAvoid these subjects/words: ${negativeWords}`,
     });
   }
 
@@ -225,13 +269,13 @@ Make sure the resulting prompt will guide the image generator to reproduce this 
 
     // Fallback: if model returns empty, use a sensible default
     if (!enhanced) {
-      return await buildFallbackEnhancedPrompt(rawPrompt);
+      return await buildFallbackEnhancedPrompt(rawPrompt, style);
     }
 
     return enhanced;
   } catch (error) {
     console.error("[Gemini] Failed to enhance prompt, using fallback:", error);
-    return await buildFallbackEnhancedPrompt(rawPrompt);
+    return await buildFallbackEnhancedPrompt(rawPrompt, style);
   }
 }
 
@@ -264,14 +308,14 @@ export async function generateDesignImage(
   });
 
   const response = result.response;
-  const parts = response.candidates?.[0]?.content?.parts;
+  const responseParts = response.candidates?.[0]?.content?.parts;
 
-  if (!parts) {
+  if (!responseParts) {
     throw new Error("Gemini returned no content parts.");
   }
 
   // Find the image part in the response
-  for (const part of parts) {
+  for (const part of responseParts) {
     if (part.inlineData) {
       const { mimeType, data } = part.inlineData;
       return `data:${mimeType};base64,${data}`;

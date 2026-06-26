@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { buildFallbackEnhancedPrompt, enhancePrompt } from "@/lib/gemini";
 import { generateReplicateImage } from "@/lib/replicate";
-import type {
+import {
   GenerateRequest,
   GenerateResponse,
   GenerateErrorResponse,
   GeneratedDesign,
+  DesignStyle,
+  getNegativePromptForStyle,
 } from "@/types/ai";
 
 // ---------------------------------------------------------------------------
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { prompt, phoneModel, style, refImage, negativePrompt } = body;
+  const { prompt, phoneModel, style: rawStyle, refImage } = body;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length < 3) {
     return NextResponse.json<GenerateErrorResponse>(
@@ -51,12 +53,26 @@ export async function POST(request: Request) {
     );
   }
 
+  const validStyles: DesignStyle[] = [
+    "pop-art-floral",
+    "kawaii-pastel",
+    "textile-pattern",
+    "y2k-dreamy",
+    "luxury-gem",
+  ];
+  const style = validStyles.includes(rawStyle as DesignStyle)
+    ? (rawStyle as DesignStyle)
+    : "pop-art-floral";
+
+  const negativePrompt =
+    body.negativePrompt || getNegativePromptForStyle(style);
+
   try {
     // --- 2. Enhance prompt (Vietnamese → English professional prompt) ---
-    const rawPrompt = style ? `${prompt}, phong cách ${style}` : prompt;
+    console.log(`[AI Generate] Enhancing prompt with style: "${style}"...`);
     const enhancedPrompt = process.env.GEMINI_API_KEY
-      ? await enhancePrompt(rawPrompt, refImage)
-      : await buildFallbackEnhancedPrompt(rawPrompt);
+      ? await enhancePrompt(prompt, style, refImage)
+      : await buildFallbackEnhancedPrompt(prompt, style);
 
     // --- 3. Generate 1 design variant via Replicate ---
     const provider = getImageProvider();

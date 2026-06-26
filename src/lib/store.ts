@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { PhoneCaseTemplate } from "@/constants/phone-templates";
+import type { DesignStyle } from "@/types/ai";
 
 export interface CanvasElement {
   id: string;
@@ -30,6 +31,7 @@ export interface User {
 interface DesignState {
   phoneModel: string;
   prompt: string;
+  designStyle: DesignStyle;
   generatedImages: string[];
   selectedImage: string | null;
   elements: CanvasElement[];
@@ -46,6 +48,7 @@ interface DesignState {
 
   setPhoneModel: (model: string) => void;
   setPrompt: (prompt: string) => void;
+  setDesignStyle: (style: DesignStyle) => void;
   setGeneratedImages: (images: string[]) => void;
   setSelectedImage: (image: string | null) => void;
   setElements: (elements: CanvasElement[]) => void;
@@ -69,6 +72,7 @@ interface DesignState {
 export const useDesignStore = create<DesignState>((set) => ({
   phoneModel: "",
   prompt: "",
+  designStyle: "pop-art-floral",
   generatedImages: [],
   selectedImage: null,
   elements: [],
@@ -85,6 +89,7 @@ export const useDesignStore = create<DesignState>((set) => ({
 
   setPhoneModel: (phoneModel) => set({ phoneModel }),
   setPrompt: (prompt) => set({ prompt }),
+  setDesignStyle: (designStyle) => set({ designStyle }),
   setGeneratedImages: (generatedImages) => set({ generatedImages }),
   setSelectedImage: (selectedImage) => set({ selectedImage }),
   setElements: (elements) => set({ elements }),
@@ -117,6 +122,7 @@ export const useDesignStore = create<DesignState>((set) => ({
     set({
       phoneModel: "",
       prompt: "",
+      designStyle: "pop-art-floral",
       generatedImages: [],
       selectedImage: null,
       elements: [],
