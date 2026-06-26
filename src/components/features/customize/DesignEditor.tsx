@@ -412,7 +412,7 @@ export default function DesignEditor({
   if (!mounted) return null;
 
   return (
-    <div className="relative">
+    <div className="relative max-w-full" style={{ width: displayW }}>
       {/* Template info badge */}
       {selectedTemplate && (
         <div className="absolute -top-7 left-0 z-10 flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -425,85 +425,90 @@ export default function DesignEditor({
         </div>
       )}
 
-      <Stage
-        ref={stageRef}
-        width={canvasW}
-        height={canvasH}
-        scaleX={displayScale}
-        scaleY={displayScale}
-        style={{
-          width: displayW,
-          height: displayH,
-        }}
-        onClick={handleStageClick}
-        onTap={(e) => {
-          if (e.target === e.target.getStage()) setSelectedElementId(null);
-        }}
+      <div
+        className="overflow-hidden"
+        style={{ width: displayW, height: displayH }}
       >
-        {/* Layer 1: Background */}
-        <Layer>
-          {/* Solid background color */}
-          <Rect
-            x={0}
-            y={0}
-            width={canvasW}
-            height={canvasH}
-            fill={backgroundColor || "#1a1a2e"}
-            listening={false}
-          />
-
-          {/* Background image (AI-generated or uploaded) */}
-          {backgroundImage && (
-            <BackgroundImageLayer
-              imageUrl={backgroundImage}
-              canvasWidth={canvasW}
-              canvasHeight={canvasH}
+        <Stage
+          ref={stageRef}
+          width={canvasW}
+          height={canvasH}
+          scaleX={displayScale}
+          scaleY={displayScale}
+          style={{
+            width: displayW,
+            height: displayH,
+          }}
+          onClick={handleStageClick}
+          onTap={(e) => {
+            if (e.target === e.target.getStage()) setSelectedElementId(null);
+          }}
+        >
+          {/* Layer 1: Background */}
+          <Layer>
+            {/* Solid background color */}
+            <Rect
+              x={0}
+              y={0}
+              width={canvasW}
+              height={canvasH}
+              fill={backgroundColor || "#1a1a2e"}
+              listening={false}
             />
-          )}
-        </Layer>
 
-        {/* Layer 2: User elements (text, images, stickers) */}
-        <Layer>
-          {elements.map((el) => {
-            if (el.type === "text") {
-              return (
-                <DraggableText
-                  key={el.id}
-                  element={el}
-                  isSelected={selectedElementId === el.id}
-                  onSelect={() => setSelectedElementId(el.id)}
-                  onTransformEnd={(attrs) => updateElement(el.id, attrs)}
-                  onDragEnd={(x, y) => updateElement(el.id, { x, y })}
-                />
-              );
-            }
-            if (el.type === "image") {
-              return (
-                <URLImage
-                  key={el.id}
-                  element={el}
-                  isSelected={selectedElementId === el.id}
-                  onSelect={() => setSelectedElementId(el.id)}
-                  onTransformEnd={(attrs) => updateElement(el.id, attrs)}
-                  onDragEnd={(x, y) => updateElement(el.id, { x, y })}
-                />
-              );
-            }
-            return null;
-          })}
-        </Layer>
-
-        {/* Layer 3: Template overlay (camera cutouts, guides) — NOT exported */}
-        {selectedTemplate && (
-          <Layer listening={false} id="overlay-layer">
-            <TemplateOverlay
-              template={selectedTemplate}
-              showGuides={showGuides}
-              showCameraCutout={showCameraCutout}
-            />
+            {/* Background image (AI-generated or uploaded) */}
+            {backgroundImage && (
+              <BackgroundImageLayer
+                imageUrl={backgroundImage}
+                canvasWidth={canvasW}
+                canvasHeight={canvasH}
+              />
+            )}
           </Layer>
-        )}
-      </Stage>
+
+          {/* Layer 2: User elements (text, images, stickers) */}
+          <Layer>
+            {elements.map((el) => {
+              if (el.type === "text") {
+                return (
+                  <DraggableText
+                    key={el.id}
+                    element={el}
+                    isSelected={selectedElementId === el.id}
+                    onSelect={() => setSelectedElementId(el.id)}
+                    onTransformEnd={(attrs) => updateElement(el.id, attrs)}
+                    onDragEnd={(x, y) => updateElement(el.id, { x, y })}
+                  />
+                );
+              }
+              if (el.type === "image") {
+                return (
+                  <URLImage
+                    key={el.id}
+                    element={el}
+                    isSelected={selectedElementId === el.id}
+                    onSelect={() => setSelectedElementId(el.id)}
+                    onTransformEnd={(attrs) => updateElement(el.id, attrs)}
+                    onDragEnd={(x, y) => updateElement(el.id, { x, y })}
+                  />
+                );
+              }
+              return null;
+            })}
+          </Layer>
+
+          {/* Layer 3: Template overlay (camera cutouts, guides) — NOT exported */}
+          {selectedTemplate && (
+            <Layer listening={false} id="overlay-layer">
+              <TemplateOverlay
+                template={selectedTemplate}
+                showGuides={showGuides}
+                showCameraCutout={showCameraCutout}
+              />
+            </Layer>
+          )}
+        </Stage>
+      </div>
 
       {/* Legend (below canvas) */}
       {selectedTemplate && showGuides && (

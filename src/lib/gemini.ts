@@ -1,9 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { DesignStyle } from "@/types/ai";
+import { buildClientEnhancedPrompt } from "@/lib/ai-generation";
 import {
   STYLE_PROMPT_SUFFIX,
-  PHONE_CASE_BASE_SUFFIX,
   getNegativePromptForStyle,
+  type ColorPreset,
+  type DesignStyle,
+  type PromptClassifierOutput,
+  type PromptMode,
 } from "@/types/ai";
 
 // ---------------------------------------------------------------------------
@@ -41,6 +44,16 @@ function getImageModel() {
 // Prompt Enhancement
 // ---------------------------------------------------------------------------
 
+export interface PromptEnhancementOptions {
+  colorPreset?: ColorPreset;
+  customColor?: string;
+  wantsText?: boolean;
+  promptMode?: PromptMode;
+  classification?: PromptClassifierOutput;
+  refImage?: string;
+  enhancedPromptDraft?: string;
+}
+
 function cleanUserPrompt(prompt: string): string {
   let clean = prompt;
   const termsToRemove = [
@@ -72,36 +85,43 @@ function cleanUserPrompt(prompt: string): string {
 // ENHANCE_SYSTEM_PROMPT — Gemini system instructions for prompt engineering
 // ---------------------------------------------------------------------------
 
-const ENHANCE_SYSTEM_PROMPT = `You are MIRAI's prompt engineer. Your job is to transform a Vietnamese customer's casual design description into a premium English prompt optimized for AI image generation (Replicate FLUX).
+const ENHANCE_SYSTEM_PROMPT = `You are MIRAI's art director for a custom phone case ecommerce website.
+
+Rewrite the customer's short idea into one polished English prompt for an image generation model.
 
 CRITICAL CONTEXT:
-The output image is a FLAT ARTWORK / TEXTURE that will be applied onto a 3D phone case model. It is NOT an image of a phone case. Generate only the design/illustration/pattern itself.
+The output is only a flat 2D printable artwork texture that will be applied onto a 3D phone case model later by the frontend. It is not a phone, not a phone case object, and not a phone mockup photo. Generate only the design/illustration/pattern itself on a clean vertical canvas.
 
-COMPOSITION RULES (Safe Zone):
-- The main subject must be in the CENTER 75% of the frame
-- Top 15% and bottom 10% should contain secondary elements or background only
-- NEVER place the main subject in the top-left corner (camera area will cover it)
-- Use vertical composition optimized for a tall narrow format (9:16)
-- Keep the composition balanced and symmetrical when possible
+RULES:
+- Keep the user's original idea.
+- Make it suitable as printable artwork for a phone case surface.
+- Use modern, premium, trendy visual language.
+- Prefer clean composition, printable details, and balanced negative space.
+- Place the main subject in the bottom center / lower-middle safe area of the artwork.
+- Keep the top 30% airy and simple for phone camera clusters.
+- Keep the upper-left camera zone free of faces, text, logos, focal objects, and important details.
+- Do not include any phone, phone case shell, camera cutout, camera lens, device frame, product mockup, hand, shadowed product render, or AR preview.
+- Avoid cheesy, outdated, old 2010s poster styles.
+- Avoid messy gradients, random typography, watermark, frame, logo, and cluttered backgrounds.
+- Do not add text unless the user explicitly asks for text.
+- If text is requested, preserve the exact requested words.
+- If a specific character is requested without reference image, do not promise exact character fidelity; make a tasteful inspired artwork.
+- If a reference image is provided, adapt the visual identity and style from the reference into flat printable artwork.
 
 STYLE GUIDELINES:
 The user will specify a style. Adapt the prompt accordingly:
-- "pop-art-floral": Use halftone print texture, floating gemstones, crescent moon elements, motion blur trails, duotone colors, vibrant gradient backgrounds. One large centered flower as focal point.
-- "kawaii-pastel": Use crayon texture, paper cutout effect, soft pastel colors, repeating patterns, cute kawaii aesthetic, handmade scrapbook feel. No single focal point — use scattered repeating elements.
-- "textile-pattern": Use seamless repeating pattern, woven fabric texture, clean minimal design, Scandinavian aesthetic. No focal subject — pure pattern.
-- "y2k-dreamy": Use holographic iridescent effects, dreamy pastel gradients, sparkle stars, soft glow aura, nostalgic Y2K aesthetic. Scattered cute elements.
-- "luxury-gem": Use gemstone collage, crystal facets, metallic gold accents, rich jewel tones, editorial luxury fashion print aesthetic.
-
-CHARACTER PRESERVATION:
-If the customer requests a specific character (anime, brand, etc.), PRESERVE their exact name AND append a brief accurate description of their iconic visual features (hair, clothing, accessories) to guide the image generator.
-
-FORBIDDEN WORDS (never include these — Flux will render them literally):
-phone, case, mockup, iphone, samsung, device, hand, outline, border, cutout, camera, template, 3D case, person, human, face, portrait, hands, body, text, letters, logo, watermark, signature, frame
+- "minimal": Minimal premium illustration, clean lines, soft shadows, subtle palette, elegant negative space.
+- "cute-sticker": Cute sticker-style illustration, bold clean outline, soft rounded shapes, trendy Korean stationery aesthetic.
+- "streetwear": Bold streetwear graphic, high contrast, edgy modern apparel print style.
+- "y2k-modern": Modern Y2K-inspired design, chrome accents, dreamy glow, playful futuristic mood.
+- "anime-clean": Clean anime-inspired illustration, soft cinematic lighting, elegant composition, detailed but not cluttered.
+- "luxury": Premium editorial design, refined palette, elegant lighting, high-end accessory feel.
 
 OUTPUT RULES:
 1. Output ONLY the enhanced English prompt — no markdown, no labels, no explanations
-2. Keep it under 120 words
-3. Always end with: "vertical composition, center-safe layout, print-ready premium artwork"`;
+2. Keep it under 140 words
+3. Always include: "flat printable artwork texture", "vertical composition", "bottom-center subject placement", "camera-safe top area", "print-ready premium artwork", "no phone or case mockup"
+4. Include "no text" or "no random text" unless text is explicitly requested.`;
 
 function parseBase64DataUrl(
   dataUrl: string,
@@ -196,27 +216,25 @@ function enrichCharacterDescription(englishPrompt: string): string[] {
  */
 export async function buildFallbackEnhancedPrompt(
   rawPrompt: string,
-  style: DesignStyle = "pop-art-floral",
+  style: DesignStyle = "minimal",
+  options: PromptEnhancementOptions = {},
 ): Promise<string> {
   const cleanPrompt = cleanUserPrompt(rawPrompt);
   const englishPrompt = await translateToEnglish(cleanPrompt);
-
-  const parts = [englishPrompt];
+  const promptDraft = buildClientEnhancedPrompt({
+    userPrompt: englishPrompt,
+    selectedStyle: style,
+    colorPreset: options.colorPreset,
+    customColor: options.customColor,
+    mode: options.promptMode ?? "generic",
+    wantsText: options.wantsText,
+    hasReferenceImage: Boolean(options.refImage),
+  });
 
   // Add character-specific descriptions
   const characterExtras = enrichCharacterDescription(englishPrompt);
-  parts.push(...characterExtras);
 
-  // Add style-specific suffix
-  const styleSuffix = STYLE_PROMPT_SUFFIX[style];
-  if (styleSuffix) {
-    parts.push(styleSuffix);
-  }
-
-  // Add phone case base suffix
-  parts.push(PHONE_CASE_BASE_SUFFIX);
-
-  return parts.join(", ");
+  return [promptDraft, ...characterExtras].filter(Boolean).join(", ");
 }
 
 // ---------------------------------------------------------------------------
@@ -225,18 +243,36 @@ export async function buildFallbackEnhancedPrompt(
 
 export async function enhancePrompt(
   rawPrompt: string,
-  style: DesignStyle = "pop-art-floral",
-  refImage?: string,
+  style: DesignStyle = "minimal",
+  optionsOrRefImage?: PromptEnhancementOptions | string,
 ): Promise<string> {
+  const options: PromptEnhancementOptions =
+    typeof optionsOrRefImage === "string"
+      ? { refImage: optionsOrRefImage }
+      : (optionsOrRefImage ?? {});
   const cleanedPrompt = cleanUserPrompt(rawPrompt);
   const styleSuffix = STYLE_PROMPT_SUFFIX[style] || "";
   const negativeWords = getNegativePromptForStyle(style);
+  const promptDraft =
+    options.enhancedPromptDraft ||
+    buildClientEnhancedPrompt({
+      userPrompt: cleanedPrompt,
+      selectedStyle: style,
+      colorPreset: options.colorPreset,
+      customColor: options.customColor,
+      mode: options.promptMode ?? "generic",
+      wantsText: options.wantsText,
+      hasReferenceImage: Boolean(options.refImage),
+    });
+  const classifierMessage = options.classification?.userFacingMessage
+    ? `Classifier note: ${options.classification.userFacingMessage}`
+    : "";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const parts: any[] = [{ text: ENHANCE_SYSTEM_PROMPT }];
 
-  if (refImage) {
-    const parsed = parseBase64DataUrl(refImage);
+  if (options.refImage) {
+    const parsed = parseBase64DataUrl(options.refImage);
     if (parsed) {
       parts.push({
         inlineData: {
@@ -247,19 +283,24 @@ export async function enhancePrompt(
       parts.push({
         text: `The user has provided a reference image above. 
 Your goal is to carefully analyze the artistic style, color palette, lighting, textures, layout, and composition of this reference image.
-Then, generate a highly detailed English image generation prompt that perfectly blends the customer's request ("${cleanedPrompt}") with the exact stylistic elements (but NOT the exact subject, unless it fits) of this reference image.
+Then, generate a highly detailed English image generation prompt that blends the customer's request ("${cleanedPrompt}") with the visual identity, style, color palette, lighting, textures, layout, and composition of this reference image.
+The image generator must output only flat printable artwork, not a phone, not a case shell, not a camera cutout, and not a product mockup.
 Selected style: ${style}. Style hint: ${styleSuffix}.
+Color direction: ${options.colorPreset ?? "auto"}${options.customColor ? ` (${options.customColor})` : ""}.
+Mode: ${options.promptMode ?? "reference"}.
+Frontend prompt draft: ${promptDraft}
+${classifierMessage}
 Avoid these subjects/words in your output: ${negativeWords}.
 Make sure the resulting prompt will guide the image generator to reproduce this exact style!`,
       });
     } else {
       parts.push({
-        text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nAvoid these subjects/words: ${negativeWords}`,
+        text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nColor direction: ${options.colorPreset ?? "auto"}\nMode: ${options.promptMode ?? "generic"}\nFrontend prompt draft: ${promptDraft}\n${classifierMessage}\nAvoid these subjects/words: ${negativeWords}`,
       });
     }
   } else {
     parts.push({
-      text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nAvoid these subjects/words: ${negativeWords}`,
+      text: `Customer prompt: ${cleanedPrompt}\nSelected style: ${style}\nStyle hint: ${styleSuffix}\nColor direction: ${options.colorPreset ?? "auto"}${options.customColor ? ` (${options.customColor})` : ""}\nMode: ${options.promptMode ?? "generic"}\nFrontend prompt draft: ${promptDraft}\n${classifierMessage}\nAvoid these subjects/words: ${negativeWords}`,
     });
   }
 
@@ -269,13 +310,13 @@ Make sure the resulting prompt will guide the image generator to reproduce this 
 
     // Fallback: if model returns empty, use a sensible default
     if (!enhanced) {
-      return await buildFallbackEnhancedPrompt(rawPrompt, style);
+      return await buildFallbackEnhancedPrompt(rawPrompt, style, options);
     }
 
     return enhanced;
   } catch (error) {
     console.error("[Gemini] Failed to enhance prompt, using fallback:", error);
-    return await buildFallbackEnhancedPrompt(rawPrompt, style);
+    return await buildFallbackEnhancedPrompt(rawPrompt, style, options);
   }
 }
 
@@ -296,7 +337,7 @@ export async function generateDesignImage(
         role: "user",
         parts: [
           {
-            text: `Generate a phone case design image based on this description: ${enhancedPrompt}`,
+            text: `Generate only the flat printable artwork texture based on this description. Do not generate a phone, phone case shell, camera hole, product mockup, or device frame. ${enhancedPrompt}`,
           },
         ],
       },

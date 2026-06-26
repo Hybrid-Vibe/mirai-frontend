@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { PhoneCaseTemplate } from "@/constants/phone-templates";
-import type { DesignStyle } from "@/types/ai";
+import type { ColorPreset, DesignStyle } from "@/types/ai";
 
 export interface CanvasElement {
   id: string;
@@ -32,6 +32,9 @@ interface DesignState {
   phoneModel: string;
   prompt: string;
   designStyle: DesignStyle;
+  colorPreset: ColorPreset;
+  customColor: string;
+  wantsText: boolean;
   generatedImages: string[];
   selectedImage: string | null;
   elements: CanvasElement[];
@@ -49,6 +52,9 @@ interface DesignState {
   setPhoneModel: (model: string) => void;
   setPrompt: (prompt: string) => void;
   setDesignStyle: (style: DesignStyle) => void;
+  setColorPreset: (preset: ColorPreset) => void;
+  setCustomColor: (color: string) => void;
+  setWantsText: (wantsText: boolean) => void;
   setGeneratedImages: (images: string[]) => void;
   setSelectedImage: (image: string | null) => void;
   setElements: (elements: CanvasElement[]) => void;
@@ -72,7 +78,10 @@ interface DesignState {
 export const useDesignStore = create<DesignState>((set) => ({
   phoneModel: "",
   prompt: "",
-  designStyle: "pop-art-floral",
+  designStyle: "minimal",
+  colorPreset: "auto",
+  customColor: "#ffffff",
+  wantsText: false,
   generatedImages: [],
   selectedImage: null,
   elements: [],
@@ -90,6 +99,9 @@ export const useDesignStore = create<DesignState>((set) => ({
   setPhoneModel: (phoneModel) => set({ phoneModel }),
   setPrompt: (prompt) => set({ prompt }),
   setDesignStyle: (designStyle) => set({ designStyle }),
+  setColorPreset: (colorPreset) => set({ colorPreset }),
+  setCustomColor: (customColor) => set({ customColor }),
+  setWantsText: (wantsText) => set({ wantsText }),
   setGeneratedImages: (generatedImages) => set({ generatedImages }),
   setSelectedImage: (selectedImage) => set({ selectedImage }),
   setElements: (elements) => set({ elements }),
@@ -122,7 +134,10 @@ export const useDesignStore = create<DesignState>((set) => ({
     set({
       phoneModel: "",
       prompt: "",
-      designStyle: "pop-art-floral",
+      designStyle: "minimal",
+      colorPreset: "auto",
+      customColor: "#ffffff",
+      wantsText: false,
       generatedImages: [],
       selectedImage: null,
       elements: [],

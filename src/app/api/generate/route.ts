@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { buildFallbackEnhancedPrompt, enhancePrompt } from "@/lib/gemini";
 import { generateReplicateImage } from "@/lib/replicate";
+import { buildGenerationPlan } from "@/lib/ai-generation";
 import {
-  GenerateRequest,
-  GenerateResponse,
-  GenerateErrorResponse,
-  GeneratedDesign,
-  DesignStyle,
-  getNegativePromptForStyle,
+  normalizeDesignStyle,
+  type GenerateRequest,
+  type GenerateResponse,
+  type GenerateErrorResponse,
+  type GeneratedDesign,
 } from "@/types/ai";
 
 // ---------------------------------------------------------------------------
@@ -53,26 +53,46 @@ export async function POST(request: Request) {
     );
   }
 
-  const validStyles: DesignStyle[] = [
-    "pop-art-floral",
-    "kawaii-pastel",
-    "textile-pattern",
-    "y2k-dreamy",
-    "luxury-gem",
-  ];
-  const style = validStyles.includes(rawStyle as DesignStyle)
-    ? (rawStyle as DesignStyle)
-    : "pop-art-floral";
-
-  const negativePrompt =
-    body.negativePrompt || getNegativePromptForStyle(style);
+  const style = normalizeDesignStyle(rawStyle);
+  const generationPlan = buildGenerationPlan({
+    userPrompt: prompt,
+    selectedStyle: style,
+    colorPreset: body.colorPreset,
+    customColor: body.customColor,
+    wantsText: body.wantsText,
+    qualityLevel: "standard",
+    referenceImageUrl: refImage,
+  });
+  const classification = body.classification ?? generationPlan.classification;
+  const promptMode = body.promptMode ?? classification.recommendedMode;
+  const routing = generationPlan.routing;
+  const qualityLevel = generationPlan.qualityLevel;
+  const negativePrompt = body.negativePrompt || generationPlan.negativePrompt;
 
   try {
     // --- 2. Enhance prompt (Vietnamese → English professional prompt) ---
     console.log(`[AI Generate] Enhancing prompt with style: "${style}"...`);
     const enhancedPrompt = process.env.GEMINI_API_KEY
-      ? await enhancePrompt(prompt, style, refImage)
-      : await buildFallbackEnhancedPrompt(prompt, style);
+      ? await enhancePrompt(prompt, style, {
+          colorPreset: body.colorPreset,
+          customColor: body.customColor,
+          wantsText: body.wantsText ?? classification.hasTextRequest,
+          promptMode,
+          classification,
+          refImage,
+          enhancedPromptDraft:
+            body.enhancedPromptDraft || generationPlan.enhancedPromptDraft,
+        })
+      : await buildFallbackEnhancedPrompt(prompt, style, {
+          colorPreset: body.colorPreset,
+          customColor: body.customColor,
+          wantsText: body.wantsText ?? classification.hasTextRequest,
+          promptMode,
+          classification,
+          refImage,
+          enhancedPromptDraft:
+            body.enhancedPromptDraft || generationPlan.enhancedPromptDraft,
+        });
 
     // --- 3. Generate 1 design variant via Replicate ---
     const provider = getImageProvider();
@@ -80,19 +100,29 @@ export async function POST(request: Request) {
     console.log(
       `[AI Generate] Generating 1 design variant via ${provider} with negativePrompt: "${negativePrompt || ""}"...`,
     );
-    const replicateResult = await generateReplicateImage(enhancedPrompt);
+    const replicateResult = await generateReplicateImage(enhancedPrompt, {
+      negativePrompt,
+    });
 
     designs.push({
       id: `design-${Date.now()}-0`,
       imageUrl: replicateResult.imageUrl,
       enhancedPrompt,
       model: replicateResult.model,
+      suggestedModel: routing.suggestedModel,
+      promptMode,
     });
 
     // --- 4. Return successful response ---
     const durationMs = Date.now() - startTime;
 
-    return NextResponse.json<GenerateResponse>({ designs, durationMs });
+    return NextResponse.json<GenerateResponse>({
+      designs,
+      durationMs,
+      classification,
+      routing,
+      qualityLevel,
+    });
   } catch (error) {
     console.error("[/api/generate] Generation failed:", error);
 

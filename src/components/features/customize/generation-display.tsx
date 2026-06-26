@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { type GeneratedDesign, getNegativePromptForStyle } from "@/types/ai";
+import { type GeneratedDesign } from "@/types/ai";
+import { buildGenerationPlan } from "@/lib/ai-generation";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 // ---------------------------------------------------------------------------
@@ -136,6 +137,9 @@ export function GenerationDisplay({
     prompt,
     phoneModel,
     designStyle,
+    colorPreset,
+    customColor,
+    wantsText,
     selectedImage,
     setSelectedImage,
     setGeneratedImages,
@@ -155,7 +159,15 @@ export function GenerationDisplay({
     setDesigns([]);
     setSelectedImage(null);
 
-    const negativePrompt = getNegativePromptForStyle(designStyle);
+    const generationPlan = buildGenerationPlan({
+      userPrompt: prompt,
+      selectedStyle: designStyle,
+      colorPreset,
+      customColor,
+      wantsText,
+      qualityLevel: "standard",
+    });
+    const negativePrompt = generationPlan.negativePrompt;
 
     try {
       const response = await aiApi.generateImage(
@@ -163,6 +175,13 @@ export function GenerationDisplay({
           prompt,
           phoneModel: phoneModel || "iPhone 15",
           style: designStyle,
+          colorPreset,
+          customColor: colorPreset === "custom" ? customColor : undefined,
+          wantsText: wantsText || generationPlan.classification.hasTextRequest,
+          qualityLevel: "standard",
+          promptMode: generationPlan.classification.recommendedMode,
+          classification: generationPlan.classification,
+          enhancedPromptDraft: generationPlan.enhancedPromptDraft,
           negativePrompt,
         },
         captchaToken || "",
@@ -244,6 +263,9 @@ export function GenerationDisplay({
     prompt,
     phoneModel,
     designStyle,
+    colorPreset,
+    customColor,
+    wantsText,
     setSelectedImage,
     setGeneratedImages,
     captchaToken,
