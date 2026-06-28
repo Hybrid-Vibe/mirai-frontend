@@ -343,7 +343,7 @@ export interface GenerationMetadata {
 // API Request/Response Types
 // ======================================================================
 
-/** Request body sent from client -> POST /api/generate. */
+/** Request body sent from client -> backend AI generation endpoint. */
 export interface GenerateRequest {
   /** User's raw prompt (Vietnamese or English). */
   prompt: string;
@@ -389,7 +389,7 @@ export interface GeneratedDesign {
   promptMode?: PromptMode;
 }
 
-/** Successful response from POST /api/generate. */
+/** Successful response normalized from backend AI generation endpoint. */
 export interface GenerateResponse {
   /** Array of generated design variants. */
   designs: GeneratedDesign[];
@@ -400,7 +400,7 @@ export interface GenerateResponse {
   qualityLevel?: QualityLevel;
 }
 
-/** Error response from POST /api/generate. */
+/** Error response from AI generation. */
 export interface GenerateErrorResponse {
   error: string;
   code:

@@ -9,6 +9,7 @@ import axios, {
   type AxiosError,
   type InternalAxiosRequestConfig,
 } from "axios";
+import { AIImageStatusValue } from "@/types/api";
 import type {
   // Auth
   LoginRequestDto,
@@ -981,21 +982,57 @@ export const aiImageApi = {
   },
 };
 
+function isCompletedAIImageStatus(status: AIImageDto["status"]): boolean {
+  return (
+    status === "Completed" || Number(status) === AIImageStatusValue.Completed
+  );
+}
+
+function mapBackendAIImageToGenerateResponse(
+  request: GenerateRequest,
+  aiImage: AIImageDto,
+  durationMs: number,
+): GenerateResponse {
+  if (!aiImage.imageUrl || !isCompletedAIImageStatus(aiImage.status)) {
+    throw new Error(
+      aiImage.errorMessage ||
+        "Backend chưa trả về ảnh AI hoàn chỉnh. Vui lòng thử lại sau.",
+    );
+  }
+
+  return {
+    designs: [
+      {
+        id: aiImage.aiImageId,
+        imageUrl: aiImage.imageUrl,
+        enhancedPrompt:
+          aiImage.prompt || request.enhancedPromptDraft || request.prompt,
+        model: "backend-replicate",
+        suggestedModel: "backend-owned",
+        promptMode: request.promptMode,
+      },
+    ],
+    durationMs,
+    classification: request.classification,
+    routing: {
+      suggestedModel: "backend-owned",
+      fallbackModel: "backend-owned",
+      routingReason: "backend-ai-images-endpoint",
+      requiresBackendRouting: false,
+    },
+    qualityLevel: request.qualityLevel,
+  };
+}
+
 // ======================================================================
-// API Services — AI Image Generation (Next.js Internal)
-// Calls Next.js internal API route (NOT the .NET backend directly)
-// because AI provider keys are server-side secrets
+// API Services — AI Image Generation (Backend)
+// Browser calls the .NET backend /api/ai-images endpoint. Provider keys and
+// Replicate/Groq calls stay server-side in the backend service.
 // ======================================================================
 
 export const aiApi = {
   /**
-   * POST /api/generate — Generate AI phone case design variants.
-   *
-   * Sends prompt to Next.js server route which:
-   * 1. Enhances Vietnamese prompt → professional English prompt
-   * 2. Generates a design with the configured server-side provider
-   * 3. Returns data URLs for each design
-   *
+   * POST /api/ai-images — Generate an AI print artwork through the .NET backend.
    * @param request - { prompt, phoneModel, style? }
    * @returns { designs: GeneratedDesign[], durationMs: number }
    */
@@ -1003,23 +1040,24 @@ export const aiApi = {
     request: GenerateRequest,
     turnstileToken?: string,
   ): Promise<GenerateResponse> => {
-    // Use a separate axios instance for Next.js internal routes (no /api prefix from backend)
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (turnstileToken) {
-      headers["X-Turnstile-Token"] = turnstileToken;
-    }
-
-    const { data } = await axios.post<GenerateResponse>(
-      "/api/generate",
-      request,
+    const startedAt = performance.now();
+    const promptForBackend = request.enhancedPromptDraft || request.prompt;
+    const aiImage = await aiImageApi.createAIImage(
       {
-        timeout: 120_000, // Replicate sync + polling can take longer on free tier
-        headers,
+        prompt: promptForBackend,
+        negativePrompt: request.negativePrompt,
+        style: request.style,
+        width: 1024,
+        height: 1792,
       },
+      turnstileToken,
     );
-    return data;
+
+    return mapBackendAIImageToGenerateResponse(
+      request,
+      aiImage,
+      Math.round(performance.now() - startedAt),
+    );
   },
 };
 
