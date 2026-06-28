@@ -93,26 +93,29 @@ export default function SettingsPage() {
           <TabsContent value="ai" className="space-y-6">
             <div className="rounded-md border border-border bg-background p-6">
               <h3 className="font-heading font-semibold text-lg mb-4">
-                API & Tích hợp Gemini
+                API & Tích hợp AI
               </h3>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Gemini API Key</label>
+                  <label className="text-sm font-medium">
+                    Backend AI Provider
+                  </label>
                   <Input
-                    type="password"
-                    defaultValue="***********************************"
+                    value="Replicate Recraft v4.1 + Groq prompt enhancer"
+                    disabled
                   />
                   <p className="text-xs text-muted-foreground">
-                    Khóa API dùng để tạo ảnh và xử lý prompt tiếng Việt.
+                    Frontend gọi backend /api/ai-images. API key được cấu hình ở
+                    backend, không nằm trong frontend bundle.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Text Model</label>
-                  <Input defaultValue="gemini-2.0-flash" />
+                  <label className="text-sm font-medium">Prompt Enhancer</label>
+                  <Input value="Groq backend service" disabled />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Image Model</label>
-                  <Input defaultValue="gemini-2.0-flash-preview-image-generation" />
+                  <Input value="recraft-ai/recraft-v4.1" disabled />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center justify-between">
@@ -120,7 +123,8 @@ export default function SettingsPage() {
                   </label>
                   <textarea
                     className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    defaultValue="You are MIRAI's prompt engineer. Your job is to take a Vietnamese customer's casual description of a phone case design and transform it into a professional English prompt optimized for AI image generation."
+                    defaultValue="Create only flat printable artwork for a phone case surface. Do not generate a phone, phone case mockup, camera hole, camera lens, or product render."
+                    disabled
                   />
                 </div>
               </div>

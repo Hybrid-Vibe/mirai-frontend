@@ -456,7 +456,7 @@ export default function CustomizePage() {
       return;
     }
 
-    // Bypass Turnstile check since it is not enforced by server-side /api/generate
+    // Turnstile remains optional until the backend enforces it for AI generation.
     await runGenerate(captchaToken || "");
   };
 
