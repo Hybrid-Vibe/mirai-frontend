@@ -79,6 +79,11 @@ import type {
   AdminUpdateShippingDto,
   AdminAIImageFilter,
   UpdateOrderStatusResponse,
+  CollectionResponseDto,
+  CreateCollectionDto,
+  UpdateCollectionDto,
+  AddProductsToCollectionRequestDto,
+  RemoveProductsFromCollectionRequestDto,
 } from "@/types/api";
 import type { GenerateRequest, GenerateResponse } from "@/types/ai";
 import { useDesignStore } from "@/lib/store";
@@ -1275,6 +1280,87 @@ export const adminApi = {
   deleteAIImage: async (aiImageId: string): Promise<string> => {
     const { data } = await apiClient.delete<string>(
       `/admin/ai-images/${aiImageId}`,
+    );
+    return data;
+  },
+};
+
+// ======================================================================
+// API Services — Collection (Public)
+// ======================================================================
+
+export const collectionApi = {
+  /** GET /api/Collection/Get-All-Active */
+  getAllActive: async (): Promise<CollectionResponseDto[]> => {
+    const { data } = await apiClient.get<CollectionResponseDto[]>(
+      "/Collection/Get-All-Active",
+    );
+    return normalizeArray<CollectionResponseDto>(data);
+  },
+
+  /** GET /api/Collection/Get-By-Slug/{slug} */
+  getBySlug: async (slug: string): Promise<CollectionResponseDto> => {
+    const { data } = await apiClient.get<CollectionResponseDto>(
+      `/Collection/Get-By-Slug/${slug}`,
+    );
+    return data;
+  },
+};
+
+// ======================================================================
+// API Services — Collection (Admin Management)
+// ======================================================================
+
+export const adminCollectionApi = {
+  /** POST /api/Admin/Collection/Create-Collection */
+  createCollection: async (
+    dto: CreateCollectionDto,
+  ): Promise<CollectionResponseDto> => {
+    const { data } = await apiClient.post<CollectionResponseDto>(
+      "/Admin/Collection/Create-Collection",
+      dto,
+    );
+    return data;
+  },
+
+  /** PUT /api/Admin/Collection/Update-Collection/{id} */
+  updateCollection: async (
+    id: string,
+    dto: UpdateCollectionDto,
+  ): Promise<CollectionResponseDto> => {
+    const { data } = await apiClient.put<CollectionResponseDto>(
+      `/Admin/Collection/Update-Collection/${id}`,
+      dto,
+    );
+    return data;
+  },
+
+  /** DELETE /api/Admin/Collection/Delete-Collection/{id} */
+  deleteCollection: async (id: string): Promise<string> => {
+    const { data } = await apiClient.delete<string>(
+      `/Admin/Collection/Delete-Collection/${id}`,
+    );
+    return data;
+  },
+
+  /** POST /api/Admin/Collection/Add-Products-To-Collection */
+  addProductsToCollection: async (
+    dto: AddProductsToCollectionRequestDto,
+  ): Promise<string> => {
+    const { data } = await apiClient.post<string>(
+      "/Admin/Collection/Add-Products-To-Collection",
+      dto,
+    );
+    return data;
+  },
+
+  /** POST /api/Admin/Collection/Remove-Products-From-Collection */
+  removeProductsFromCollection: async (
+    dto: RemoveProductsFromCollectionRequestDto,
+  ): Promise<string> => {
+    const { data } = await apiClient.post<string>(
+      "/Admin/Collection/Remove-Products-From-Collection",
+      dto,
     );
     return data;
   },

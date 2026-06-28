@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   Palette,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
@@ -33,7 +34,8 @@ import type { PhoneCaseArAssets } from "@/components/features/customize/PhoneCas
 
 import { useDesignStore } from "@/lib/store";
 import { useCartStore } from "@/stores/cart-store";
-import { STANDARD_NEGATIVE_PROMPT } from "@/types/ai";
+import { COLOR_PRESET_OPTIONS, DESIGN_STYLE_OPTIONS } from "@/types/ai";
+import { buildGenerationPlan } from "@/lib/ai-generation";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 import {
   PHONE_CASE_TEMPLATES,
@@ -140,6 +142,14 @@ export default function CustomizePage() {
     setShowCameraCutout,
     setBackgroundImage,
     user,
+    designStyle,
+    setDesignStyle,
+    colorPreset,
+    setColorPreset,
+    customColor,
+    setCustomColor,
+    wantsText,
+    setWantsText,
   } = useDesignStore();
 
   const [mode, setMode] = useState<"ai" | "self">("ai");
@@ -295,6 +305,19 @@ export default function CustomizePage() {
     casePreviewTextureUrl && (hasSelfCustomDesign || hasAiPreviewDesign),
   );
   const shouldShowCaseSurface = hasSelfCustomDesign || hasAiPreviewDesign;
+  const aiGenerationPlan = useMemo(
+    () =>
+      buildGenerationPlan({
+        userPrompt: prompt,
+        selectedStyle: designStyle,
+        colorPreset,
+        customColor,
+        wantsText,
+        qualityLevel: "standard",
+        referenceImageUrl: refImage,
+      }),
+    [prompt, designStyle, colorPreset, customColor, wantsText, refImage],
+  );
   const resetCanvasForModelChange = useCallback(() => {
     setElements([]);
     setSelectedElementId(null);
@@ -378,8 +401,24 @@ export default function CustomizePage() {
         {
           prompt,
           phoneModel,
+          style: designStyle,
+          colorPreset,
+          customColor: colorPreset === "custom" ? customColor : undefined,
+          wantsText:
+            wantsText || aiGenerationPlan.classification.hasTextRequest,
+          qualityLevel: "standard",
+          promptMode: aiGenerationPlan.classification.recommendedMode,
+          classification: aiGenerationPlan.classification,
+          enhancedPromptDraft: aiGenerationPlan.enhancedPromptDraft,
           refImage: refImage || undefined,
-          negativePrompt: STANDARD_NEGATIVE_PROMPT,
+          negativePrompt: aiGenerationPlan.negativePrompt,
+          metadata: {
+            originalPrompt: prompt,
+            selectedStyle: designStyle,
+            colorPreset,
+            mode: aiGenerationPlan.classification.recommendedMode,
+            qualityLevel: "standard",
+          },
         },
         token,
       );
@@ -554,7 +593,7 @@ export default function CustomizePage() {
         </div>
 
         {/* ─── Main Layout: Sidebar + Canvas ─── */}
-        <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[400px_minmax(0,1fr)]">
           {/* LEFT SIDEBAR */}
           <aside className="space-y-5 overflow-y-auto">
             {/* Header spacer to align with the Canvas header */}
@@ -604,10 +643,14 @@ export default function CustomizePage() {
                   <label className="flex h-20 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-secondary/50 text-foreground hover:bg-muted transition-colors">
                     <ImagePlus className="h-4 w-4 text-muted-foreground animate-pulse" />
                     <span className="text-xs font-medium">
-                      Tải hình tham khảo phong cách
+                      {aiGenerationPlan.classification.isSpecificCharacter
+                        ? "Tải ảnh mẫu nhân vật"
+                        : "Tải hình tham khảo phong cách"}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      Phân tích mood, màu sắc, art style
+                      {aiGenerationPlan.classification.isSpecificCharacter
+                        ? "Giúp AI bám visual nhân vật hơn"
+                        : "Phân tích mood, màu sắc, art style"}
                     </span>
                     <input
                       type="file"
@@ -618,25 +661,149 @@ export default function CustomizePage() {
                   </label>
                 )}
 
+                {aiGenerationPlan.classification.userFacingMessage && (
+                  <div className="flex gap-2 rounded-lg border border-(--mirai-sem-warning)/30 bg-(--mirai-sem-warning)/10 p-3 text-xs text-foreground">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-(--mirai-sem-warning)" />
+                    <p className="leading-relaxed">
+                      {aiGenerationPlan.classification.userFacingMessage}
+                    </p>
+                  </div>
+                )}
+
                 {/* Prompt */}
-                <div className="flex gap-2">
-                  <textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Mô tả phong cách bạn muốn tạo..."
-                    className="h-20 flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={isGenerating || !prompt.trim()}
-                    className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50"
-                  >
-                    <Sparkles
-                      className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-foreground">
+                      Ý tưởng ngắn
+                    </label>
+                    <span className="text-[10px] text-muted-foreground">
+                      {prompt.length}/220
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <textarea
+                      value={prompt}
+                      maxLength={220}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Ví dụ: mèo đen nằm trên mặt trăng"
+                      className="h-24 flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
                     />
-                    {isGenerating ? "..." : "Tạo"}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleGenerate}
+                      disabled={isGenerating || !prompt.trim()}
+                      className="flex h-24 w-20 flex-col items-center justify-center gap-1 rounded-lg bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50"
+                    >
+                      <Sparkles
+                        className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                      />
+                      {isGenerating ? "..." : "Tạo"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    Phong cách
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {DESIGN_STYLE_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setDesignStyle(option.value)}
+                        className={`rounded-lg border p-2 text-left transition-colors ${
+                          designStyle === option.value
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <span className="block text-xs font-semibold">
+                          {option.label}
+                        </span>
+                        <span className="mt-0.5 line-clamp-1 block text-[10px]">
+                          {option.description}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    Màu chủ đạo
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {COLOR_PRESET_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setColorPreset(option.value)}
+                        className={`flex items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs transition-colors ${
+                          colorPreset === option.value
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <span className="flex -space-x-1">
+                          {option.swatches.map((swatch) => (
+                            <span
+                              key={swatch}
+                              className="h-4 w-4 rounded-full border border-background"
+                              style={{ backgroundColor: swatch }}
+                            />
+                          ))}
+                        </span>
+                        <span className="font-medium">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {colorPreset === "custom" && (
+                    <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+                      <input
+                        type="color"
+                        value={customColor}
+                        onChange={(e) => setCustomColor(e.target.value)}
+                        className="h-7 w-8 cursor-pointer rounded border border-border bg-transparent"
+                      />
+                      <span className="font-mono text-xs uppercase text-muted-foreground">
+                        {customColor}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-foreground">
+                      Chữ trên ảnh
+                    </p>
+                    <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border">
+                      <button
+                        type="button"
+                        onClick={() => setWantsText(false)}
+                        className={`h-9 text-xs font-semibold ${
+                          !wantsText
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Không
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWantsText(true)}
+                        className={`h-9 text-xs font-semibold ${
+                          wantsText
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        Có
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Hidden Turnstile Widget for AI Generation */}
@@ -1017,9 +1184,9 @@ export default function CustomizePage() {
           </aside>
 
           {/* RIGHT: Canvas + 3D Preview */}
-          <section className="space-y-6">
+          <section className="min-w-0 space-y-6">
             {/* Headers row (Canvas + 3D Preview) */}
-            <div className="grid items-end gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 items-end gap-6 xl:grid-cols-2">
               {/* Canvas header */}
               <div className="flex items-center justify-between h-6">
                 <div className="text-sm font-semibold text-foreground">
@@ -1056,9 +1223,9 @@ export default function CustomizePage() {
             </div>
 
             {/* Canvas + 3D side by side */}
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 gap-6 xl:grid-cols-2">
               {/* Canvas */}
-              <div className="flex flex-col items-center xl:items-stretch">
+              <div className="min-w-0 flex flex-col items-center xl:items-stretch">
                 <div
                   className="flex justify-center overflow-hidden rounded-2xl border border-border bg-[repeating-conic-gradient(#80808015_0%_25%,transparent_0%_50%)] bg-[length:20px_20px]"
                   style={{
@@ -1101,7 +1268,7 @@ export default function CustomizePage() {
               </div>
 
               {/* 3D AR Preview - bigger */}
-              <div className="flex flex-col items-center xl:items-stretch">
+              <div className="min-w-0 flex flex-col items-center xl:items-stretch">
                 {/* 3D Preview header (only shown when stacked, i.e., less than xl) */}
                 <div className="xl:hidden flex items-center justify-between mb-3 h-6">
                   <h3 className="text-sm font-semibold text-foreground">
@@ -1151,15 +1318,6 @@ export default function CustomizePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 border-t border-border pt-6">
-              <button
-                type="button"
-                onClick={() =>
-                  toast.success("Thiết kế đã được lưu vào bộ sưu tập!")
-                }
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-6 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-              >
-                Lưu thiết kế
-              </button>
               <button
                 type="button"
                 onClick={handleAddToCart}

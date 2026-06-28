@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { type GeneratedDesign, STANDARD_NEGATIVE_PROMPT } from "@/types/ai";
+import { type GeneratedDesign } from "@/types/ai";
+import { buildGenerationPlan } from "@/lib/ai-generation";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 // ---------------------------------------------------------------------------
@@ -135,6 +136,10 @@ export function GenerationDisplay({
   const {
     prompt,
     phoneModel,
+    designStyle,
+    colorPreset,
+    customColor,
+    wantsText,
     selectedImage,
     setSelectedImage,
     setGeneratedImages,
@@ -154,12 +159,30 @@ export function GenerationDisplay({
     setDesigns([]);
     setSelectedImage(null);
 
+    const generationPlan = buildGenerationPlan({
+      userPrompt: prompt,
+      selectedStyle: designStyle,
+      colorPreset,
+      customColor,
+      wantsText,
+      qualityLevel: "standard",
+    });
+    const negativePrompt = generationPlan.negativePrompt;
+
     try {
       const response = await aiApi.generateImage(
         {
           prompt,
           phoneModel: phoneModel || "iPhone 15",
-          negativePrompt: STANDARD_NEGATIVE_PROMPT,
+          style: designStyle,
+          colorPreset,
+          customColor: colorPreset === "custom" ? customColor : undefined,
+          wantsText: wantsText || generationPlan.classification.hasTextRequest,
+          qualityLevel: "standard",
+          promptMode: generationPlan.classification.recommendedMode,
+          classification: generationPlan.classification,
+          enhancedPromptDraft: generationPlan.enhancedPromptDraft,
+          negativePrompt,
         },
         captchaToken || "",
       );
@@ -175,8 +198,8 @@ export function GenerationDisplay({
           await aiImageApi.createAIImage(
             {
               prompt: response.designs[0]?.enhancedPrompt || prompt,
-              negativePrompt: STANDARD_NEGATIVE_PROMPT,
-              style: "default",
+              negativePrompt,
+              style: designStyle,
               width: 512,
               height: 512,
             },
@@ -236,7 +259,17 @@ export function GenerationDisplay({
       turnstileRef.current?.reset();
       setCaptchaToken(null);
     }
-  }, [prompt, phoneModel, setSelectedImage, setGeneratedImages, captchaToken]);
+  }, [
+    prompt,
+    phoneModel,
+    designStyle,
+    colorPreset,
+    customColor,
+    wantsText,
+    setSelectedImage,
+    setGeneratedImages,
+    captchaToken,
+  ]);
 
   // -----------------------------------------------------------------------
   // Initial fetch on mount

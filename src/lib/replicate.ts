@@ -1,10 +1,5 @@
 const REPLICATE_API_BASE = "https://api.replicate.com";
-const DEFAULT_IMAGE_MODEL_CHAIN = [
-  "black-forest-labs/flux-schnell",
-  "black-forest-labs/flux-1.1-pro",
-  "ideogram-ai/ideogram-v3-turbo",
-  "black-forest-labs/flux-dev",
-];
+const DEFAULT_IMAGE_MODEL_CHAIN = ["recraft-ai/recraft-v4.1"];
 const MODEL_COOLDOWN_MS = 15 * 60 * 1000;
 
 const unavailableModels = new Map<string, number>();
@@ -93,14 +88,12 @@ function getReplicateModelChain(): string[] {
   const configuredModels =
     process.env.REPLICATE_IMAGE_MODELS || process.env.REPLICATE_IMAGE_MODEL;
 
-  if (!configuredModels) {
-    return DEFAULT_IMAGE_MODEL_CHAIN;
-  }
-
   const models = configuredModels
-    .split(",")
-    .map((model) => model.trim())
-    .filter(Boolean);
+    ? configuredModels
+        .split(",")
+        .map((model) => model.trim())
+        .filter(Boolean)
+    : DEFAULT_IMAGE_MODEL_CHAIN;
 
   return [...new Set(models.length > 0 ? models : DEFAULT_IMAGE_MODEL_CHAIN)];
 }
@@ -142,13 +135,26 @@ function isFallbackEligibleError(error: unknown): boolean {
   );
 }
 
-function buildModelInput(model: string, enhancedPrompt: string) {
+interface BuildModelInputOptions {
+  negativePrompt?: string;
+}
+
+function buildModelInput(
+  model: string,
+  enhancedPrompt: string,
+  options: BuildModelInputOptions = {},
+) {
+  const negativePrompt = options.negativePrompt;
+  const prompt = negativePrompt
+    ? `${enhancedPrompt} Must not include: ${negativePrompt}.`
+    : enhancedPrompt;
+
   if (model === "black-forest-labs/flux-schnell") {
     return {
-      prompt: enhancedPrompt,
+      prompt,
       go_fast: true,
       num_outputs: 1,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       output_format: "webp",
       output_quality: 80,
       num_inference_steps: 4,
@@ -158,8 +164,8 @@ function buildModelInput(model: string, enhancedPrompt: string) {
 
   if (model === "google/imagen-4") {
     return {
-      prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      prompt,
+      aspect_ratio: "9:16",
       image_size: "1K",
       output_format: "png",
       safety_filter_level: "block_medium_and_above",
@@ -168,8 +174,8 @@ function buildModelInput(model: string, enhancedPrompt: string) {
 
   if (model === "black-forest-labs/flux-1.1-pro") {
     return {
-      prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      prompt,
+      aspect_ratio: "9:16",
       output_format: "png",
       output_quality: 90,
       safety_tolerance: 2,
@@ -179,8 +185,8 @@ function buildModelInput(model: string, enhancedPrompt: string) {
 
   if (model === "ideogram-ai/ideogram-v3-turbo") {
     return {
-      prompt: enhancedPrompt,
-      aspect_ratio: "3:4",
+      prompt,
+      aspect_ratio: "9:16",
       resolution: "None",
       style_type: "Design",
       magic_prompt_option: "Auto",
@@ -189,12 +195,12 @@ function buildModelInput(model: string, enhancedPrompt: string) {
 
   if (model === "black-forest-labs/flux-dev") {
     return {
-      prompt: enhancedPrompt,
+      prompt,
       go_fast: true,
       guidance: 3,
       megapixels: "1",
       num_outputs: 1,
-      aspect_ratio: "3:4",
+      aspect_ratio: "9:16",
       output_format: "png",
       output_quality: 90,
       num_inference_steps: 28,
@@ -202,8 +208,44 @@ function buildModelInput(model: string, enhancedPrompt: string) {
     };
   }
 
+  if (
+    model === "recraft-ai/recraft-v4.1" ||
+    model === "recraft-ai/recraft-v4.1-pro"
+  ) {
+    return {
+      prompt,
+      aspect_ratio: "9:16",
+    };
+  }
+
+  if (model === "recraft-ai/recraft-v4.1-svg") {
+    return {
+      prompt,
+      aspect_ratio: "9:16",
+    };
+  }
+
+  if (model === "ideogram-ai/ideogram-v4-balanced") {
+    return {
+      prompt,
+      resolution: "None",
+      enable_copyright_detection: true,
+    };
+  }
+
+  if (model === "black-forest-labs/flux-kontext-pro") {
+    return {
+      prompt,
+      aspect_ratio: "9:16",
+      output_format: "png",
+      safety_tolerance: 2,
+      prompt_upsampling: true,
+    };
+  }
+
   return {
-    prompt: enhancedPrompt,
+    prompt,
+    aspect_ratio: "9:16",
   };
 }
 
@@ -282,6 +324,7 @@ async function pollPrediction(
 async function runReplicateModel(
   model: string,
   enhancedPrompt: string,
+  options: BuildModelInputOptions = {},
 ): Promise<string> {
   const token = getReplicateToken();
   const response = await fetch(
@@ -295,7 +338,7 @@ async function runReplicateModel(
         "Cancel-After": "90s",
       },
       body: JSON.stringify({
-        input: buildModelInput(model, enhancedPrompt),
+        input: buildModelInput(model, enhancedPrompt, options),
       }),
     },
   );
@@ -324,6 +367,7 @@ async function runReplicateModel(
 
 export async function generateReplicateImage(
   enhancedPrompt: string,
+  options: { negativePrompt?: string } = {},
 ): Promise<{ imageUrl: string; model: string; attemptedModels: string[] }> {
   const modelChain = getReplicateModelChain();
   const attemptedModels: string[] = [];
@@ -337,7 +381,9 @@ export async function generateReplicateImage(
     attemptedModels.push(model);
 
     try {
-      const imageUrl = await runReplicateModel(model, enhancedPrompt);
+      const imageUrl = await runReplicateModel(model, enhancedPrompt, {
+        negativePrompt: options.negativePrompt,
+      });
       return { imageUrl, model, attemptedModels };
     } catch (error) {
       lastError = error;

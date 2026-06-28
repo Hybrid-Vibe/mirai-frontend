@@ -33,6 +33,15 @@
   --radius-md: var(--mirai-radius-sm);
   --radius-lg: var(--mirai-radius-md);
   --radius-xl: var(--mirai-radius-lg);
+
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.75rem;
 }
 
 :root {
@@ -101,13 +110,13 @@
   --mirai-type-display-xl: 700 72px/1.04 var(--font-display);
   --mirai-type-display-lg: 700 64px/1.08 var(--font-display);
   --mirai-type-heading-md: 600 32px/1.2 var(--font-display);
-  --mirai-type-body-md: 400 16px/1.55 var(--font-body);
-  --mirai-type-body-sm: 400 14px/1.5 var(--font-body);
-  --mirai-type-caption: 600 12px/1.4 var(--font-body);
+  --mirai-type-body-md: 400 17px/1.55 var(--font-body);
+  --mirai-type-body-sm: 400 15px/1.5 var(--font-body);
+  --mirai-type-caption: 600 13px/1.4 var(--font-body);
 
   /* Legacy aliases for old classes/components */
   --mirai-font-title-12-regular: var(--mirai-type-caption);
-  --mirai-font-title-14-semibold: 600 14px/1.5 var(--font-body);
+  --mirai-font-title-14-semibold: 600 15px/1.5 var(--font-body);
   --mirai-font-title-16-regular: var(--mirai-type-body-md);
   --mirai-font-heading-24-bold: 700 24px/1.2 var(--font-display);
   --mirai-font-heading-24-semibold: 600 24px/1.2 var(--font-display);
@@ -188,6 +197,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
