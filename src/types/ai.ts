@@ -416,3 +416,6 @@ export type GenerationStatus =
   | "processing"
   | "completed"
   | "failed";
+
+export const STANDARD_NEGATIVE_PROMPT =
+  "phone mockup, 3D case render, camera cutout, phone borders, low quality, deformed, blurry, text, watermark, signature";
