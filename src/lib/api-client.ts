@@ -982,7 +982,10 @@ export const aiImageApi = {
   },
 };
 
-function isCompletedAIImageStatus(status: AIImageDto["status"]): boolean {
+function isCompletedAIImageStatus(
+  status: AIImageDto["status"] | undefined,
+): boolean {
+  if (status === undefined) return true; // GenerateAIImageResultDto has no status field but is completed if imageUrl is returned
   return (
     status === "Completed" || Number(status) === AIImageStatusValue.Completed
   );
@@ -1003,7 +1006,10 @@ function mapBackendAIImageToGenerateResponse(
   return {
     designs: [
       {
-        id: aiImage.aiImageId,
+        id:
+          aiImage.aiImageId ||
+          (aiImage as { predictionId?: string }).predictionId ||
+          "",
         imageUrl: aiImage.imageUrl,
         enhancedPrompt:
           aiImage.prompt || request.enhancedPromptDraft || request.prompt,
