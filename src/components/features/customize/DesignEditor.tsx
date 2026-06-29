@@ -385,6 +385,9 @@ export default function DesignEditor({
     stage.batchDraw();
   }, [onCanvasExport, onCasePreviewExport, selectedTemplate, stageRef]);
 
+  // Track background image load state to trigger export on load success
+  const [bgImageElement] = useImage(backgroundImage || "", "anonymous");
+
   // Auto-export when elements change
   useEffect(() => {
     if (!onCanvasExport) return;
@@ -397,6 +400,7 @@ export default function DesignEditor({
     elements,
     backgroundImage,
     backgroundColor,
+    bgImageElement, // Triggers re-export when background image loads
     exportCanvas,
     onCasePreviewExport,
     onCanvasExport,
