@@ -497,10 +497,10 @@ export interface CreateCartDto {
 export type AIImageStatus = "Pending" | "Processing" | "Completed" | "Failed";
 
 export const AIImageStatusValue = {
-  Pending: 1,
-  Processing: 2,
-  Completed: 3,
-  Failed: 4,
+  Pending: 0,
+  Processing: 1,
+  Completed: 2,
+  Failed: 3,
 } as const;
 
 /** POST /api/ai-images — Request body */
@@ -523,7 +523,7 @@ export interface AIImageDto {
   style?: string;
   width?: number;
   height?: number;
-  status: AIImageStatus;
+  status: AIImageStatus | number;
   errorMessage?: string;
   createdAt: string;
   updatedAt?: string;
@@ -531,7 +531,7 @@ export interface AIImageDto {
 
 /** PUT /api/ai-images/{id}/status — Request body */
 export interface UpdateAIImageStatusDto {
-  status: AIImageStatus;
+  status: AIImageStatus | number;
   imageUrl?: string;
   thumbnailUrl?: string;
   errorMessage?: string;
