@@ -5,6 +5,10 @@ import { SessionProvider } from "@/components/common";
 import { SupabaseAuthProvider } from "@/components/providers/supabase-auth-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastConfigurator } from "@/components/providers/toast-configurator";
+import { Analytics } from "@vercel/analytics/react";
+import { cookies } from "next/headers";
+import { LanguageProvider, Locale } from "@/providers/language-context";
+import Script from "next/script";
 import "./globals.css";
 
 const fontDisplay = Bricolage_Grotesque({
@@ -63,13 +67,16 @@ const themeBootScript = `
   }
 })();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const locale = (cookieStore.get("NEXT_LOCALE")?.value as Locale) || "vi";
+
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -82,32 +89,39 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Caveat:wght@400..700&family=Cinzel:wght@400..900&family=Inter:wght@100..900&family=Lobster&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Oswald:wght@200..700&family=Pacifico&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100..900;1,100..900&family=Sacramento&display=swap"
           rel="stylesheet"
         />
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <Script
+          id="theme-boot"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeBootScript }}
+        />
       </head>
       <body
         className={`${fontDisplay.variable} ${fontBody.variable} ${fontUi.variable} min-h-screen bg-background text-foreground antialiased`}
       >
-        <ToastConfigurator />
-        <SessionProvider>
-          <SupabaseAuthProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-          </SupabaseAuthProvider>
-        </SessionProvider>
-        <Toaster
-          theme="light"
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "var(--mirai-sem-surface)",
-              border: "1px solid var(--mirai-sem-border)",
-              color: "var(--mirai-sem-text)",
-            },
-          }}
-          icons={{
-            info: null,
-            warning: null,
-          }}
-        />
+        <LanguageProvider initialLocale={locale}>
+          <ToastConfigurator />
+          <SessionProvider>
+            <SupabaseAuthProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </SupabaseAuthProvider>
+          </SessionProvider>
+          <Toaster
+            theme="light"
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "var(--mirai-sem-surface)",
+                border: "1px solid var(--mirai-sem-border)",
+                color: "var(--mirai-sem-text)",
+              },
+            }}
+            icons={{
+              info: null,
+              warning: null,
+            }}
+          />
+          <Analytics />
+        </LanguageProvider>
       </body>
     </html>
   );

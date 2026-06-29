@@ -13,10 +13,12 @@ import { userApi } from "@/lib/api-client";
 import { useDesignStore } from "@/lib/store";
 import { getFriendlyErrorMessage } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/providers/language-context";
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useDesignStore((state) => state.setUser);
+  const { t } = useTranslation();
 
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
@@ -81,7 +83,7 @@ export default function LoginPage() {
       });
 
       toast.success(
-        `Chào mừng quay trở lại, ${response.fullName || response.email}!`,
+        `${t("auth.login_success")}, ${response.fullName || response.email}!`,
       );
 
       // Smart redirection based on role
@@ -91,12 +93,7 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: unknown) {
-      toast.error(
-        getFriendlyErrorMessage(
-          error,
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.",
-        ),
-      );
+      toast.error(getFriendlyErrorMessage(error, t("auth.login_fail")));
     } finally {
       setIsLoading(false);
     }
@@ -111,10 +108,10 @@ export default function LoginPage() {
 
         <section>
           <h1 className="font-heading text-5xl font-semibold text-foreground">
-            Đăng nhập vào MIRAI
+            {t("auth.login_title")}
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
-            Nhập thông tin của bạn bên dưới
+            {t("auth.enter_details")}
           </p>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -143,27 +140,27 @@ export default function LoginPage() {
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Đang đăng nhập...
+                    {t("auth.logging_in")}
                   </span>
                 ) : (
-                  "Đăng nhập"
+                  t("auth.login_btn")
                 )}
               </Button>
               <Link
                 href="/forgot-password"
                 className="text-sm font-medium text-(--mirai-sem-accent) hover:underline"
               >
-                Quên mật khẩu?
+                {t("auth.forgot_password")}
               </Link>
             </div>
           </form>
 
-          <GoogleSignInButton label="Đăng nhập với Google" />
+          <GoogleSignInButton label={t("auth.login_google")} />
 
           <p className="mt-8 text-sm text-muted-foreground">
-            Chưa có tài khoản?{" "}
+            {t("auth.no_account")}{" "}
             <Link href="/signup" className="font-semibold underline">
-              Tạo tài khoản
+              {t("header.signup")}
             </Link>
           </p>
         </section>

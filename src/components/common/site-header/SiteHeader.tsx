@@ -24,6 +24,7 @@ import { useDesignStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useTranslation } from "@/providers/language-context";
 
 const ACCOUNT_MENU_ITEMS = [
   { href: "/account", label: "Quản lý tài khoản", icon: User },
@@ -42,6 +43,7 @@ const isPathActive = (pathname: string, href: string) => {
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const { locale, setLocale, t } = useTranslation();
   const user = useDesignStore((state) => state.user);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -86,9 +88,9 @@ export function SiteHeader() {
     });
 
     toast.promise(logoutPromise, {
-      loading: "Đang đăng xuất khỏi hệ thống...",
-      success: "Đăng xuất thành công! Hẹn gặp lại bạn nhé. 👋",
-      error: "Có lỗi xảy ra khi đăng xuất.",
+      loading: t("header.logout_loading"),
+      success: t("header.logout_success"),
+      error: t("header.logout_error"),
     });
 
     try {
@@ -123,7 +125,15 @@ export function SiteHeader() {
                     href={item.href}
                     className={`group relative pb-1 font-body text-xs font-medium transition-colors hover:text-(--mirai-sem-primary) ${isActive ? "text-(--mirai-color-ink)" : "text-(--mirai-color-ink)"}`}
                   >
-                    {item.label}
+                    {item.href === "/"
+                      ? t("header.home")
+                      : item.href === "/customize"
+                        ? t("header.customize")
+                        : item.href === "/shop"
+                          ? t("header.shop")
+                          : item.href === "/about"
+                            ? t("header.about")
+                            : item.label}
                     <span
                       className={
                         isActive
@@ -142,7 +152,7 @@ export function SiteHeader() {
               <Search className="h-4 w-4 text-(--mirai-color-ink)" />
               <input
                 type="search"
-                placeholder="What are you looking for?"
+                placeholder={t("header.search_placeholder")}
                 className="w-44 bg-transparent font-body text-xs text-(--mirai-color-ink) outline-none placeholder:text-(--mirai-color-ink-2)"
               />
             </div>
@@ -216,7 +226,13 @@ export function SiteHeader() {
                         >
                           <item.icon className="h-6 w-6" />
                           <span className="font-body text-[14px] font-normal leading-[21px]">
-                            {item.label}
+                            {item.href === "/account"
+                              ? t("header.manage_account")
+                              : item.href === "/orders"
+                                ? t("header.my_orders")
+                                : item.href === "/reviews"
+                                  ? t("header.my_reviews")
+                                  : item.label}
                           </span>
                         </Link>
                       ))}
@@ -227,7 +243,7 @@ export function SiteHeader() {
                       >
                         <LogOut className="h-6 w-6" />
                         <span className="font-body text-[14px] font-normal leading-[21px]">
-                          Đăng xuất
+                          {t("header.logout")}
                         </span>
                       </button>
                     </div>
@@ -240,13 +256,13 @@ export function SiteHeader() {
                   href="/signup"
                   className="inline-flex h-9 items-center gap-1 rounded-[4px] bg-(--mirai-color-brand) px-4 text-xs font-semibold text-(--mirai-color-ink) transition-all hover:opacity-90 active:scale-[0.98]"
                 >
-                  Đăng ký
+                  {t("header.signup")}
                 </Link>
                 <Link
                   href="/login"
                   className="inline-flex h-9 items-center gap-1 rounded-[4px] border border-(--mirai-color-line) px-4 text-xs font-semibold text-(--mirai-color-ink) transition-all hover:bg-(--mirai-color-surface-muted) active:scale-[0.98]"
                 >
-                  Đăng nhập
+                  {t("header.login")}
                 </Link>
               </>
             )}
@@ -313,7 +329,15 @@ export function SiteHeader() {
                     : "text-(--mirai-color-ink)"
                 }`}
               >
-                {item.label}
+                {item.href === "/"
+                  ? t("header.home")
+                  : item.href === "/customize"
+                    ? t("header.customize")
+                    : item.href === "/shop"
+                      ? t("header.shop")
+                      : item.href === "/about"
+                        ? t("header.about")
+                        : item.label}
               </Link>
             ))}
           </nav>
@@ -322,7 +346,7 @@ export function SiteHeader() {
             <Search className="h-4 w-4 text-(--mirai-color-ink)" />
             <input
               type="search"
-              placeholder="What are you looking for?"
+              placeholder={t("header.search_placeholder")}
               className="w-full bg-transparent font-body text-xs text-(--mirai-color-ink) outline-none placeholder:text-(--mirai-color-ink-2)"
             />
           </div>
@@ -355,7 +379,13 @@ export function SiteHeader() {
                       onClick={closePanels}
                       className="block rounded-[4px] px-2 py-2 text-sm text-(--mirai-color-ink) transition hover:bg-(--mirai-color-surface-muted)"
                     >
-                      {item.label}
+                      {item.href === "/account"
+                        ? t("header.manage_account")
+                        : item.href === "/orders"
+                          ? t("header.my_orders")
+                          : item.href === "/reviews"
+                            ? t("header.my_reviews")
+                            : item.label}
                     </Link>
                   ))}
                   <button
@@ -363,7 +393,7 @@ export function SiteHeader() {
                     onClick={handleSignOut}
                     className="w-full rounded-[4px] px-2 py-2 text-left text-sm text-red-500 transition hover:bg-(--mirai-color-surface-muted)"
                   >
-                    Đăng xuất
+                    {t("header.logout")}
                   </button>
                 </div>
               </div>
@@ -375,14 +405,14 @@ export function SiteHeader() {
                 onClick={closePanels}
                 className="inline-flex h-10 items-center justify-center rounded-[4px] border border-(--mirai-color-line) text-sm font-medium text-(--mirai-color-ink)"
               >
-                Đăng nhập
+                {t("header.login")}
               </Link>
               <Link
                 href="/signup"
                 onClick={closePanels}
                 className="inline-flex h-10 items-center justify-center rounded-[4px] bg-(--mirai-color-brand) text-sm font-semibold text-(--mirai-color-ink)"
               >
-                Đăng ký
+                {t("header.signup")}
               </Link>
             </div>
           )}
@@ -393,10 +423,11 @@ export function SiteHeader() {
             </span>
             <button
               type="button"
+              onClick={() => setLocale(locale === "vi" ? "en" : "vi")}
               className="inline-flex items-center gap-1 rounded-[4px] border border-(--mirai-color-line) px-2 py-1 text-xs text-(--mirai-color-ink)"
               aria-label="Switch language"
             >
-              Vietnamese
+              {locale === "vi" ? "Vietnamese" : "English"}
               <ChevronDown className="h-3 w-3" />
             </button>
           </div>

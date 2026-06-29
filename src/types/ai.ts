@@ -53,6 +53,7 @@ export interface StyleOption {
   value: DesignStyle;
   label: string;
   description: string;
+  descriptionEn: string;
   prompt: string;
   emoji?: string;
 }
@@ -60,6 +61,7 @@ export interface StyleOption {
 export interface ColorPresetOption {
   value: ColorPreset;
   label: string;
+  labelEn: string;
   prompt: string;
   swatches: string[];
 }
@@ -84,6 +86,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "minimal",
     label: "Minimal",
     description: "Gọn, sạch, nhiều khoảng thở",
+    descriptionEn: "Clean, airy, lots of breathing room",
     prompt:
       "Minimal premium illustration, clean lines, soft shadows, subtle color palette, elegant negative space, modern lifestyle product aesthetic.",
   },
@@ -91,6 +94,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "cute-sticker",
     label: "Cute Sticker",
     description: "Sticker dễ thương, nét rõ",
+    descriptionEn: "Adorable sticker style, bold outlines",
     prompt:
       "Cute sticker-style illustration, bold clean outline, soft rounded shapes, playful but not childish, trendy Korean stationery aesthetic.",
   },
@@ -98,6 +102,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "streetwear",
     label: "Streetwear",
     description: "Táo bạo, graphic, tương phản",
+    descriptionEn: "Bold, graphic, high contrast",
     prompt:
       "Bold streetwear graphic, high contrast, edgy composition, modern apparel print style, clean vector-like details.",
   },
@@ -105,6 +110,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "y2k-modern",
     label: "Y2K Modern",
     description: "Chrome, glow, hiện đại",
+    descriptionEn: "Chrome, glow, futuristic",
     prompt:
       "Modern Y2K-inspired design, chrome accents, dreamy glow, playful futuristic mood, clean and not overdecorated.",
   },
@@ -112,6 +118,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "anime-clean",
     label: "Anime Clean",
     description: "Anime sáng, ít rối",
+    descriptionEn: "Bright anime style, uncluttered",
     prompt:
       "Clean anime-inspired illustration, soft cinematic lighting, elegant composition, detailed but not cluttered, no old anime poster look.",
   },
@@ -119,6 +126,7 @@ export const DESIGN_STYLE_OPTIONS: StyleOption[] = [
     value: "luxury",
     label: "Luxury",
     description: "Cao cấp, tinh gọn, polished",
+    descriptionEn: "Premium, refined, polished",
     prompt:
       "Premium editorial design, refined color palette, elegant lighting, high-end accessory branding feel, minimal and polished.",
   },
@@ -128,42 +136,49 @@ export const COLOR_PRESET_OPTIONS: ColorPresetOption[] = [
   {
     value: "auto",
     label: "AI tự chọn màu",
+    labelEn: "AI Pick Color",
     prompt: "Use a tasteful modern color palette that fits the user's idea.",
     swatches: ["#f7f7f2", "#222222", "#6c7df7"],
   },
   {
     value: "pastel",
     label: "Pastel",
+    labelEn: "Pastel",
     prompt: "Soft pastel palette with gentle contrast and clean highlights.",
     swatches: ["#f7c8e0", "#c7f0db", "#b8d8ff"],
   },
   {
     value: "monochrome",
     label: "Đen trắng",
+    labelEn: "Monochrome",
     prompt: "Black and white palette with refined contrast and crisp details.",
     swatches: ["#0f0f0f", "#ffffff", "#b8b8b8"],
   },
   {
     value: "neon",
     label: "Neon",
+    labelEn: "Neon",
     prompt: "Controlled neon accents on a clean base, vibrant but not messy.",
     swatches: ["#101014", "#39ff88", "#ff3df2"],
   },
   {
     value: "pink",
     label: "Hồng",
+    labelEn: "Pink",
     prompt: "Pink-led palette with balanced highlights and premium softness.",
     swatches: ["#ffe2ef", "#ff7ab6", "#53314c"],
   },
   {
     value: "blue",
     label: "Xanh",
+    labelEn: "Blue",
     prompt: "Blue-led palette with airy contrast and modern fresh energy.",
     swatches: ["#e2f0ff", "#3772ff", "#0e2a47"],
   },
   {
     value: "earth",
     label: "Earth",
+    labelEn: "Earth",
     prompt:
       "Earthy natural palette with muted greens, clay, ivory, and calm contrast.",
     swatches: ["#f2eadf", "#7b8b5f", "#b26d4b"],
@@ -171,6 +186,7 @@ export const COLOR_PRESET_OPTIONS: ColorPresetOption[] = [
   {
     value: "custom",
     label: "Tuỳ chọn màu",
+    labelEn: "Custom Color",
     prompt: "Use the customer's custom color as the dominant palette anchor.",
     swatches: ["#ffffff", "#888888", "#111111"],
   },

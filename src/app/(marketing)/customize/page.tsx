@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import { useTranslation } from "@/providers/language-context";
 import { aiApi } from "@/lib/api-client";
 import {
   Select,
@@ -115,6 +116,7 @@ function getCenteredTemplatePosition(
 
 export default function CustomizePage() {
   const router = useRouter();
+  const { locale, t } = useTranslation();
   const stageRef = useRef<Konva.Stage | null>(null);
 
   const {
@@ -512,7 +514,7 @@ export default function CustomizePage() {
         <div className="mb-6 flex flex-wrap items-center gap-3">
           {/* Category */}
           <div className="flex gap-2">
-            {["Phone Cases", "Airpod Cases"].map((cat, i) => (
+            {["Phone Cases"].map((cat, i) => (
               <button
                 key={cat}
                 type="button"
@@ -545,7 +547,7 @@ export default function CustomizePage() {
               className="h-10 w-56 text-sm font-semibold bg-card"
               data-testid="phone-model-select"
             >
-              <SelectValue placeholder="Chọn dòng điện thoại">
+              <SelectValue placeholder={t("customize.select_model")}>
                 {currentTemplate?.label}
               </SelectValue>
             </SelectTrigger>
@@ -587,7 +589,7 @@ export default function CustomizePage() {
                   : "text-foreground hover:bg-muted"
               }`}
             >
-              Tự Custom
+              {locale === "vi" ? "Tự Custom" : "Self Custom"}
             </button>
           </div>
         </div>
@@ -599,7 +601,13 @@ export default function CustomizePage() {
             {/* Header spacer to align with the Canvas header */}
             <div className="flex h-6 items-center justify-between">
               <span className="text-sm font-semibold text-foreground">
-                {mode === "ai" ? "Công cụ AI Design" : "Công cụ tự thiết kế"}
+                {mode === "ai"
+                  ? locale === "vi"
+                    ? "Công cụ AI Design"
+                    : "AI Design Tools"
+                  : locale === "vi"
+                    ? "Công cụ tự thiết kế"
+                    : "Self Design Tools"}
               </span>
             </div>
 
@@ -624,17 +632,25 @@ export default function CustomizePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-foreground truncate">
-                        Ảnh tham khảo phong cách
+                        {locale === "vi"
+                          ? "Ảnh tham khảo phong cách"
+                          : "Style Reference Image"}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        AI sẽ mô phỏng tone màu và mood của ảnh này.
+                        {locale === "vi"
+                          ? "AI sẽ mô phỏng tone màu và mood của ảnh này."
+                          : "AI will emulate this image's color tone and mood."}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveRefImage}
                       className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
-                      title="Xóa hình tham khảo"
+                      title={
+                        locale === "vi"
+                          ? "Xóa hình tham khảo"
+                          : "Delete reference image"
+                      }
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -644,13 +660,21 @@ export default function CustomizePage() {
                     <ImagePlus className="h-4 w-4 text-muted-foreground animate-pulse" />
                     <span className="text-xs font-medium">
                       {aiGenerationPlan.classification.isSpecificCharacter
-                        ? "Tải ảnh mẫu nhân vật"
-                        : "Tải hình tham khảo phong cách"}
+                        ? locale === "vi"
+                          ? "Tải ảnh mẫu nhân vật"
+                          : "Upload Character Image"
+                        : locale === "vi"
+                          ? "Tải hình tham khảo phong cách"
+                          : "Upload Style Reference"}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {aiGenerationPlan.classification.isSpecificCharacter
-                        ? "Giúp AI bám visual nhân vật hơn"
-                        : "Phân tích mood, màu sắc, art style"}
+                        ? locale === "vi"
+                          ? "Giúp AI bám visual nhân vật hơn"
+                          : "Help AI match character visuals"
+                        : locale === "vi"
+                          ? "Phân tích mood, màu sắc, art style"
+                          : "Analyze mood, colors, and art style"}
                     </span>
                     <input
                       type="file"
@@ -674,7 +698,7 @@ export default function CustomizePage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-foreground">
-                      Ý tưởng ngắn
+                      {locale === "vi" ? "Ý tưởng ngắn" : "Short Idea"}
                     </label>
                     <span className="text-[10px] text-muted-foreground">
                       {prompt.length}/220
@@ -685,7 +709,11 @@ export default function CustomizePage() {
                       value={prompt}
                       maxLength={220}
                       onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Ví dụ: mèo đen nằm trên mặt trăng"
+                      placeholder={
+                        locale === "vi"
+                          ? "Ví dụ: mèo đen nằm trên mặt trăng"
+                          : "e.g., black cat lying on the moon"
+                      }
                       className="h-24 flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
                     />
                     <button
@@ -697,14 +725,18 @@ export default function CustomizePage() {
                       <Sparkles
                         className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
                       />
-                      {isGenerating ? "..." : "Tạo"}
+                      {isGenerating
+                        ? "..."
+                        : locale === "vi"
+                          ? "Tạo"
+                          : "Create"}
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-foreground">
-                    Phong cách
+                    {locale === "vi" ? "Phong cách" : "Style"}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {DESIGN_STYLE_OPTIONS.map((option) => (
@@ -722,7 +754,9 @@ export default function CustomizePage() {
                           {option.label}
                         </span>
                         <span className="mt-0.5 line-clamp-1 block text-[10px]">
-                          {option.description}
+                          {locale === "vi"
+                            ? option.description
+                            : option.descriptionEn}
                         </span>
                       </button>
                     ))}
@@ -731,7 +765,7 @@ export default function CustomizePage() {
 
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-foreground">
-                    Màu chủ đạo
+                    {locale === "vi" ? "Màu chủ đạo" : "Dominant Color"}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {COLOR_PRESET_OPTIONS.map((option) => (
@@ -754,7 +788,9 @@ export default function CustomizePage() {
                             />
                           ))}
                         </span>
-                        <span className="font-medium">{option.label}</span>
+                        <span className="font-medium">
+                          {locale === "vi" ? option.label : option.labelEn}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -777,7 +813,7 @@ export default function CustomizePage() {
                 <div className="space-y-2">
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-foreground">
-                      Chữ trên ảnh
+                      {locale === "vi" ? "Chữ trên ảnh" : "Text on Image"}
                     </p>
                     <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border">
                       <button
@@ -789,7 +825,7 @@ export default function CustomizePage() {
                             : "bg-background text-muted-foreground hover:bg-muted"
                         }`}
                       >
-                        Không
+                        {locale === "vi" ? "Không" : "No"}
                       </button>
                       <button
                         type="button"
@@ -800,7 +836,7 @@ export default function CustomizePage() {
                             : "bg-background text-muted-foreground hover:bg-muted"
                         }`}
                       >
-                        Có
+                        {locale === "vi" ? "Có" : "Yes"}
                       </button>
                     </div>
                   </div>
@@ -810,6 +846,7 @@ export default function CustomizePage() {
                 {shouldLoadTurnstile && (
                   <div className="hidden">
                     <Turnstile
+                      key={locale}
                       ref={turnstileRef}
                       siteKey={
                         process.env.NODE_ENV === "development"
@@ -827,6 +864,7 @@ export default function CustomizePage() {
                       onError={() => setCaptchaToken(null)}
                       options={{
                         size: "invisible",
+                        language: locale,
                       }}
                     />
                   </div>
@@ -836,7 +874,9 @@ export default function CustomizePage() {
                 {generatedImages.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-semibold text-foreground">
-                      Chọn mẫu ({generatedImages.length})
+                      {locale === "vi"
+                        ? `Chọn mẫu (${generatedImages.length})`
+                        : `Select Template (${generatedImages.length})`}
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {generatedImages.map((imgUrl, i) => (
@@ -873,11 +913,13 @@ export default function CustomizePage() {
                 <div className="rounded-xl border border-border bg-card p-4">
                   <label className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                     <ImagePlus className="h-4 w-4 text-primary" />
-                    Thêm hình ảnh
+                    {locale === "vi" ? "Thêm hình ảnh" : "Add Image"}
                   </label>
                   <label className="flex h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/50 text-xs text-foreground hover:bg-muted transition-colors">
                     <ImagePlus className="h-4 w-4" />
-                    Click để chọn ảnh
+                    {locale === "vi"
+                      ? "Click để chọn ảnh"
+                      : "Click to select image"}
                     <input
                       type="file"
                       className="hidden"
@@ -918,7 +960,11 @@ export default function CustomizePage() {
                               width: w,
                               height: h,
                             });
-                            toast.success("Đã thêm ảnh vào canvas");
+                            toast.success(
+                              locale === "vi"
+                                ? "Đã thêm ảnh vào canvas"
+                                : "Image added to canvas",
+                            );
                           };
                         }
                       }}
@@ -930,7 +976,7 @@ export default function CustomizePage() {
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                     <Type className="h-4 w-4 text-primary" />
-                    Thêm chữ
+                    {locale === "vi" ? "Thêm chữ" : "Add Text"}
                   </h3>
 
                   {/* Text input + add button */}
@@ -945,7 +991,11 @@ export default function CustomizePage() {
                       type="button"
                       onClick={() => {
                         if (!textInput.trim()) {
-                          toast.error("Nhập nội dung chữ");
+                          toast.error(
+                            locale === "vi"
+                              ? "Nhập nội dung chữ"
+                              : "Enter text content",
+                          );
                           return;
                         }
                         const estimatedTextWidth = Math.min(
@@ -970,11 +1020,13 @@ export default function CustomizePage() {
                           color: selectedColor,
                         });
                         setTextInput("");
-                        toast.success("Đã thêm chữ");
+                        toast.success(
+                          locale === "vi" ? "Đã thêm chữ" : "Text added",
+                        );
                       }}
                       className="h-9 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
                     >
-                      Thêm
+                      {locale === "vi" ? "Thêm" : "Add"}
                     </button>
                   </div>
 
@@ -1016,7 +1068,7 @@ export default function CustomizePage() {
                       </select>
                     </label>
                     <label className="text-xs text-muted-foreground">
-                      Cỡ chữ
+                      {locale === "vi" ? "Cỡ chữ" : "Font Size"}
                       <select
                         value={fontSize}
                         onChange={(e) =>
@@ -1036,7 +1088,7 @@ export default function CustomizePage() {
                   {/* Text color: presets + RGB picker */}
                   <div>
                     <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                      Màu chữ
+                      {locale === "vi" ? "Màu chữ" : "Text Color"}
                     </p>
                     <div className="flex items-center gap-2">
                       <div className="flex flex-wrap gap-1.5">
@@ -1077,7 +1129,9 @@ export default function CustomizePage() {
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <h3 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                     <Palette className="h-4 w-4 text-primary" />
-                    Màu nền ốp lưng
+                    {locale === "vi"
+                      ? "Màu nền ốp lưng"
+                      : "Case Background Color"}
                   </h3>
                   <div className="flex items-center gap-2">
                     <div className="flex flex-wrap gap-1.5">
@@ -1162,7 +1216,9 @@ export default function CustomizePage() {
                           <span>
                             {el.type === "text"
                               ? `T "${el.text?.slice(0, 15)}"`
-                              : "🖼 Hình ảnh"}
+                              : locale === "vi"
+                                ? "🖼 Hình ảnh"
+                                : "🖼 Image"}
                           </span>
                           <button
                             type="button"
@@ -1203,7 +1259,8 @@ export default function CustomizePage() {
                     onClick={() => removeElement(selectedElementId)}
                     className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80"
                   >
-                    <Trash2 className="h-3.5 w-3.5" /> Xoá element
+                    <Trash2 className="h-3.5 w-3.5" />{" "}
+                    {locale === "vi" ? "Xoá element" : "Delete element"}
                   </button>
                 )}
               </div>
@@ -1217,7 +1274,7 @@ export default function CustomizePage() {
                   3D / AR Preview
                 </h3>
                 <span className="text-[10px] text-muted-foreground">
-                  Xoay · Zoom · AR
+                  {locale === "vi" ? "Xoay · Zoom · AR" : "Rotate · Zoom · AR"}
                 </span>
               </div>
             </div>
@@ -1245,23 +1302,32 @@ export default function CustomizePage() {
                   </div>
                 </div>
                 <p className="mt-2 text-center text-xs text-muted-foreground">
-                  Click chọn → kéo di chuyển · Kéo góc để resize/xoay
+                  {locale === "vi"
+                    ? "Click chọn → kéo di chuyển · Kéo góc để resize/xoay"
+                    : "Click to select → drag to move · Drag corners to resize/rotate"}
                 </p>
 
                 {selectedElementId && (
                   <div className="mt-3 flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <span className="text-xs text-destructive/80 font-medium">
-                      Đang chọn:{" "}
+                      {locale === "vi" ? "Đang chọn:" : "Selected:"}{" "}
                       {selectedElement?.type === "text"
-                        ? `Chữ "${selectedElement.text?.slice(0, 15)}..."`
-                        : "Hình ảnh"}
+                        ? locale === "vi"
+                          ? `Chữ "${selectedElement.text?.slice(0, 15)}..."`
+                          : `Text "${selectedElement.text?.slice(0, 15)}..."`
+                        : locale === "vi"
+                          ? "Hình ảnh"
+                          : "Image"}
                     </span>
                     <button
                       type="button"
                       onClick={() => removeElement(selectedElementId)}
                       className="flex items-center gap-1.5 rounded-lg bg-destructive px-3.5 py-1.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive/95 shadow-md shadow-destructive/10 transition-all hover:scale-105 active:scale-95"
                     >
-                      <Trash2 className="h-3.5 w-3.5" /> Xoá Element Này
+                      <Trash2 className="h-3.5 w-3.5" />{" "}
+                      {locale === "vi"
+                        ? "Xoá Element Này"
+                        : "Delete This Element"}
                     </button>
                   </div>
                 )}
@@ -1275,7 +1341,9 @@ export default function CustomizePage() {
                     3D / AR Preview
                   </h3>
                   <span className="text-[10px] text-muted-foreground">
-                    Xoay · Zoom · AR
+                    {locale === "vi"
+                      ? "Xoay · Zoom · AR"
+                      : "Rotate · Zoom · AR"}
                   </span>
                 </div>
                 <div
@@ -1304,10 +1372,14 @@ export default function CustomizePage() {
                           <Camera className="w-8 h-8 text-muted-foreground/50" />
                         </div>
                         <p className="text-sm font-medium text-foreground">
-                          Chưa chọn dòng máy
+                          {locale === "vi"
+                            ? "Chưa chọn dòng máy"
+                            : "No model selected"}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Vui lòng chọn ở menu phía trên
+                          {locale === "vi"
+                            ? "Vui lòng chọn ở menu phía trên"
+                            : "Please select one from the menu above"}
                         </p>
                       </div>
                     )}
@@ -1324,7 +1396,7 @@ export default function CustomizePage() {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 <ShoppingCart className="h-4 w-4" />
-                Đặt hàng ngay
+                {locale === "vi" ? "Đặt hàng ngay" : "Order Now"}
               </button>
             </div>
           </section>

@@ -6,7 +6,6 @@ import {
   Smartphone,
   Sparkles,
   Target,
-  Users,
   Zap,
 } from "lucide-react";
 
@@ -107,49 +106,6 @@ export default function AboutPage() {
               <Headphones className="h-5 w-5 text-(--mirai-sem-primary)" />
               Phụ kiện Âm thanh
             </div>
-          </div>
-        </section>
-
-        {/* The Team Section */}
-        <section className="mt-24">
-          <div className="mb-16 text-center">
-            <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-(--mirai-color-surface-muted) text-foreground shadow-inner">
-              <Users className="h-8 w-8" />
-            </div>
-            <h2 className="font-heading text-4xl font-bold md:text-5xl">
-              Đội ngũ Hybrid Vibe
-            </h2>
-            <p className="mt-6 text-lg text-muted-foreground">
-              5 mảnh ghép, 1 tầm nhìn chung về tương lai của trải nghiệm cá nhân
-              hoá.
-            </p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            {[
-              { id: 1, role: "Founder / CEO" },
-              { id: 2, role: "Co-founder / CTO" },
-              { id: 3, role: "Co-founder / Design" },
-              { id: 4, role: "Co-founder / Marketing" },
-              { id: 5, role: "Co-founder / Product" },
-            ].map((member) => (
-              <div
-                key={member.id}
-                className="group relative overflow-hidden rounded-[20px] border border-(--mirai-color-line) bg-card p-8 text-center transition-all duration-300 hover:-translate-y-3 hover:border-(--mirai-sem-primary) hover:shadow-2xl"
-              >
-                <div className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-tr from-(--mirai-sem-primary)/20 via-background to-(--mirai-sem-accent)/20 shadow-inner transition-transform duration-500 group-hover:scale-110">
-                  <span className="font-brand text-3xl font-black text-(--mirai-sem-primary)">
-                    HV
-                  </span>
-                </div>
-                <h3 className="font-heading text-xl font-bold text-foreground transition-colors group-hover:text-(--mirai-sem-primary)">
-                  Thành viên {member.id}
-                </h3>
-                <p className="mt-2 text-sm font-medium text-muted-foreground">
-                  {member.role}
-                </p>
-              </div>
-            ))}
           </div>
         </section>
 

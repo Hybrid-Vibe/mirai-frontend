@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useTranslation } from "@/providers/language-context";
 
 import { useCartStore } from "@/stores";
 import {
@@ -24,6 +25,7 @@ import {
 const formatCurrency = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 export default function CartPage() {
+  const { locale } = useTranslation();
   const {
     items: cartRows,
     updateQuantity,
@@ -44,12 +46,20 @@ export default function CartPage() {
 
   const removeItem = (id: string) => {
     removeStoreItem(id);
-    toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+    toast.success(
+      locale === "vi"
+        ? "Đã xóa sản phẩm khỏi giỏ hàng"
+        : "Item removed from cart",
+    );
   };
 
   const handleApplyCoupon = () => {
     if (!coupon.trim()) return;
-    toast.success(`Áp dụng mã ${coupon} thành công!`);
+    toast.success(
+      locale === "vi"
+        ? `Áp dụng mã ${coupon} thành công!`
+        : `Coupon "${coupon}" applied!`,
+    );
     // Mock logic: clear coupon after success or show discount
   };
 
@@ -75,16 +85,16 @@ export default function CartPage() {
             <thead>
               <tr className="border-b border-(--mirai-color-line) bg-card">
                 <th className="px-8 py-5 text-left text-sm font-semibold text-foreground">
-                  Sản phẩm
+                  {locale === "vi" ? "Sản phẩm" : "Product"}
                 </th>
                 <th className="px-8 py-5 text-left text-sm font-semibold text-foreground">
-                  Giá
+                  {locale === "vi" ? "Giá" : "Price"}
                 </th>
                 <th className="px-8 py-5 text-left text-sm font-semibold text-foreground">
-                  Số lượng
+                  {locale === "vi" ? "Số lượng" : "Quantity"}
                 </th>
                 <th className="px-8 py-5 text-right text-sm font-semibold text-foreground">
-                  Tổng phụ
+                  {locale === "vi" ? "Tổng phụ" : "Subtotal"}
                 </th>
               </tr>
             </thead>
@@ -169,12 +179,16 @@ export default function CartPage() {
                           type="button"
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-(--mirai-sem-danger) border border-(--mirai-color-line)/60"
                           onClick={() => removeItem(row.id)}
-                          aria-label={`Xóa ${row.name}`}
+                          aria-label={`${locale === "vi" ? "Xóa" : "Delete"} ${row.name}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Xóa khỏi giỏ hàng</p>
+                          <p>
+                            {locale === "vi"
+                              ? "Xóa khỏi giỏ hàng"
+                              : "Remove from cart"}
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -193,7 +207,7 @@ export default function CartPage() {
             href="/shop"
             className="inline-flex h-11 min-w-52 items-center justify-center rounded-[4px] border border-(--mirai-sem-text-muted)/40 px-6 text-sm font-semibold hover:bg-muted transition-colors"
           >
-            Trở về Cửa Hàng
+            {locale === "vi" ? "Trở về Cửa Hàng" : "Back to Shop"}
           </Link>
         </div>
 
@@ -201,7 +215,7 @@ export default function CartPage() {
           <div className="flex h-fit flex-wrap gap-3">
             <input
               type="text"
-              placeholder="Mã Giảm Giá"
+              placeholder={locale === "vi" ? "Mã Giảm Giá" : "Discount Code"}
               value={coupon}
               onChange={(event) => setCoupon(event.target.value)}
               className="h-11 w-full max-w-[340px] rounded-[4px] border border-(--mirai-sem-text-muted)/40 bg-card px-4 text-sm"
@@ -212,25 +226,25 @@ export default function CartPage() {
               disabled={!coupon.trim()}
               className="min-w-44 disabled:opacity-50"
             >
-              Áp Dụng
+              {locale === "vi" ? "Áp Dụng" : "Apply"}
             </Button>
           </div>
 
           <section className="justify-self-end rounded-[4px] border border-(--mirai-sem-text-muted) bg-card p-6 lg:w-[470px]">
             <h2 className="font-heading text-2xl font-semibold text-foreground">
-              Tổng cộng giỏ hàng
+              {locale === "vi" ? "Tổng cộng giỏ hàng" : "Cart Total"}
             </h2>
             <div className="mt-6 space-y-4 text-sm text-foreground">
               <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
-                <span>Subtotal:</span>
+                <span>{locale === "vi" ? "Tạm tính:" : "Subtotal:"}</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex items-center justify-between border-b border-(--mirai-color-line) pb-3">
-                <span>Shipping:</span>
-                <span>Free</span>
+                <span>{locale === "vi" ? "Giao hàng:" : "Shipping:"}</span>
+                <span>{locale === "vi" ? "Miễn phí" : "Free"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>Total:</span>
+                <span>{locale === "vi" ? "Tổng:" : "Total:"}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
@@ -239,14 +253,16 @@ export default function CartPage() {
                 href="/checkout"
                 className="mx-auto mt-8 inline-flex h-11 w-full max-w-64 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground hover:bg-(--mirai-sem-primary)/90 transition-colors"
               >
-                Tiếp tục thanh toán
+                {locale === "vi"
+                  ? "Tiếp tục thanh toán"
+                  : "Proceed to Checkout"}
               </Link>
             ) : (
               <button
                 disabled
                 className="mx-auto mt-8 inline-flex h-11 w-full max-w-64 items-center justify-center rounded-[4px] bg-muted px-6 text-sm font-semibold text-muted-foreground cursor-not-allowed opacity-50"
               >
-                Giỏ hàng trống
+                {locale === "vi" ? "Giỏ hàng trống" : "Cart is empty"}
               </button>
             )}
           </section>

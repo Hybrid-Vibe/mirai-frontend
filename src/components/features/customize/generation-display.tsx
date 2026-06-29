@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { type GeneratedDesign } from "@/types/ai";
 import { buildGenerationPlan } from "@/lib/ai-generation";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { useTranslation } from "@/providers/language-context";
 
 // ---------------------------------------------------------------------------
 // Dynamic loading messages — Don Norman feedback principle
@@ -121,6 +122,7 @@ export function GenerationDisplay({
   onNext: () => void;
   onBack?: () => void;
 }) {
+  const { locale } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
@@ -309,6 +311,7 @@ export function GenerationDisplay({
       {shouldLoadTurnstile && (
         <div className="hidden">
           <Turnstile
+            key={locale}
             ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
             onSuccess={(token: string) => setCaptchaToken(token)}
@@ -316,6 +319,7 @@ export function GenerationDisplay({
             onError={() => setCaptchaToken(null)}
             options={{
               size: "invisible",
+              language: locale,
             }}
           />
         </div>
