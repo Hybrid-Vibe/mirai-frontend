@@ -10,6 +10,7 @@ import { GetAllProductsByFilterDto, CategoryResponseDto } from "@/types/api";
 import { useCartStore, useWishlistStore } from "@/stores";
 import { useDesignStore } from "@/lib/store";
 import { toast } from "sonner";
+import { useTranslation } from "@/providers/language-context";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,6 +31,7 @@ type SortOption = "newest" | "price-asc" | "price-desc";
 const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
 export default function ShopPage() {
+  const { locale } = useTranslation();
   const [products, setProducts] = useState<GetAllProductsByFilterDto[]>([]);
   const [categories, setCategories] = useState<CategoryResponseDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,9 +150,11 @@ export default function ShopPage() {
         },
         userId || "guest",
       );
-      toast.success("Đã thêm vào giỏ hàng");
+      toast.success(locale === "vi" ? "Đã thêm vào giỏ hàng" : "Added to cart");
     } catch {
-      toast.error("Không thể thêm vào giỏ hàng");
+      toast.error(
+        locale === "vi" ? "Không thể thêm vào giỏ hàng" : "Cannot add to cart",
+      );
     } finally {
       setAddingId(null);
     }
@@ -184,12 +188,14 @@ export default function ShopPage() {
             ) : (
               <SlidersHorizontal className="h-4 w-4" />
             )}
-            {showMobileFilters ? "Đóng" : "Filter"}
+            {showMobileFilters ? "Đóng" : locale === "vi" ? "Bộ lọc" : "Filter"}
           </button>
         </div>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          Khám phá bộ sưu tập ốp lưng và phụ kiện mới nhất.
+          {locale === "vi"
+            ? "Khám phá bộ sưu tập ốp lưng và phụ kiện mới nhất."
+            : "Explore the latest phone case and accessory collections."}
         </p>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
@@ -201,13 +207,13 @@ export default function ShopPage() {
             )}
           >
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Bộ lọc
+              {locale === "vi" ? "Bộ lọc" : "Filters"}
             </h2>
 
             <div className="mt-5 space-y-6 text-sm">
               <div>
                 <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
-                  Danh mục
+                  {locale === "vi" ? "Danh mục" : "Category"}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -220,7 +226,7 @@ export default function ShopPage() {
                     )}
                     onClick={() => setActiveCategoryId("all")}
                   >
-                    Tất cả
+                    {locale === "vi" ? "Tất cả" : "All"}
                   </button>
                   {categories.map((category) => (
                     <button
@@ -242,14 +248,19 @@ export default function ShopPage() {
 
               <div>
                 <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
-                  Giá
+                  {locale === "vi" ? "Giá" : "Price"}
                 </p>
                 <div className="space-y-2">
                   {[
-                    { id: "all", label: "Tất cả mức giá", filter: "all" },
+                    {
+                      id: "all",
+                      label: locale === "vi" ? "Tất cả mức giá" : "All Prices",
+                      filter: "all",
+                    },
                     {
                       id: "under-100",
-                      label: "Dưới 100.000đ",
+                      label:
+                        locale === "vi" ? "Dưới 100.000đ" : "Under 100,000đ",
                       filter: "under-100",
                     },
                     {
@@ -259,7 +270,8 @@ export default function ShopPage() {
                     },
                     {
                       id: "over-200",
-                      label: "Trên 200.000đ",
+                      label:
+                        locale === "vi" ? "Trên 200.000đ" : "Over 200,000đ",
                       filter: "over-200",
                     },
                   ].map((item) => (
@@ -294,14 +306,14 @@ export default function ShopPage() {
 
               <div>
                 <p className="mb-3 font-semibold text-foreground text-xs uppercase tracking-wider">
-                  Màu sắc
+                  {locale === "vi" ? "Màu sắc" : "Color"}
                 </p>
                 <div className="flex flex-wrap gap-2.5">
                   {[
                     {
                       value: "all",
                       bg: "conic-gradient(from 0deg, red, yellow, green, cyan, blue, magenta, red)",
-                      name: "Tất cả",
+                      name: locale === "vi" ? "Tất cả" : "All",
                     },
                     {
                       value: "var(--mirai-sem-primary)",
@@ -376,10 +388,14 @@ export default function ShopPage() {
           <div>
             <div className="mb-4 flex items-center justify-between rounded-[4px] border border-(--mirai-color-line) bg-card px-4 py-3 text-sm">
               <p className="text-muted-foreground">
-                Hiển thị {visibleProducts.length} sản phẩm
+                {locale === "vi"
+                  ? `Hiển thị ${visibleProducts.length} sản phẩm`
+                  : `Showing ${visibleProducts.length} products`}
               </p>
               <label className="flex items-center gap-2 text-foreground">
-                <span className="hidden sm:inline">Sắp xếp:</span>
+                <span className="hidden sm:inline">
+                  {locale === "vi" ? "Sắp xếp:" : "Sort:"}
+                </span>
                 <select
                   className="h-8 rounded-[4px] border border-border bg-card px-2"
                   value={sortBy}
@@ -387,9 +403,15 @@ export default function ShopPage() {
                     setSortBy(event.target.value as SortOption)
                   }
                 >
-                  <option value="newest">Mới nhất</option>
-                  <option value="price-asc">Giá tăng dần</option>
-                  <option value="price-desc">Giá giảm dần</option>
+                  <option value="newest">
+                    {locale === "vi" ? "Mới nhất" : "Newest"}
+                  </option>
+                  <option value="price-asc">
+                    {locale === "vi" ? "Giá tăng dần" : "Price: Low to High"}
+                  </option>
+                  <option value="price-desc">
+                    {locale === "vi" ? "Giá giảm dần" : "Price: High to Low"}
+                  </option>
                 </select>
               </label>
             </div>
@@ -397,7 +419,11 @@ export default function ShopPage() {
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
                 <Loader2 className="mb-4 h-10 w-10 animate-spin text-(--mirai-sem-primary)" />
-                <p>Đang tải sản phẩm...</p>
+                <p>
+                  {locale === "vi"
+                    ? "Đang tải sản phẩm..."
+                    : "Loading products..."}
+                </p>
               </div>
             ) : error ? (
               <div className="rounded-[4px] border border-destructive/20 bg-destructive/5 p-12 text-center text-destructive">
@@ -405,7 +431,9 @@ export default function ShopPage() {
               </div>
             ) : visibleProducts.length === 0 ? (
               <div className="rounded-[4px] border border-dashed border-(--mirai-color-line) p-24 text-center text-muted-foreground">
-                Không tìm thấy sản phẩm nào phù hợp với bộ lọc.
+                {locale === "vi"
+                  ? "Không tìm thấy sản phẩm nào phù hợp với bộ lọc."
+                  : "No products match the current filters."}
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -441,22 +469,26 @@ export default function ShopPage() {
                         <TooltipContent>
                           <p>
                             {wishlisted.includes(product.productId)
-                              ? "Bỏ khỏi wishlist"
-                              : "Thêm vào wishlist"}
+                              ? locale === "vi"
+                                ? "Bỏ khỏi wishlist"
+                                : "Remove from wishlist"
+                              : locale === "vi"
+                                ? "Thêm vào wishlist"
+                                : "Add to wishlist"}
                           </p>
                         </TooltipContent>
                       </Tooltip>
 
                       <Link
                         href={`/shop/${product.productId}`}
-                        className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 cursor-pointer hover:scale-105 transition-transform duration-300 block"
+                        className="mb-4 h-56 w-full rounded-[4px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300 block"
                       >
                         {product.productImages?.[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={product.productImages[0].imageUrl || ""}
                             alt={product.name}
-                            className="max-h-full max-w-full object-contain"
+                            className="h-full w-full object-cover"
                           />
                         ) : (
                           <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
@@ -470,8 +502,12 @@ export default function ShopPage() {
                         disabled={addingId === product.productId}
                       >
                         {addingId === product.productId
-                          ? "Đang thêm..."
-                          : "Thêm vào giỏ"}
+                          ? locale === "vi"
+                            ? "Đang thêm..."
+                            : "Adding..."
+                          : locale === "vi"
+                            ? "Thêm vào giỏ"
+                            : "Add to Cart"}
                       </button>
                     </div>
 
@@ -528,7 +564,7 @@ export default function ShopPage() {
                   disabled={currentPage === 1}
                   className="inline-flex h-9 items-center justify-center rounded-[4px] border border-border bg-card px-3 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:text-foreground active:scale-95 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
                 >
-                  Trang trước
+                  {locale === "vi" ? "Trang trước" : "Previous"}
                 </button>
 
                 <div className="flex items-center gap-1.5">
@@ -561,7 +597,7 @@ export default function ShopPage() {
                   disabled={currentPage === totalPages}
                   className="inline-flex h-9 items-center justify-center rounded-[4px] border border-border bg-card px-3 text-xs font-semibold text-foreground transition-all hover:bg-accent hover:text-foreground active:scale-95 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
                 >
-                  Trang sau
+                  {locale === "vi" ? "Trang sau" : "Next"}
                 </button>
               </div>
             )}
@@ -571,7 +607,7 @@ export default function ShopPage() {
                 href="/cart"
                 className="inline-flex h-11 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 text-sm font-semibold text-foreground"
               >
-                Đi đến giỏ hàng
+                {locale === "vi" ? "Đi đến giỏ hàng" : "Go to Cart"}
               </Link>
             </div>
           </div>

@@ -197,7 +197,7 @@ export default function WishlistPage() {
 
                     <Link
                       href={`/shop/${item.productId}`}
-                      className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
+                      className="mb-4 h-56 w-full rounded-[4px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
                     >
                       {item.productImages?.[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -295,7 +295,7 @@ export default function WishlistPage() {
 
                       <Link
                         href={`/shop/${item.productId}`}
-                        className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
+                        className="mb-4 h-56 w-full rounded-[4px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative group-hover:scale-105 transition-transform duration-300 shadow-sm block"
                       >
                         {item.productImages?.[0] ? (
                           // eslint-disable-next-line @next/next/no-img-element

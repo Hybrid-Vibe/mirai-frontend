@@ -13,9 +13,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { userApi } from "@/lib/api-client";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { useTranslation } from "@/providers/language-context";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { locale, t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -39,7 +41,7 @@ export default function SignupPage() {
     if (!val) {
       setEmailError("");
     } else if (!emailRegex.test(val)) {
-      setEmailError("Email không hợp lệ định dạng");
+      setEmailError(t("auth.invalid_email"));
     } else {
       setEmailError("");
     }
@@ -65,7 +67,7 @@ export default function SignupPage() {
     if (!isFormValid) return;
 
     if (!captchaToken) {
-      toast.error("Vui lòng hoàn thành xác thực Captcha!");
+      toast.error(t("auth.captcha_req"));
       return;
     }
 
@@ -79,15 +81,12 @@ export default function SignupPage() {
         },
         captchaToken,
       );
-      toast.success("Đăng ký tài khoản thành công!");
+      toast.success(t("auth.signup_success"));
       router.push("/login");
     } catch (error: unknown) {
       turnstileRef.current?.reset();
       setCaptchaToken(null);
-      const friendlyMsg = getFriendlyErrorMessage(
-        error,
-        "Đăng ký tài khoản thất bại. Vui lòng thử lại! ⚙️",
-      );
+      const friendlyMsg = getFriendlyErrorMessage(error, t("auth.signup_fail"));
       toast.error(friendlyMsg);
     } finally {
       setIsLoading(false);
@@ -103,10 +102,10 @@ export default function SignupPage() {
 
         <section>
           <h1 className="font-heading text-5xl font-semibold text-foreground">
-            Tạo một tài khoản
+            {t("auth.signup_title")}
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
-            Nhập thông tin của bạn bên dưới
+            {t("auth.enter_details")}
           </p>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -159,7 +158,7 @@ export default function SignupPage() {
                   ) : (
                     <Circle className="h-3 w-3" />
                   )}
-                  <span>Tối thiểu 8 ký tự</span>
+                  <span>{t("auth.pwd_min_len")}</span>
                 </div>
                 <div
                   className={cn(
@@ -172,7 +171,7 @@ export default function SignupPage() {
                   ) : (
                     <Circle className="h-3 w-3" />
                   )}
-                  <span>Có chữ in hoa</span>
+                  <span>{t("auth.pwd_uppercase")}</span>
                 </div>
                 <div
                   className={cn(
@@ -185,7 +184,7 @@ export default function SignupPage() {
                   ) : (
                     <Circle className="h-3 w-3" />
                   )}
-                  <span>Có chữ thường</span>
+                  <span>{t("auth.pwd_lowercase")}</span>
                 </div>
                 <div
                   className={cn(
@@ -198,7 +197,7 @@ export default function SignupPage() {
                   ) : (
                     <Circle className="h-3 w-3" />
                   )}
-                  <span>Có chữ số</span>
+                  <span>{t("auth.pwd_number")}</span>
                 </div>
                 <div
                   className={cn(
@@ -211,18 +210,22 @@ export default function SignupPage() {
                   ) : (
                     <Circle className="h-3 w-3" />
                   )}
-                  <span>Ký tự đặc biệt</span>
+                  <span>{t("auth.pwd_special")}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex justify-center mt-4">
               <Turnstile
+                key={locale}
                 ref={turnstileRef}
                 siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
                 onSuccess={(token: string) => setCaptchaToken(token)}
                 onExpire={() => setCaptchaToken(null)}
                 onError={() => setCaptchaToken(null)}
+                options={{
+                  language: locale,
+                }}
               />
             </div>
 
@@ -234,20 +237,20 @@ export default function SignupPage() {
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang đăng ký...
+                  {t("auth.signing_up")}
                 </span>
               ) : (
-                "Tạo tài khoản"
+                t("auth.signup_btn")
               )}
             </Button>
           </form>
 
-          <GoogleSignInButton label="Đăng ký với Google" />
+          <GoogleSignInButton label={t("auth.signup_google")} />
 
           <p className="mt-8 text-sm text-muted-foreground">
-            Bạn đã có tài khoản?{" "}
+            {t("auth.have_account")}{" "}
             <Link href="/login" className="font-semibold underline">
-              Đăng nhập
+              {t("header.login")}
             </Link>
           </p>
         </section>

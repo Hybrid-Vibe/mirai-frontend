@@ -3,9 +3,10 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslation } from "@/providers/language-context";
 
 export function TopAnnouncementBar() {
-  const [lang, setLang] = useState("Vietnamese");
+  const { locale, setLocale, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -14,16 +15,16 @@ export function TopAnnouncementBar() {
         {/* Center content */}
         <div className="flex items-center gap-2">
           <p className="font-body text-[15px] font-normal leading-[21px] hidden sm:block">
-            Chào mừng bạn đã ghé thăm website chính thức của MIRAI !!
+            {t("announcement.welcome")}
           </p>
           <p className="font-body text-[13px] font-normal sm:hidden">
-            Chào mừng đến MIRAI!
+            {locale === "vi" ? "Chào mừng đến MIRAI!" : "Welcome to MIRAI!"}
           </p>
           <Link
             href="/shop"
             className="font-body text-[15px] font-semibold leading-[24px] underline"
           >
-            ShopNow
+            {t("common.shop_now")}
           </Link>
         </div>
 
@@ -36,7 +37,7 @@ export function TopAnnouncementBar() {
               aria-label="Select language"
             >
               <span className="font-body text-[14px] font-normal leading-[21px]">
-                {lang}
+                {locale === "vi" ? "Vietnamese" : "English"}
               </span>
               <ChevronDown
                 className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -48,7 +49,7 @@ export function TopAnnouncementBar() {
                 <div className="py-1">
                   <button
                     onClick={() => {
-                      setLang("Vietnamese");
+                      setLocale("vi");
                       setIsOpen(false);
                     }}
                     className="block w-full px-4 py-2 text-left text-xs hover:bg-(--mirai-sem-surface-muted) transition-colors"
@@ -57,7 +58,7 @@ export function TopAnnouncementBar() {
                   </button>
                   <button
                     onClick={() => {
-                      setLang("English");
+                      setLocale("en");
                       setIsOpen(false);
                     }}
                     className="block w-full px-4 py-2 text-left text-xs hover:bg-(--mirai-sem-surface-muted) transition-colors"

@@ -5,7 +5,11 @@ import { ArrowRight, Headset, ShieldCheck, Truck } from "lucide-react";
 import { InteractiveProductCard } from "@/components/features/marketing/interactive-product-card";
 import { CountdownTimer } from "@/components/features/marketing/countdown-timer";
 import { ScrollButtons } from "@/components/features/marketing/scroll-buttons";
+import { HomeBannerCarousel } from "@/components/features/marketing/home-banner-carousel";
 import { productApi } from "@/lib/api-client";
+import { cookies } from "next/headers";
+import vi from "@/dictionaries/vi.json";
+import en from "@/dictionaries/en.json";
 
 type Product = {
   id: string;
@@ -19,14 +23,6 @@ type Product = {
   endTime?: string;
   imageUrl?: string;
 };
-
-const heroCategories = [
-  { label: "Phone Cases", href: "/shop?category=phone-cases" },
-  { label: "Laptop Cases", href: "/shop?category=laptop-cases" },
-  { label: "Airpod Cases", href: "/shop?category=airpod-cases" },
-  { label: "Phụ kiện", href: "/shop?category=accessories" },
-  { label: "Bộ sưu tập", href: "/collections" },
-];
 
 const flashSales: Product[] = [
   {
@@ -175,6 +171,35 @@ const mockJardinProducts: Product[] = [
 ];
 
 export default async function HomePage() {
+  const cookieStore = await cookies();
+  const locale = (cookieStore.get("NEXT_LOCALE")?.value as "vi" | "en") || "vi";
+  const dict = locale === "en" ? en : vi;
+
+  const t = (key: string): string => {
+    const parts = key.split(".");
+    let current: unknown = dict;
+    for (const part of parts) {
+      if (
+        current &&
+        typeof current === "object" &&
+        part in (current as Record<string, unknown>)
+      ) {
+        current = (current as Record<string, unknown>)[part];
+      } else {
+        return key;
+      }
+    }
+    return typeof current === "string" ? current : key;
+  };
+
+  const heroCategories = [
+    { label: "Phone Cases", href: "/shop?category=phone-cases" },
+    {
+      label: locale === "vi" ? "Bộ sưu tập" : "Collections",
+      href: "/collections",
+    },
+  ];
+
   let dbProducts: Product[] = [];
   let jardinProducts: Product[] = [];
   try {
@@ -280,50 +305,14 @@ export default async function HomePage() {
             </ul>
           </aside>
 
-          <div className="grid gap-4">
-            <div className="grid min-h-[330px] items-center gap-6 rounded-[4px] bg-(--mirai-sem-text) px-8 py-8 text-(--mirai-sem-background) md:grid-cols-2 md:px-12">
-              <div>
-                <p className="mb-3 text-sm text-(--mirai-sem-primary)">
-                  AI Custom Case
-                </p>
-                <h1 className="font-heading text-4xl font-semibold leading-tight md:text-5xl">
-                  Thiết kế ốp lưng mang dấu ấn riêng của bạn
-                </h1>
-                <Link
-                  href="/customize"
-                  className="mt-8 inline-flex items-center gap-2 text-sm underline transition-colors hover:text-(--mirai-sem-primary)"
-                >
-                  Khám phá ngay
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mx-auto flex h-56 w-48 items-center justify-center rounded-[28px] border border-(--mirai-sem-border) overflow-hidden relative shadow-[0_30px_80px_var(--mirai-state-focus-ring)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/static-image/ava-mirai%20.jpg"
-                  alt="MIRAI Custom Case"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-2 w-2 rounded-full ${i === 2 ? "bg-(--mirai-sem-primary)" : "bg-(--mirai-sem-surface-muted)"}`}
-                />
-              ))}
-            </div>
-          </div>
+          <HomeBannerCarousel />
         </div>
       </section>
 
       <section className="page-shell py-16">
         <SectionHeading
-          label="Hôm nay"
-          title="Flash Sales"
+          label={t("home.flash_sales_label")}
+          title={t("home.flash_sales_title")}
           targetId="flash-sales-list"
         />
         <CountdownTimer
@@ -352,17 +341,19 @@ export default async function HomePage() {
             href="/shop"
             className="inline-flex min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
           >
-            Xem tất cả sản phẩm
+            {t("common.see_all")}
           </Link>
         </div>
       </section>
 
       {/* Jardin De Fleurs Collection Section */}
       <section className="page-shell border-t border-(--mirai-color-line) py-16 bg-gradient-to-b from-transparent via-accent/5 to-transparent">
-        <SectionHeading label="Bộ sưu tập" title="Jardin De Fleurs" />
+        <SectionHeading
+          label={t("home.jardin_label")}
+          title={t("home.jardin_title")}
+        />
         <p className="mb-8 -mt-6 text-sm text-muted-foreground">
-          Khám phá dòng sản phẩm ốp lưng họa tiết hoa cỏ thiên nhiên, tinh tế và
-          sang trọng.
+          {t("home.jardin_desc")}
         </p>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -377,8 +368,8 @@ export default async function HomePage() {
 
       <section className="page-shell border-t border-(--mirai-color-line) py-16">
         <SectionHeading
-          label="Tháng này"
-          title="Sản phẩm bán chạy nhất tháng"
+          label={t("home.best_selling_label")}
+          title={t("home.best_selling_title")}
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -394,47 +385,16 @@ export default async function HomePage() {
             href="/shop"
             className="inline-flex min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
           >
-            Xem tất cả sản phẩm
+            {t("common.see_all")}
           </Link>
         </div>
       </section>
 
       <section className="page-shell py-16">
-        <div className="grid min-h-[320px] items-center gap-8 rounded-[4px] bg-(--mirai-sem-text) px-8 py-10 text-(--mirai-sem-background) md:grid-cols-2">
-          <div>
-            <p className="mb-3 text-sm text-(--mirai-sem-primary)">
-              Bộ sưu tập tháng
-            </p>
-            <h2 className="font-heading text-4xl font-semibold leading-tight md:text-5xl">
-              Khám phá phong cách của riêng bạn
-            </h2>
-            <CountdownTimer
-              initialDays={23}
-              initialHours={5}
-              initialMinutes={39}
-              initialSeconds={35}
-              format="inline"
-            />
-            <Link
-              href="/customize"
-              className="mt-8 inline-flex min-w-36 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
-            >
-              Mua ngay
-            </Link>
-          </div>
-          <div className="mx-auto h-64 w-full max-w-xs rounded-3xl border border-(--mirai-sem-border) overflow-hidden relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://stuwtmcljxqhdlsawtif.supabase.co/storage/v1/object/public/static-image/collection-banner.jpg"
-              alt="Monthly Collection"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="page-shell py-16">
-        <SectionHeading label="Sản phẩm" title="Khám phá sản phẩm" />
+        <SectionHeading
+          label={t("home.discover_label")}
+          title={t("home.discover_title")}
+        />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {exploreProductsDisplay.map((product, index) => (
             <InteractiveProductCard
@@ -448,7 +408,7 @@ export default async function HomePage() {
             href="/shop"
             className="inline-flex min-w-44 items-center justify-center rounded-[4px] bg-(--mirai-sem-primary) px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-(--mirai-state-primary-hover) active:scale-[0.98]"
           >
-            Xem tất cả sản phẩm
+            {t("common.see_all")}
           </Link>
         </div>
       </section>
@@ -458,11 +418,11 @@ export default async function HomePage() {
           <div className="mb-2 flex items-center gap-2">
             <span className="inline-block h-8 w-2 rounded-sm bg-(--mirai-sem-accent)" />
             <span className="text-sm font-semibold text-(--mirai-sem-accent)">
-              Nổi bật
+              {t("home.new_features_label")}
             </span>
           </div>
           <h2 className="font-heading text-3xl font-semibold text-foreground md:text-4xl">
-            Tính năng mới
+            {t("home.new_features_title")}
           </h2>
         </div>
 
@@ -470,13 +430,13 @@ export default async function HomePage() {
           <article className="relative min-h-[420px] rounded-[4px] bg-(--mirai-sem-text) p-8 text-(--mirai-sem-background)">
             <h3 className="font-heading text-4xl font-semibold">Customize</h3>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Trải nghiệm tạo mẫu cá nhân hóa với AI và chỉnh sửa thủ công.
+              {t("home.new_features_desc")}
             </p>
             <Link
               href="/customize"
               className="mt-5 inline-flex items-center text-sm underline transition-colors hover:text-(--mirai-sem-primary)"
             >
-              Mua ngay
+              {t("common.buy_now")}
             </Link>
             <div className="absolute bottom-8 right-8 h-40 w-28 rounded-2xl bg-gradient-to-br from-(--mirai-sem-primary) to-(--mirai-sem-accent)" />
           </article>
@@ -490,26 +450,28 @@ export default async function HomePage() {
                   </h3>
                 </Link>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Bộ sưu tập ốp lưng họa tiết hoa cỏ thiên nhiên mới ra mắt.
+                  {locale === "vi"
+                    ? "Bộ sưu tập ốp lưng họa tiết hoa cỏ thiên nhiên mới ra mắt."
+                    : "A newly released collection of floral and botanical patterned cases."}
                 </p>
               </div>
               <Link
                 href="/collections/jardin-de-fleurs"
                 className="mt-4 inline-flex items-center text-xs underline transition-colors hover:text-(--mirai-sem-primary)"
               >
-                Xem bộ sưu tập
+                {locale === "vi" ? "Xem bộ sưu tập" : "View collection"}
               </Link>
             </article>
 
             <div className="grid gap-5 md:grid-cols-2">
               <article className="relative min-h-[200px] rounded-[4px] bg-(--mirai-sem-text) p-6 text-(--mirai-sem-background)">
                 <h3 className="font-heading text-3xl font-semibold">
-                  Hot cases
+                  {t("home.hot_cases")}
                 </h3>
               </article>
               <article className="relative min-h-[200px] rounded-[4px] bg-(--mirai-sem-warning) p-6 text-(--mirai-sem-text)">
                 <h3 className="font-heading text-3xl font-semibold">
-                  Phụ kiện
+                  {locale === "vi" ? "Phụ kiện" : "Accessories"}
                 </h3>
               </article>
             </div>
@@ -522,18 +484,18 @@ export default async function HomePage() {
           {[
             {
               icon: <Truck className="h-6 w-6" />,
-              title: "GIAO HÀNG MIỄN PHÍ VÀ NHANH CHÓNG",
-              desc: "Miễn phí giao hàng cho tất cả đơn hàng từ 500.000d.",
+              title: t("home.services.free_shipping"),
+              desc: t("home.services.free_shipping_desc"),
             },
             {
               icon: <Headset className="h-6 w-6" />,
-              title: "DỊCH VỤ KHÁCH HÀNG 24/7",
-              desc: "Hỗ trợ khách hàng nhanh nhất mọi thời điểm.",
+              title: t("home.services.customer_service"),
+              desc: t("home.services.customer_service_desc"),
             },
             {
               icon: <ShieldCheck className="h-6 w-6" />,
-              title: "ĐẢM BẢO HOÀN TIỀN",
-              desc: "Chính sách hoàn tiền trong vòng 3 ngày.",
+              title: t("home.services.money_back"),
+              desc: t("home.services.money_back_desc"),
             },
           ].map((service) => (
             <article key={service.title} className="text-center">

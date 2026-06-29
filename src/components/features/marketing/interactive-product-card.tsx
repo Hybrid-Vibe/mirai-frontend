@@ -80,14 +80,14 @@ export function InteractiveProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/shop/${product.productId || product.id}`}
-          className="mx-auto mb-4 h-40 w-24 rounded-[24px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center p-3 transition-transform duration-500 group-hover:scale-105 block"
+          className="mb-4 h-56 w-full rounded-[4px] border border-(--mirai-sem-border) bg-(--mirai-sem-surface) overflow-hidden relative flex items-center justify-center transition-transform duration-500 group-hover:scale-105 block"
         >
           {product.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="max-h-full max-w-full object-contain"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-b from-(--mirai-sem-text) via-(--mirai-sem-accent) to-(--mirai-sem-primary)" />
